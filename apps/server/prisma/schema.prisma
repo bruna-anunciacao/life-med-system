@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  PROFESSIONAL
+  PATIENT
+  ADMIN
+}
+
+enum AppointmentModality {
+  VIRTUAL
+  HOME_VISIT
+  CLINIC
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  password String
+  name     String
+  role     UserRole @default(PATIENT)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  professionalProfile ProfessionalProfile?
+
+  appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
+  appointmentsAsPatient Appointment[] @relation("PatientAppointments")
+
+  availability Availability[]
+
+  passwordResets PasswordReset[]
+  sessions       Session[]
+
+  @@map("users")
+}
+
+model ProfessionalProfile {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  professionalLicense String              @map("professional_license")
+  specialty           String
+  subspecialty        String?
+  modality            AppointmentModality @default(VIRTUAL)
+  bio                 String?             @db.Text
+  photoUrl            String?             @map("photo_url")
+  socialLinks         Json?               @map("social_links")
+
+  @@map("professional_profiles")
+}
+
+model Availability {
+  id             Int  @id @default(autoincrement())
+  professionalId Int  @map("professional_id")
+  professional   User @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int    @map("day_of_week")
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
+
+  @@map("availability")
+}
+
+model Appointment {
+  id Int @id @default(autoincrement())
+
+  professionalId Int  @map("professional_id")
+  professional   User @relation("DoctorAppointments", fields: [professionalId], references: [id])
+
+  patientId Int  @map("patient_id")
+  patient   User @relation("PatientAppointments", fields: [patientId], references: [id])
+
+  dateTime DateTime          @map("date_time")
+  status   AppointmentStatus @default(PENDING)
+  notes    String?           @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("appointments")
+}
+
+model PasswordReset {
+  id     Int  @id @default(autoincrement())
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_resets")
+}
+
+model Session {
+  id        String   @id
+  userId    Int?     @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  data      String?  @db.Text
+
+  @@map("sessions")
+}
