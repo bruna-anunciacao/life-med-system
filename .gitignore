@@ -1,8 +1,4 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-.vscode
-.cursor
-tsconfig.tsbuildinfo
-data/
 
 # Dependencies
 node_modules
