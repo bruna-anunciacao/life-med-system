@@ -5,12 +5,12 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
@@ -32,7 +32,6 @@ enum AppointmentStatus {
   CANCELLED
   NO_SHOW
 }
-
 
 model User {
   id       Int      @id @default(autoincrement())
@@ -69,6 +68,7 @@ model ProfessionalProfile {
   bio                 String?             @db.Text
   photoUrl            String?             @map("photo_url")
   socialLinks         Json?               @map("social_links")
+
   @@map("professional_profiles")
 }
 
@@ -93,15 +93,14 @@ model Appointment {
   patientId Int  @map("patient_id")
   patient   User @relation("PatientAppointments", fields: [patientId], references: [id])
 
-  dateTime  DateTime          @map("date_time")
-  status    AppointmentStatus @default(PENDING)
-  notes     String?           @db.Text
+  dateTime DateTime          @map("date_time")
+  status   AppointmentStatus @default(PENDING)
+  notes    String?           @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("appointments")
 }
-
 
 model PasswordReset {
   id     Int  @id @default(autoincrement())
