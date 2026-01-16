@@ -34,7 +34,7 @@ enum AppointmentStatus {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
+  id       String   @id @default(uuid())
   email    String   @unique
   password String
   name     String
@@ -57,9 +57,9 @@ model User {
 }
 
 model ProfessionalProfile {
-  id     Int  @id @default(autoincrement())
-  userId Int  @unique @map("user_id")
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   professionalLicense String              @map("professional_license")
   specialty           String
@@ -73,9 +73,9 @@ model ProfessionalProfile {
 }
 
 model Availability {
-  id             Int  @id @default(autoincrement())
-  professionalId Int  @map("professional_id")
-  professional   User @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  professional   User   @relation(fields: [professionalId], references: [id], onDelete: Cascade)
 
   dayOfWeek Int    @map("day_of_week")
   startTime String @map("start_time")
@@ -85,13 +85,13 @@ model Availability {
 }
 
 model Appointment {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
-  professionalId Int  @map("professional_id")
-  professional   User @relation("DoctorAppointments", fields: [professionalId], references: [id])
+  professionalId String @map("professional_id")
+  professional   User   @relation("DoctorAppointments", fields: [professionalId], references: [id])
 
-  patientId Int  @map("patient_id")
-  patient   User @relation("PatientAppointments", fields: [patientId], references: [id])
+  patientId String @map("patient_id")
+  patient   User   @relation("PatientAppointments", fields: [patientId], references: [id])
 
   dateTime DateTime          @map("date_time")
   status   AppointmentStatus @default(PENDING)
@@ -103,9 +103,9 @@ model Appointment {
 }
 
 model PasswordReset {
-  id     Int  @id @default(autoincrement())
-  userId Int  @map("user_id")
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   token     String   @unique
   expiresAt DateTime @map("expires_at")
@@ -115,8 +115,8 @@ model PasswordReset {
 }
 
 model Session {
-  id        String   @id
-  userId    Int?     @map("user_id")
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime @map("expires_at")
   data      String?  @db.Text
