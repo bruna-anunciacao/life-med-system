@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserRoleEnum } from './enums/user-role-enum';
@@ -46,8 +46,10 @@ export class AuthService {
       email: user.email,
     };
 
+    const accessToken = String(this.jwtService.sign(payload));
+
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken,
       user: {
         id: user.id,
         name: user.name,
