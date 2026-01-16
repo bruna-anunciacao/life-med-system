@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "../auth.module.css";
 import {
+  Button,
+  FieldError,
   Form,
   Input,
   InputGroup,
@@ -12,9 +14,50 @@ import {
   RadioGroup,
   TextField,
 } from "@heroui/react";
-import { Eye } from "@gravity-ui/icons";
+import { Eye, EyeSlash } from "@gravity-ui/icons";
+import * as z from "zod";
+
+const registerPatientValidation = z
+  .object({
+    name: z.string().min(1, "Nome é obrigatório"),
+    email: z.email("Email inválido"),
+    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+    confirmPassword: z
+      .string()
+      .min(6, "A senha deve ter no mínimo 6 caracteres"),
+    role: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
+
+const registerProfessionalValidation = z
+  .object({
+    name: z.string().min(1, "Nome é obrigatório"),
+    email: z.email("Email inválido"),
+    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+    confirmPassword: z
+      .string()
+      .min(6, "A senha deve ter no mínimo 6 caracteres"),
+    role: z.string(),
+    professionalLicense: z
+      .string()
+      .min(1, "Registro profissional é obrigatório"),
+    specialty: z.string().min(1, "Especialidade é obrigatória"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
 
 export default function RegisterPage() {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
+    useState(false);
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -25,18 +68,61 @@ export default function RegisterPage() {
     specialty: "",
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+  const resetForm = (role: string) => {
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      role: role,
+      professionalLicense: "",
+      specialty: "",
+    });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleRoleChange = (value: string) => {
-    setFormData({ ...formData, role: value });
+    resetForm(value);
+    setErrors({});
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrors({});
+
+    const schema =
+      formData.role === "PROFESSIONAL"
+        ? registerProfessionalValidation
+        : registerPatientValidation;
+
+    const result = schema.safeParse(formData);
+
+    if (!result.success) {
+      const formattedErrors: Record<string, string> = {};
+
+      result.error.issues.forEach((issue) => {
+        const fieldName = issue.path[0];
+        if (fieldName) {
+          formattedErrors[String(fieldName)] = issue.message;
+        }
+      });
+
+      setErrors(formattedErrors);
+      return;
+    }
+
+    console.log("Sucesso:", result.data);
   };
 
   return (
@@ -78,100 +164,143 @@ export default function RegisterPage() {
             </RadioGroup>
           </div>
 
-          <div className={styles.inputGroup}>
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="name" className={styles.label}>
-                Nome Completo
-              </Label>
-              <Input
-                id="name"
-                placeholder="Ex: Maria Silva"
-                type="text"
-                className={styles.input}
-                value={formData.name}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="input-type-email" className={styles.label}>
-              Email
+          <TextField isInvalid={!!errors.name} className="w-full">
+            <Label htmlFor="name" className={styles.label}>
+              Nome Completo
             </Label>
             <Input
-              id="input-type-email"
+              id="name"
+              placeholder="Ex: Maria Silva"
+              type="text"
+              name="name"
+              className={styles.input}
+              value={formData.name}
+              onChange={handleChange}
+            />
+            <FieldError>{errors.name}</FieldError>
+          </TextField>
+          <TextField isInvalid={!!errors.email} className="w-full">
+            <Label htmlFor="email" className={styles.label}>
+              E-mail
+            </Label>
+            <Input
+              id="email"
               placeholder="jane@example.com"
               type="email"
+              name="email"
               className={styles.input}
               value={formData.email}
               onChange={handleChange}
             />
-          </div>
-
+            <FieldError>{errors.email}</FieldError>
+          </TextField>
           {formData.role === "PROFESSIONAL" && (
-            <>
-              <div className={styles.inputGroup}>
-                <label htmlFor="professionalLicense" className={styles.label}>
+            <div className={styles.multipleInputs}>
+              <TextField
+                isInvalid={!!errors.professionalLicense}
+                className="w-full"
+              >
+                <Label htmlFor="professionalLicense" className={styles.label}>
                   Registro Profissional (CRM/CRP)
-                </label>
-                <input
+                </Label>
+                <Input
                   id="professionalLicense"
-                  type="text"
                   placeholder="Ex: 123456-SP"
+                  type="string"
+                  name="professionalLicense"
                   className={styles.input}
                   value={formData.professionalLicense}
                   onChange={handleChange}
-                  required
                 />
-              </div>
-
-              <div className={styles.inputGroup}>
-                <label htmlFor="specialty" className={styles.label}>
+                <FieldError>{errors.professionalLicense}</FieldError>
+              </TextField>
+              <TextField isInvalid={!!errors.specialty} className="w-full">
+                <Label htmlFor="specialty" className={styles.label}>
                   Especialidade
-                </label>
-                <input
+                </Label>
+                <Input
                   id="specialty"
-                  type="text"
                   placeholder="Ex: Cardiologia"
+                  type="string"
+                  name="specialty"
                   className={styles.input}
                   value={formData.specialty}
                   onChange={handleChange}
-                  required
                 />
-              </div>
-            </>
+                <FieldError>{errors.specialty}</FieldError>
+              </TextField>
+            </div>
           )}
 
-          <div className={styles.inputGroup}>
-            <TextField fullWidth name="password">
-              <Label>Senha</Label>
-              <InputGroup fullWidth>
-                <InputGroup.Input
-                  placeholder="Insira a senha"
-                  type="password"
-                />
-                <InputGroup.Suffix>
-                  <Eye className="size-4 text-muted" />
-                </InputGroup.Suffix>
-              </InputGroup>
-            </TextField>
-            <TextField fullWidth name="confirmPassword">
-              <Label>Confirmar a senha</Label>
-              <InputGroup fullWidth>
-                <InputGroup.Input
-                  placeholder="Confirme a senha"
-                  type="password"
-                />
-                <InputGroup.Suffix>
-                  <Eye className="size-4 text-muted" />
-                </InputGroup.Suffix>
-              </InputGroup>
-            </TextField>
-          </div>
+          <TextField isInvalid={!!errors.password} className="w-full">
+            <Label className={styles.label}>Senha</Label>
+            <InputGroup fullWidth className={styles.input}>
+              <InputGroup.Input
+                name="password"
+                placeholder="Insira a senha"
+                type={isPasswordVisible ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+              />
+              <InputGroup.Suffix className="pr-0">
+                <Button
+                  isIconOnly
+                  aria-label={
+                    isPasswordVisible ? "Esconder senha" : "Mostrar senha"
+                  }
+                  size="sm"
+                  variant="ghost"
+                  onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+                >
+                  {isPasswordVisible ? (
+                    <Eye className="size-4" />
+                  ) : (
+                    <EyeSlash className="size-4" />
+                  )}
+                </Button>
+              </InputGroup.Suffix>
+            </InputGroup>
+            <FieldError>{errors.password}</FieldError>
+          </TextField>
 
-          <button type="submit" className={styles.button}>
+          <TextField isInvalid={!!errors.confirmPassword} className="w-full">
+            <Label className={styles.label}>Confirmar a senha</Label>
+            <InputGroup fullWidth className={styles.input}>
+              <InputGroup.Input
+                name="confirmPassword"
+                placeholder="Insira a senha"
+                type={isConfirmPasswordVisible ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+              <InputGroup.Suffix className="pr-0">
+                <Button
+                  isIconOnly
+                  aria-label={
+                    isConfirmPasswordVisible
+                      ? "Esconder senha"
+                      : "Mostrar senha"
+                  }
+                  size="sm"
+                  variant="ghost"
+                  onPress={() =>
+                    setIsConfirmPasswordVisible(!isConfirmPasswordVisible)
+                  }
+                >
+                  {isConfirmPasswordVisible ? (
+                    <Eye className="size-4" />
+                  ) : (
+                    <EyeSlash className="size-4" />
+                  )}
+                </Button>
+              </InputGroup.Suffix>
+            </InputGroup>
+            <FieldError>{errors.confirmPassword}</FieldError>
+          </TextField>
+
+          <Button type="submit" className={styles.button}>
             Cadastrar
-          </button>
+          </Button>
         </Form>
 
         <div className={styles.footer}>
