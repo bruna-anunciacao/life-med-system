@@ -9,20 +9,20 @@ import { AppointmentModalityEnum } from '../enums/appointment-modality-enum';
 
 export class RegisterProfessionalDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(6)
-  password: string;
+  password!: string;
 
   @IsString()
-  name: string;
+  name!: string;
 
   @IsString()
-  professionalLicense: string;
+  professionalLicense!: string;
 
   @IsString()
-  specialty: string;
+  specialty!: string;
 
   @IsOptional()
   @IsString()

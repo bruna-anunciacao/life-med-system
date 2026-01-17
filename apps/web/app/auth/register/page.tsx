@@ -13,9 +13,13 @@ import {
   Radio,
   RadioGroup,
   TextField,
+  Spinner,
 } from "@heroui/react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeSlash } from "@gravity-ui/icons";
 import * as z from "zod";
+import { authService } from "../../../services/auth-service";
+import { toast } from "sonner";
 
 const registerPatientValidation = z
   .object({
@@ -52,9 +56,11 @@ const registerProfessionalValidation = z
   });
 
 export default function RegisterPage() {
+  const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
     useState(false);
+  const router = useRouter();
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -97,9 +103,10 @@ export default function RegisterPage() {
     setErrors({});
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    setIsLoading(true);
 
     const schema =
       formData.role === "PROFESSIONAL"
@@ -119,10 +126,43 @@ export default function RegisterPage() {
       });
 
       setErrors(formattedErrors);
+      setIsLoading(false);
       return;
     }
 
-    console.log("Sucesso:", result.data);
+    try {
+      if (formData.role === "PROFESSIONAL") {
+        const data = result.data as z.infer<
+          typeof registerProfessionalValidation
+        >;
+
+        await authService.registerProfessional({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          professionalLicense: data.professionalLicense,
+          specialty: data.specialty,
+        });
+      } else {
+        const data = result.data as z.infer<typeof registerPatientValidation>;
+
+        await authService.registerPatient({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        });
+      }
+
+      toast.success("Seu cadastro foi realizado com sucesso!");
+      resetForm(formData.role);
+      setTimeout(() => {
+        router.push("/auth/login");
+      }, 1000);
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao realizar cadastro");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -299,7 +339,7 @@ export default function RegisterPage() {
           </TextField>
 
           <Button type="submit" className={styles.button}>
-            Cadastrar
+            {isLoading ? <Spinner /> : "Cadastrar"}
           </Button>
         </Form>
 
