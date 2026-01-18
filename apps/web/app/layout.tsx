@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Toaster } from 'sonner';
+import { Toaster } from "sonner";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -15,7 +15,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "Life Med System",
-  description: "Sistema de agendamento de consultas médicas e gestão de clínicas",
+  description:
+    "Sistema de agendamento de consultas médicas e gestão de clínicas",
 };
 
 export default function RootLayout({
@@ -25,8 +26,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <Toaster richColors position="top-center" />
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Toaster richColors position="top-center" />
         {children}
       </body>
     </html>

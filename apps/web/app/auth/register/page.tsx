@@ -55,7 +55,7 @@ const registerProfessionalValidation = z
     path: ["confirmPassword"],
   });
 
-export default function RegisterPage() {
+const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
@@ -352,4 +352,6 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-}
+};
+
+export default RegisterPage;

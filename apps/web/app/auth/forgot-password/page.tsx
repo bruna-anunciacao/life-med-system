@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "../auth.module.css";
 
-export default function ForgotPasswordPage() {
+const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -73,3 +73,5 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+
+export default ForgotPasswordPage;
