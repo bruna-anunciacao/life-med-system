@@ -1,135 +1,253 @@
-# Turborepo starter
+# LifeMed System
 
-This Turborepo starter is maintained by the Turborepo core team.
+Plataforma digital web responsiva, sem fins lucrativos, destinada a facilitar o acesso à saúde. O sistema conecta profissionais de saúde voluntários à comunidade, permitindo o agendamento de consultas gratuitas.
 
-## Using this example
+## Links do Projeto
 
-Run the following command:
+| Recurso | Link |
+|---------|------|
+| **Frontend (Produção)** | https://life-med-system-web.vercel.app/ |
+| **Backend (Produção)** | https://life-med-system.onrender.com |
+| **Repositório Principal** | https://github.com/bruna-anunciacao/life-med-system |
+| **Repositório Original (TCC)** | https://github.com/bruna-anunciacao/life-med |
+| **Documentação de Requisitos** | [Google Docs](https://docs.google.com/document/d/1nTb6WZjGDMXA394hR0gvFeqp7Gk6E-zGJrsyybsuBJ4/edit?usp=sharing) |
 
-```sh
-npx create-turbo@latest
-```
+> **Nota:** O repositório original (`life-med`) foi usado como base, mas devido a problemas de tipagem e atualizações do NestJS, foi criado este novo repositório (`life-med-system`) para a versão de produção.
 
-## What's inside?
+## Visão Geral
 
-This Turborepo includes the following packages/apps:
+O LifeMed atua como intermediário que permite:
+- **Profissionais de Saúde** ofertarem horários de atendimento voluntário
+- **Pacientes** agendarem serviços de saúde de forma simples e gratuita
 
-### Apps and Packages
+## Tecnologias
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- **Frontend:** Next.js, React, TypeScript
+- **Backend:** NestJS, Prisma ORM
+- **Banco de Dados:** PostgreSQL
+- **Monorepo:** Turborepo
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+## Estrutura do Projeto
 
 ```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+life-med-system/
+├── apps/
+│   ├── server/     # Backend NestJS
+│   └── web/        # Frontend Next.js
+├── packages/
+│   ├── ui/         # Componentes compartilhados
+│   ├── eslint-config/
+│   └── typescript-config/
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+---
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
+## Guia de Instalação
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+### Pré-requisitos
 
-### Develop
+- [Node.js](https://nodejs.org/) (v18 ou superior)
+- [Git](https://git-scm.com/)
+- [PostgreSQL](https://www.postgresql.org/) (v14 ou superior)
+- [pgAdmin](https://www.pgadmin.org/) (opcional, para gerenciamento visual)
 
-To develop all apps and packages, run the following command:
+---
 
-```
-cd my-turborepo
+### 1. Instalação do PostgreSQL
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+#### Linux (Ubuntu/Debian)
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Inicie o serviço:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```bash
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
 ```
 
-### Remote Caching
+#### macOS (Homebrew)
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```bash
+brew install postgresql@16
+brew services start postgresql@16
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+#### Windows
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+Baixe e instale o [PostgreSQL Installer](https://www.postgresql.org/download/windows/).
 
+---
+
+### 2. Configuração do Banco de Dados
+
+Acesse o PostgreSQL via terminal:
+
+```bash
+# Linux/macOS
+sudo -u postgres psql
+
+# Windows (PowerShell como Admin)
+psql -U postgres
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+Execute os seguintes comandos SQL:
+
+```sql
+ALTER USER postgres WITH PASSWORD 'root';
+CREATE DATABASE "life-med";
+\q
 ```
 
-## Useful Links
+#### Alternativa via pgAdmin
 
-Learn more about the power of Turborepo:
+1. Conecte ao servidor com:
+   - **Host:** `localhost`
+   - **Port:** `5432`
+   - **Username:** `postgres`
+   - **Password:** `root`
+   - **SSL Mode:** `Disable`
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+2. Clique com botão direito em **Databases** → **Create** → **Database**
+3. Nome: `life-med`
+
+---
+
+### 3. Configuração do Projeto
+
+Clone o repositório:
+
+```bash
+git clone https://github.com/bruna-anunciacao/life-med-system.git
+cd life-med-system
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+---
+
+### 4. Configuração do Backend
+
+Crie o arquivo de variáveis de ambiente:
+
+```bash
+cp apps/server/.env.example apps/server/.env
+```
+
+Edite o arquivo `apps/server/.env`:
+
+```env
+DATABASE_URL="postgresql://postgres:root@localhost:5432/life-med?sslmode=disable"
+JWT_SECRET="sua_chave_secreta_aqui"
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+
+MAIL_HOST=smtp.exemplo.com
+MAIL_PORT=465
+MAIL_SECURE=true
+MAIL_USER=seu_email@exemplo.com
+MAIL_PASS=sua_senha_de_app
+```
+
+> **Importante:** Nunca commite o arquivo `.env` com credenciais reais.
+
+---
+
+### 5. Migrações do Banco de Dados
+
+Gere o cliente Prisma e execute as migrações:
+
+```bash
+cd apps/server
+npx prisma generate
+npx prisma migrate dev --name init
+cd ../..
+```
+
+---
+
+### 6. Executando o Projeto
+
+Na raiz do projeto, execute:
+
+```bash
+npm run dev
+```
+
+Acesse:
+- **Frontend:** http://localhost:3000
+- **Backend:** http://localhost:3001
+
+---
+
+## Comandos Úteis
+
+### Comandos do dia a dia
+
+| Situação | Comando |
+|----------|---------|
+| Iniciar o projeto | `npm run dev` |
+| Após `git pull` | `npm install && cd apps/server && npx prisma generate && cd ../.. && npm run dev` |
+| Após alterar `.env` | `cd apps/server && npx prisma generate && cd ../..` |
+| Após alterar `schema.prisma` | `cd apps/server && npx prisma migrate dev --name descricao && cd ../..` |
+
+### Comandos do PostgreSQL
+
+```bash
+# Verificar status
+sudo systemctl status postgresql
+
+# Iniciar PostgreSQL
+sudo systemctl start postgresql
+
+# Acessar banco via terminal
+sudo -u postgres psql -d life-med
+```
+
+### Comandos do Prisma
+
+```bash
+cd apps/server
+
+# Gerar cliente Prisma
+npx prisma generate
+
+# Criar nova migração
+npx prisma migrate dev --name nome_da_migracao
+
+# Visualizar banco no navegador
+npx prisma studio
+```
+
+---
+
+## Solução de Problemas
+
+| Erro | Solução |
+|------|---------|
+| `Connection refused` ao conectar no banco | Execute `sudo systemctl start postgresql` |
+| `Cannot find module 'dotenv/config'` | Execute `npm install` na pasta `apps/server` |
+| `Database "life-med" does not exist` | Crie o banco: `sudo -u postgres psql` → `CREATE DATABASE "life-med";` |
+| Erro de permissão no PostgreSQL | Verifique usuário/senha no `.env` |
+| `Unit postgresql.service not found` | Instale o PostgreSQL: `sudo apt install postgresql` |
+
+---
+
+## Atores do Sistema
+
+- **Profissional de Saúde (Voluntário):** Médico, psicólogo, enfermeiro ou terapeuta que deseja doar seu serviço
+- **Paciente (Usuário Comum):** Membro da comunidade que busca atendimento gratuito
+- **Sistema (Automático):** Processos de background (notificações, atualizações de status)
+
+---
+
+## Licença
+
+Este projeto é sem fins lucrativos e destinado a facilitar o acesso à saúde.
