@@ -89,8 +89,12 @@ const LoginPage = () => {
           router.push("/dashboard/admin");
           break;
       }
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao realizar login");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Erro desconhecido.");
+      }
       setIsLoading(false);
     }
   };

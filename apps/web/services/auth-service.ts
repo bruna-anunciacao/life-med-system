@@ -20,6 +20,15 @@ export interface LoginDto {
   password: string;
 }
 
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface ResetPasswordDto {
+  token: string;
+  newPassword: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -103,6 +112,44 @@ export const authService = {
       throw new Error("Erro de conexão com o servidor.");
     }
   },
+  async forgotPassword(data: ForgotPasswordDto) {
+    try {
+      const response = await api.post("/auth/forgot-password", data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao realizar esqueci a senha.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async resetPassword(data: ResetPasswordDto) {
+    try {
+      const response = await api.post("/auth/reset-password", data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao realizar recuperar a senha.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
   logout() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);

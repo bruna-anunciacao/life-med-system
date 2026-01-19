@@ -3,15 +3,89 @@
 import { useState } from "react";
 import Link from "next/link";
 import styles from "../auth.module.css";
+import { useRouter } from "next/navigation";
+import * as z from "zod";
+import { toast } from "sonner";
+import {
+  Button,
+  FieldError,
+  Form,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+} from "@heroui/react";
+import { authService } from "../../../services/auth-service";
+
+const formValidation = z.object({
+  email: z.email("Email inválido"),
+});
 
 const ForgotPasswordPage = () => {
-  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [formData, setFormData] = useState({
+    email: "",
+  });
+
+  const resetForm = () => {
+    setFormData({
+      email: "",
+    });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ email });
     setSubmitted(true);
+    setIsLoading(true);
+    const result = formValidation.safeParse(formData);
+
+    if (!result.success) {
+      const formattedErrors: Record<string, string> = {};
+
+      result.error.issues.forEach((issue) => {
+        const fieldName = issue.path[0];
+        if (fieldName) {
+          formattedErrors[String(fieldName)] = issue.message;
+        }
+      });
+      return;
+    }
+
+    try {
+      await authService.forgotPassword({
+        email: formData.email,
+      });
+
+      toast.success(`Enviamos um link de recuperação para ${formData.email}. Verifique sua caixa de
+              entrada e spam.`);
+      resetForm();
+      setTimeout(() => {
+        router.push("/auth/login");
+      }, 1000);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Erro desconhecido.");
+      }
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -29,8 +103,8 @@ const ForgotPasswordPage = () => {
         {submitted ? (
           <div className={styles.form}>
             <p style={{ textAlign: "center", color: "#334155" }}>
-              Enviamos um link de recuperação para <strong>{email}</strong>.
-              Verifique sua caixa de entrada e spam.
+              Enviamos um link de recuperação para. Verifique sua caixa de
+              entrada e spam.
             </p>
             <Link
               href="/auth/login"
@@ -41,25 +115,26 @@ const ForgotPasswordPage = () => {
             </Link>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="email" className={styles.label}>
+          <Form onSubmit={handleSubmit} className={styles.form}>
+            <TextField isInvalid={!!errors.email} className="w-full">
+              <Label htmlFor="email" className={styles.label}>
                 E-mail
-              </label>
-              <input
+              </Label>
+              <Input
                 id="email"
+                placeholder="exemplo@email.com"
                 type="email"
-                placeholder="seu@email.com"
+                name="email"
                 className={styles.input}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                value={formData.email}
+                onChange={handleChange}
               />
-            </div>
-            <button type="submit" className={styles.button}>
-              Enviar link
-            </button>
-          </form>
+              <FieldError>{errors.email}</FieldError>
+            </TextField>
+            <Button type="submit" className={styles.button}>
+              {isLoading ? <Spinner /> : "Enviar link"}
+            </Button>
+          </Form>
         )}
         {!submitted && (
           <div className={styles.footer}>
@@ -72,6 +147,6 @@ const ForgotPasswordPage = () => {
       </div>
     </div>
   );
-}
+};
 
 export default ForgotPasswordPage;

@@ -131,3 +131,26 @@
 .forgotLink:hover {
   color: #2563eb;
 }
+.cardNoToken {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  width: 100%;
+  max-width: 600px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cardNoToken a {
+  text-align: center;
+  max-width: 100px;
+}
+.noToken {
+  color: #ff0000;
+}

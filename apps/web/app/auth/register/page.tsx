@@ -158,8 +158,12 @@ const RegisterPage = () => {
       setTimeout(() => {
         router.push("/auth/login");
       }, 1000);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao realizar cadastro");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      } else {
+        toast.error("Erro desconhecido.");
+      }
     } finally {
       setIsLoading(false);
     }
