@@ -1,5 +1,6 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
+import Cookies from "js-cookie";
 
 export interface RegisterPatientDto {
   name: string;
@@ -91,6 +92,10 @@ export const authService = {
 
       if (accessToken) {
         localStorage.setItem(AUTH_TOKEN_KEY, accessToken);
+
+        Cookies.set(AUTH_TOKEN_KEY, accessToken, { expires: 7 });
+
+        Cookies.set("user-role", user.role, { expires: 7 });
       }
 
       if (user) {
@@ -153,6 +158,11 @@ export const authService = {
   logout() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+
+    Cookies.remove(AUTH_TOKEN_KEY);
+    Cookies.remove("user-role");
+    
+    window.location.href = "/auth/login";
   },
 
   getUser() {
