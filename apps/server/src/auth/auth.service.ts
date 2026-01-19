@@ -16,6 +16,8 @@ import { RegisterAdminDto } from './dto/register-admin-dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
+import { MailService } from 'services/mail.service';
+
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -23,6 +25,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async login(dto: LoginDto) {
@@ -176,6 +179,14 @@ export class AuthService {
         expiresAt,
       },
     });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
+
+    await this.mailService.sendPasswordResetEmail(
+      { name: user.name, email: user.email },
+      resetUrl,
+    );
 
     return { message: 'Se o e-mail existir, enviaremos instruções' };
   }

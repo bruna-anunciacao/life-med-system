@@ -18,7 +18,7 @@ const ForgotPasswordPage = () => {
     <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.header}>
-          <h1 className={styles.title}>Recuperar senha</h1>
+          <h1 className={styles.title}>Redefinir senha</h1>
           <p className={styles.subtitle}>
             {submitted
               ? "Verifique seu e-mail"
