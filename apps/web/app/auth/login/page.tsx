@@ -158,7 +158,11 @@ const LoginPage = () => {
             Esqueceu a senha?
           </Link>
 
-          <Button type="submit" className={styles.button}>
+          <Button
+            type="submit"
+            className={styles.button}
+            isDisabled={isLoading}
+          >
             {isLoading ? <Spinner /> : "Entrar"}
           </Button>
         </Form>

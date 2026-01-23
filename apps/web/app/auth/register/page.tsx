@@ -342,7 +342,11 @@ const RegisterPage = () => {
             <FieldError>{errors.confirmPassword}</FieldError>
           </TextField>
 
-          <Button type="submit" className={styles.button}>
+          <Button
+            type="submit"
+            className={styles.button}
+            isDisabled={isLoading}
+          >
             {isLoading ? <Spinner /> : "Cadastrar"}
           </Button>
         </Form>

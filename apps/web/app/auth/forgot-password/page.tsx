@@ -131,7 +131,11 @@ const ForgotPasswordPage = () => {
               />
               <FieldError>{errors.email}</FieldError>
             </TextField>
-            <Button type="submit" className={styles.button}>
+            <Button
+              type="submit"
+              className={styles.button}
+              isDisabled={isLoading}
+            >
               {isLoading ? <Spinner /> : "Enviar link"}
             </Button>
           </Form>

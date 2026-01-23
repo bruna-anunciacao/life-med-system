@@ -93,9 +93,9 @@ export const authService = {
       if (accessToken) {
         localStorage.setItem(AUTH_TOKEN_KEY, accessToken);
 
-        Cookies.set(AUTH_TOKEN_KEY, accessToken, { expires: 7 });
+        Cookies.set(AUTH_TOKEN_KEY, accessToken, { expires: 1 });
 
-        Cookies.set("user-role", user.role, { expires: 7 });
+        Cookies.set("user-role", user.role, { expires: 1 });
       }
 
       if (user) {
