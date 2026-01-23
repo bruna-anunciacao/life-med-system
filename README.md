@@ -9,10 +9,7 @@ Plataforma digital web responsiva, sem fins lucrativos, destinada a facilitar o 
 | **Frontend (Produção)** | https://life-med-system-web.vercel.app/ |
 | **Backend (Produção)** | https://life-med-system.onrender.com |
 | **Repositório Principal** | https://github.com/bruna-anunciacao/life-med-system |
-| **Repositório Original (TCC)** | https://github.com/bruna-anunciacao/life-med |
 | **Documentação de Requisitos** | [Google Docs](https://docs.google.com/document/d/1nTb6WZjGDMXA394hR0gvFeqp7Gk6E-zGJrsyybsuBJ4/edit?usp=sharing) |
-
-> **Nota:** O repositório original (`life-med`) foi usado como base, mas devido a problemas de tipagem e atualizações do NestJS, foi criado este novo repositório (`life-med-system`) para a versão de produção.
 
 ## Visão Geral
 
