@@ -14,10 +14,7 @@ const DashboardHeader = ({ role }: { role: string }) => {
   const getNavItems = () => {
     switch (role) {
       case "ADMIN":
-        return [
-          { name: "Painel Admin", href: "/dashboard/admin" },
-          { name: "Usuários", href: "/dashboard/admin/users" },
-        ];
+        return [];
       case "PROFESSIONAL":
         return [
           { name: "Agenda", href: "/dashboard/professional" },

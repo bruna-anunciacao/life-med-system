@@ -19,6 +19,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from 'services/mail.service';
 
 import { randomUUID } from 'crypto';
+import { userStatusEnum } from './enums/user-status-enum';
 
 @Injectable()
 export class AuthService {
@@ -58,6 +59,7 @@ export class AuthService {
         name: user.name,
         email: user.email,
         role: user.role,
+        status: user.status,
       },
     };
   }
@@ -79,6 +81,7 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PATIENT,
+        status: userStatusEnum.PENDING,
       },
     });
 
@@ -87,6 +90,7 @@ export class AuthService {
       email: user.email,
       name: user.name,
       role: user.role,
+      status: user.status,
     };
   }
 
@@ -107,6 +111,7 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PROFESSIONAL,
+        status: userStatusEnum.PENDING,
         professionalProfile: {
           create: {
             professionalLicense: dto.professionalLicense,
@@ -128,6 +133,7 @@ export class AuthService {
       name: user.name,
       role: user.role,
       professionalProfile: user.professionalProfile,
+      status: user.status,
     };
   }
 
@@ -148,6 +154,7 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.ADMIN,
+        status: userStatusEnum.VERIFIED,
       },
     });
 
