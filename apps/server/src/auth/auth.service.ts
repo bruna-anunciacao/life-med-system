@@ -82,7 +82,7 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PATIENT,
-        status: userStatusEnum.VERIFIED,
+        status: userStatusEnum.PENDING,
       },
     });
 
