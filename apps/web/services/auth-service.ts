@@ -35,6 +35,7 @@ export interface User {
   name: string;
   email: string;
   role: "PROFESSIONAL" | "PATIENT" | "ADMIN";
+  status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
 }
 
 export interface LoginResponse {
@@ -44,6 +45,7 @@ export interface LoginResponse {
 
 export const AUTH_TOKEN_KEY = "auth-token";
 export const USER_KEY = "user-role";
+export const USER_STATUS = "user-status";
 
 export const authService = {
   async registerPatient(data: RegisterPatientDto) {
@@ -95,11 +97,14 @@ export const authService = {
 
         Cookies.set(AUTH_TOKEN_KEY, accessToken, { expires: 1 });
 
-        Cookies.set("user-role", user.role, { expires: 1 });
+        Cookies.set(USER_KEY, user.role, { expires: 1 });
+
+        Cookies.set(USER_STATUS, user.status, { expires: 1 });
       }
 
       if (user) {
         localStorage.setItem(USER_KEY, user.role);
+        localStorage.setItem(USER_STATUS, user.status);
       }
 
       return response.data;
@@ -117,6 +122,7 @@ export const authService = {
       throw new Error("Erro de conexão com o servidor.");
     }
   },
+
   async forgotPassword(data: ForgotPasswordDto) {
     try {
       const response = await api.post("/auth/forgot-password", data);
@@ -160,8 +166,9 @@ export const authService = {
     localStorage.removeItem(USER_KEY);
 
     Cookies.remove(AUTH_TOKEN_KEY);
-    Cookies.remove("user-role");
-    
+    Cookies.remove(USER_KEY);
+    Cookies.remove(USER_STATUS);
+
     window.location.href = "/auth/login";
   },
 

@@ -48,6 +48,7 @@ export class AuthService {
       sub: user.id,
       role: user.role,
       email: user.email,
+      status: user.status,
     };
 
     const accessToken = String(this.jwtService.sign(payload));
@@ -81,7 +82,7 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PATIENT,
-        status: userStatusEnum.PENDING,
+        status: userStatusEnum.VERIFIED,
       },
     });
 
