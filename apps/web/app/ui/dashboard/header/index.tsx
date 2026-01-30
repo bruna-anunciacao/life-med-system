@@ -6,10 +6,13 @@ import styles from "./header.module.css";
 import { authService } from "../../../../services/auth-service";
 import { useRouter } from "next/navigation";
 import Logo from "../../../life-med-logo.png";
+import { toast } from "sonner";
+import { useCallback, useEffect } from "react";
 
 const DashboardHeader = ({ role }: { role: string }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const userStatus = authService.getUserStatus();
 
   const getNavItems = () => {
     switch (role) {
@@ -33,6 +36,28 @@ const DashboardHeader = ({ role }: { role: string }) => {
   };
 
   const navItems = getNavItems();
+
+  const redirectCompleteProfile = useCallback(() => {
+    toast.warning("Complete o cadastro para utilizar o sistema", {
+      id: 'complete-profile'
+    });
+    switch (role) {
+      case "PROFESSIONAL":
+        router.push("/dashboard/professional/complete-profile");
+        return;
+      case "PATIENT":
+        router.push("/dashboard/patient/complete-profile");
+        return;
+      default:
+        return;
+    }
+  }, [role, router]);
+
+  useEffect(() => {
+    if (userStatus === "PENDING") {
+      redirectCompleteProfile();
+    }
+  }, [userStatus, redirectCompleteProfile]);
 
   const handleLogout = () => {
     authService.logout();

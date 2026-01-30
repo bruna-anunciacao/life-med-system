@@ -172,9 +172,9 @@ export const authService = {
     window.location.href = "/auth/login";
   },
 
-  getUser() {
+  getUserStatus() {
     if (typeof window === "undefined") return null;
-    const userJson = localStorage.getItem(USER_KEY);
-    return userJson ? (JSON.parse(userJson) as User) : null;
+    const userJson = localStorage.getItem(USER_STATUS);
+    return userJson;
   },
 };
