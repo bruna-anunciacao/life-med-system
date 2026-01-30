@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRoleEnum } from '../auth/enums/user-role-enum';
-import { userStatusEnum } from '../auth/enums/user-status-enum';
+import { UserStatusEnum } from '../auth/enums/user-status-enum';
 
 @Injectable()
 export class UsersService {
@@ -24,8 +24,6 @@ export class UsersService {
     return result;
   }
 
-  // ... imports
-
   async update(id: string, dto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -34,30 +32,28 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
-    // 1. Separate User data from Profile data
     const {
       specialty,
       crm,
       bio,
+      status,
       modality,
       subspecialty,
       photoUrl,
       ...userData
     } = dto;
 
-    let newStatus = user.status;
+    let newStatus = status ? status : user.status;
 
-    // Logic to update status
     if (user.role === 'PROFESSIONAL' && user.status === 'PENDING') {
       const hasCrm = crm || user.professionalProfile?.professionalLicense;
       const hasSpecialty = specialty || user.professionalProfile?.specialty;
 
       if (hasCrm && hasSpecialty) {
-        newStatus = userStatusEnum.COMPLETED;
+        newStatus = UserStatusEnum.COMPLETED;
       }
     }
 
-    // 2. Update the base User table
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
@@ -103,6 +99,7 @@ export class UsersService {
         id: true,
         name: true,
         email: true,
+        status: true,
         professionalProfile: {
           select: {
             id: true,
@@ -121,6 +118,7 @@ export class UsersService {
         id: true,
         name: true,
         email: true,
+        status: true,
         patientProfile: true,
       },
     });

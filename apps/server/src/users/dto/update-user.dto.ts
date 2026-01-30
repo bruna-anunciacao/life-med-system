@@ -1,5 +1,6 @@
 import { IsOptional, IsString, IsEmail, IsUrl, IsEnum } from 'class-validator';
 import { AppointmentModality } from '@prisma/client'; // Import enum from Prisma
+import { UserStatusEnum } from 'src/auth/enums/user-status-enum';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -9,6 +10,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @IsOptional()
+  @IsEnum(UserStatusEnum)
+  status?: UserStatusEnum;
 
   @IsOptional()
   @IsString()
