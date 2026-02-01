@@ -18,7 +18,7 @@ import styles from "./admin-dashboard.module.css";
 import { EyeIcon, CheckIcon, BanIcon, EditIcon } from "../../utils/icons";
 
 const columns = [
-  { name: "USUÁRIO", uid: "name" },
+  { name: "USUÁRIOS", uid: "name" },
   { name: "STATUS", uid: "status" },
   { name: "AÇÕES", uid: "actions" },
 ];
@@ -94,15 +94,24 @@ const AdminDashboard = () => {
     const cellValue = user[columnKey as keyof User];
 
     switch (columnKey) {
+      case "name":
+        return (
+          <div className={styles.nameContainer}>
+            <p className={styles.userName}>{user.name}</p>
+            <p className={styles.userEmail}>{user.email}</p>
+          </div>
+        )
       case "status":
         return (
-          <Chip
-            className={styles.statusBtn}
-            color={statusColorMap[user.status] || "default"}
-            size="sm"
-          >
-            {statusTextMap[user.status] || user.status}
-          </Chip>
+          <div className={styles.statusBtnContainer}>
+            <Chip
+              className={styles.statusBtn}
+              color={statusColorMap[user.status] || "default"}
+              size="sm"
+            >
+              {statusTextMap[user.status] || user.status}
+            </Chip>
+          </div>
         );
       case "actions":
         return (
