@@ -6,9 +6,9 @@ const AuthLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <AuthHeader />
-      <main className="ml-64 flex-1 p-8 overflow-y-auto h-full">
+      <main className="flex-1 flex justify-center items-start">
         {children}
       </main>
     </div>

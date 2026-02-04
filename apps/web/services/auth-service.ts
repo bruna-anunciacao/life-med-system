@@ -5,15 +5,21 @@ import Cookies from "js-cookie";
 export interface RegisterPatientDto {
   name: string;
   email: string;
+  phone: string;
+  dateOfBirth: Date | null;
+  gender: string;
   password: string;
 }
 
 export interface RegisterProfessionalDto {
   name: string;
   email: string;
-  password: string;
   professionalLicense: string;
   specialty: string;
+  subspecialty?: string;
+  modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+  bio?: string;
+  password: string;
 }
 
 export interface LoginDto {

@@ -82,7 +82,17 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PATIENT,
-        status: UserStatusEnum.PENDING,
+        status: UserStatusEnum.COMPLETED,
+        patientProfile: {
+          create: {
+            phone: dto.phone,
+            dateOfBirth: dto.dateOfBirth,
+            gender: dto.gender,
+          },
+        },
+      },
+      include: {
+        patientProfile: true,
       },
     });
 
@@ -112,7 +122,7 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PROFESSIONAL,
-        status: UserStatusEnum.PENDING,
+        status: UserStatusEnum.COMPLETED,
         professionalProfile: {
           create: {
             professionalLicense: dto.professionalLicense,

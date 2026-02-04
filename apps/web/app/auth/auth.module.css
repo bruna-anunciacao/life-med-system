@@ -1,48 +1,52 @@
 .container {
-  min-height: 100vh;
-  overflow-y: auto;
+  margin-top: 100px;
+  padding: 2rem 1rem;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   background-color: #f8fafc;
-  padding: 1rem;
 }
 
 .card {
-  background: white;
-  overflow-y: auto;
-  max-height: 70vh;
+  width: 600px;
+  height: auto;
+  min-height: 50vh;
   padding: 2.5rem;
+
   border-radius: 1rem;
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.05),
     0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  width: 100%;
-  max-width: 600px;
   border: 1px solid #e2e8f0;
+
+  background: white;
 }
 
 .header {
-  text-align: center;
   margin-bottom: 2rem;
+
+  text-align: center;
 }
 
 .title {
+  margin-bottom: 0.5rem;
+
   font-size: 1.5rem;
   font-weight: 700;
   color: #0f172a;
-  margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  color: #64748b;
   font-size: 0.875rem;
+  color: #64748b;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 .inputGroup {
@@ -70,17 +74,110 @@
 .input {
   height: 3rem;
   padding: 0.75rem 1rem;
+
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+
+  font-size: 0.875rem;
+  color: #334155;
+
+  background-color: white;
+  
+  outline: none;
+  
+  transition: all 0.2s;
+}
+
+.phoneInput {
+  width: 100%;
+  height: 3rem;
+
+  display: flex;
+  align-items: center;
+  
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  
+  background: white;
+  
+  color: #334155;
+  
+  overflow: hidden;
+}
+
+.phoneInput :global(.PhoneInputCountry) {
+  display: flex;
+  flex-direction: row-reverse;
+  max-width: 40%;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 0.75rem;
+  border-right: 1px solid #e2e8f0;
+  gap: 0.25rem;
+}
+
+.phoneInput :global(.PhoneInputCountrySelect) {
+  max-width: 80%;
+}
+
+.phoneInput :global(.PhoneInputCountryIcon) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 20px;
+  height: 14px;
+}
+
+.phoneInput :global(.PhoneInputInput) {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  background: transparent;
+}
+
+:global(.heroui-date-input input) {
+  height: 3rem;
+  padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   border: 1px solid #cbd5e1;
   font-size: 0.875rem;
-  outline: none;
-  transition: all 0.2s;
+  color: #334155;
+}
+
+:global(.heroui-select-trigger) {
+  height: 3rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  font-size: 0.875rem;
   background-color: white;
 }
 
 .input:focus {
   border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.professionalInputsWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.textarea {
+  resize: none;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s;
+  background-color: white;
+  color: #334155;
 }
 
 .button {
