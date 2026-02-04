@@ -14,7 +14,12 @@ import {
   RadioGroup,
   TextField,
   Spinner,
+  DateValue,
 } from "@heroui/react";
+import { DateInput } from "@heroui/date-input";
+import { Textarea } from "@heroui/input";
+import { Select, SelectSection, SelectItem } from "@heroui/select";
+import { HeroTelInput } from "@hyperse/hero-tel-input";
 import { useRouter } from "next/navigation";
 import { Eye, EyeSlash } from "@gravity-ui/icons";
 import * as z from "zod";
@@ -25,6 +30,9 @@ const registerPatientValidation = z
   .object({
     name: z.string().min(1, "Nome é obrigatório"),
     email: z.email("Email inválido"),
+    phone: z.string().max(13, "Telefone inválido"),
+    dateOfBirth: z.coerce.date(),
+    gender: z.string(),
     password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
     confirmPassword: z
       .string()
@@ -49,6 +57,11 @@ const registerProfessionalValidation = z
       .string()
       .min(1, "Registro profissional é obrigatório"),
     specialty: z.string().min(1, "Especialidade é obrigatória"),
+    subspecialty: z.string().optional(),
+    modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"], {
+      error: () => ({ message: "Selecione uma modalidade válida" }),
+    }),
+    bio: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não coincidem",
@@ -64,13 +77,35 @@ const RegisterPage = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const [formData, setFormData] = useState({
+  type RegisterFormData = {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+    role: string;
+    professionalLicense: string;
+    phone: string;
+    dateOfBirth: DateValue | null;
+    gender: string;
+    subspecialty: string;
+    modality: string;
+    bio: string;
+    specialty: string;
+  };
+
+  const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     role: "PATIENT",
     professionalLicense: "",
+    phone: "",
+    dateOfBirth: null,
+    gender: "",
+    subspecialty: "",
+    modality: "VIRTUAL",
+    bio: "",
     specialty: "",
   });
 
@@ -82,6 +117,12 @@ const RegisterPage = () => {
       confirmPassword: "",
       role: role,
       professionalLicense: "",
+      phone: "",
+      dateOfBirth: null,
+      gender: "",
+      subspecialty: "",
+      modality: "VIRTUAL",
+      bio: "",
       specialty: "",
     });
   };
@@ -98,6 +139,56 @@ const RegisterPage = () => {
     }
   };
 
+  const handlePhoneChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, phone: value }));
+    if (errors.phone) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.phone;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleGenderChange = (value: React.Key | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      gender: value ? String(value) : "",
+    }));
+    if (errors.gender) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.gender;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDateChange = (value: DateValue | null) => {
+    setFormData((prev) => ({ ...prev, dateOfBirth: value }));
+    if (errors.dateOfBirth) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.dateOfBirth;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleModalityChange = (value: React.Key | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      modality: value ? String(value) : "",
+    }));
+    if (errors.modality) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.modality;
+        return newErrors;
+      });
+    }
+  };
+
   const handleRoleChange = (value: string) => {
     resetForm(value);
     setErrors({});
@@ -108,12 +199,20 @@ const RegisterPage = () => {
     setErrors({});
     setIsLoading(true);
 
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const dataForValidation = {
+      ...formData,
+      dateOfBirth: formData.dateOfBirth
+        ? formData.dateOfBirth.toDate(timeZone)
+        : null,
+    };
+
     const schema =
       formData.role === "PROFESSIONAL"
         ? registerProfessionalValidation
         : registerPatientValidation;
 
-    const result = schema.safeParse(formData);
+    const result = schema.safeParse(dataForValidation);
 
     if (!result.success) {
       const formattedErrors: Record<string, string> = {};
@@ -142,6 +241,9 @@ const RegisterPage = () => {
           password: data.password,
           professionalLicense: data.professionalLicense,
           specialty: data.specialty,
+          subspecialty: data.subspecialty,
+          bio: data.bio,
+          modality: data.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
         });
       } else {
         const data = result.data as z.infer<typeof registerPatientValidation>;
@@ -150,6 +252,9 @@ const RegisterPage = () => {
           name: data.name,
           email: data.email,
           password: data.password,
+          phone: data.phone,
+          dateOfBirth: data.dateOfBirth,
+          gender: data.gender,
         });
       }
 
@@ -238,6 +343,68 @@ const RegisterPage = () => {
             />
             <FieldError>{errors.email}</FieldError>
           </TextField>
+          {formData.role === "PATIENT" && (
+            <div>
+              <TextField
+                isInvalid={!!errors.professionalLicense}
+                className="w-full"
+              >
+                <Label htmlFor="phone" className={styles.label}>
+                  Telefone
+                </Label>
+                <HeroTelInput
+                  id="phone"
+                  placeholder="71 99999 9999"
+                  name="phone"
+                  value={formData.phone}
+                  className={
+                    styles.input
+                  }
+                  onChange={handlePhoneChange}
+                  disabled={isLoading}
+                  forceCallingCode={true}
+                  defaultCountry="BR"
+                />
+                <FieldError>{errors.phone}</FieldError>
+              </TextField>
+              <TextField
+                isInvalid={!!errors.professionalLicense}
+                className="w-full"
+              >
+                <Label htmlFor="dateOfBirth" className={styles.label}>
+                  Data de nascimento
+                </Label>
+                <DateInput
+                  id="dateOfBirth"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  className={styles.input}
+                  onChange={handleDateChange}
+                />
+                <FieldError>{errors.dateOfBirth}</FieldError>
+              </TextField>
+              <TextField isInvalid={!!errors.gender} className="w-full">
+                <Label htmlFor="gender" className={styles.label}>
+                  Gênero
+                </Label>
+                <Select
+                  id="gender"
+                  name="gender"
+                  selectedKeys={formData.gender ? [formData.gender] : []}
+                  placeholder="Selecione"
+                  className={styles.input}
+                  onChange={(value) => handleGenderChange(value as unknown as React.Key | null)}
+                >
+                  <SelectSection title="Gênero">
+                    <SelectItem key="MALE">Masculino</SelectItem>
+                    <SelectItem key="FEMALE">Feminino</SelectItem>
+                    <SelectItem key="OTHER">Outro</SelectItem>
+                  </SelectSection>
+                </Select>
+                <FieldError>{errors.gender}</FieldError>
+              </TextField>
+            </div>
+          )}
           {formData.role === "PROFESSIONAL" && (
             <div className={styles.multipleInputs}>
               <TextField
@@ -272,6 +439,55 @@ const RegisterPage = () => {
                   onChange={handleChange}
                 />
                 <FieldError>{errors.specialty}</FieldError>
+              </TextField>
+              <TextField isInvalid={!!errors.subspecialty} className="w-full">
+                <Label htmlFor="subspecialty" className={styles.label}>
+                  Subespecialidade
+                </Label>
+                <Input
+                  id="subspecialty"
+                  placeholder="Ex: Cardiologia infantil"
+                  type="string"
+                  name="subspecialty"
+                  className={styles.input}
+                  value={formData.subspecialty}
+                  onChange={handleChange}
+                />
+                <FieldError>{errors.subspecialty}</FieldError>
+              </TextField>
+              <TextField isInvalid={!!errors.modality} className="w-full">
+                <Label htmlFor="modality" className={styles.label}>
+                  Modalidade
+                </Label>
+                <Select
+                  id="modality"
+                  name="modality"
+                  selectedKeys={formData.modality ? [formData.modality] : []}
+                  placeholder="Selecione"
+                  className={styles.input}
+                  onChange={(value) => handleModalityChange(value as unknown as React.Key | null)}
+                >
+                  <SelectSection title="Modalidade">
+                    <SelectItem key="VIRTUAL">Virtual</SelectItem>
+                    <SelectItem key="HOME_VISIT">Home Visit</SelectItem>
+                    <SelectItem key="CLINIC">Clínico</SelectItem>
+                  </SelectSection>
+                </Select>
+                <FieldError>{errors.modality}</FieldError>
+              </TextField>
+              <TextField isInvalid={!!errors.bio} className="w-full">
+                <Label htmlFor="bio" className={styles.label}>
+                  Biografia
+                </Label>
+                <Textarea
+                  id="bio"
+                  placeholder="Ex: Sou um profissional de saúde com 10 anos de experiência"
+                  name="bio"
+                  className={styles.input}
+                  value={formData.bio}
+                  onChange={handleChange}
+                />
+                <FieldError>{errors.bio}</FieldError>
               </TextField>
             </div>
           )}
