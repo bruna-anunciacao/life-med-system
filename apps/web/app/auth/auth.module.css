@@ -55,6 +55,34 @@
   gap: 0.5rem;
 }
 
+.radioWrapper {
+  display: flex;
+  gap: 16px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+
+  cursor: pointer;
+}
+
+.nativeRadio {
+  width: 16px;
+  height: 16px;
+
+  accent-color: #1b439b;
+
+  background-color: white!important;
+
+  cursor: pointer;
+}
+
 .multipleInputs {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -82,9 +110,9 @@
   color: #334155;
 
   background-color: white;
-  
+
   outline: none;
-  
+
   transition: all 0.2s;
 }
 
@@ -94,26 +122,28 @@
 
   display: flex;
   align-items: center;
-  
+
   border: 1px solid #cbd5e1;
   border-radius: 0.5rem;
-  
+
   background: white;
-  
+
   color: #334155;
-  
+
   overflow: hidden;
 }
 
 .phoneInput :global(.PhoneInputCountry) {
+  max-width: 40%;
+  padding: 0 0.75rem;
+
   display: flex;
   flex-direction: row-reverse;
-  max-width: 40%;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 0.75rem;
-  border-right: 1px solid #e2e8f0;
   gap: 0.25rem;
+
+  border-right: 1px solid #e2e8f0;
 }
 
 .phoneInput :global(.PhoneInputCountrySelect) {
@@ -121,26 +151,33 @@
 }
 
 .phoneInput :global(.PhoneInputCountryIcon) {
+  width: 20px;
+  height: 14px;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 20px;
-  height: 14px;
 }
 
 .phoneInput :global(.PhoneInputInput) {
-  flex: 1;
   height: 100%;
-  border: none;
-  outline: none;
   padding: 0 1rem;
+
+  flex: 1;
+
+  border: none;
+
   font-size: 0.875rem;
+
   background: transparent;
+
+  outline: none;
 }
 
 :global(.heroui-date-input input) {
   height: 3rem;
   padding: 0.75rem 1rem;
+
   border-radius: 0.5rem;
   border: 1px solid #cbd5e1;
   font-size: 0.875rem;
@@ -150,14 +187,17 @@
 :global(.heroui-select-trigger) {
   height: 3rem;
   padding: 0.75rem 1rem;
+
   border-radius: 0.5rem;
   border: 1px solid #cbd5e1;
   font-size: 0.875rem;
+
   background-color: white;
 }
 
 .input:focus {
   border-color: #2563eb;
+
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
@@ -168,29 +208,37 @@
 }
 
 .textarea {
-  resize: none;
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
+
   border: 1px solid #cbd5e1;
-  font-size: 0.875rem;
-  outline: none;
   transition: all 0.2s;
+
   background-color: white;
+
+  font-size: 0.875rem;
   color: #334155;
+
+  outline: none;
+  resize: none;
 }
 
 .button {
   width: 100%;
-  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
-  color: white;
+  margin-top: 0.5rem;
   padding: 0.75rem;
+
   border-radius: 9999px;
   border: none;
+
   font-weight: 600;
-  cursor: pointer;
+  color: white;
+
+  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+
   transition: transform 0.1s;
-  margin-top: 0.5rem;
+  cursor: pointer;
 }
 
 .button:hover {
@@ -204,16 +252,18 @@
 
 .footer {
   margin-top: 1.5rem;
+
   text-align: center;
   font-size: 0.875rem;
   color: #64748b;
 }
 
 .link {
-  color: #2563eb;
+  margin-left: 0.25rem;
+
   text-decoration: none;
   font-weight: 500;
-  margin-left: 0.25rem;
+  color: #2563eb;
 }
 
 .link:hover {
@@ -221,35 +271,42 @@
 }
 
 .forgotLink {
+  margin-top: -0.5rem;
+
   font-size: 0.875rem;
   color: #64748b;
   text-align: right;
+
   text-decoration: none;
-  margin-top: -0.5rem;
 }
 
 .forgotLink:hover {
   color: #2563eb;
 }
 .cardNoToken {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 1rem;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.05),
-    0 2px 4px -1px rgba(0, 0, 0, 0.03);
   width: 100%;
   max-width: 600px;
-  border: 1px solid #e2e8f0;
+  padding: 2.5rem;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+
+  background: white;
+
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .cardNoToken a {
-  text-align: center;
   max-width: 100px;
+
+  text-align: center;
 }
 .noToken {
   color: #ff0000;

@@ -165,16 +165,12 @@ const RegisterPage = () => {
       ...formData,
     };
 
-    console.log(dataForValidation)
-
     const schema =
       formData.role === "PROFESSIONAL"
         ? registerProfessionalValidation
         : registerPatientValidation;
 
     const result = schema.safeParse(dataForValidation);
-
-    console.log('aaaa',result)
 
     if (!result.success) {
       const formattedErrors: Record<string, string> = {};
@@ -248,33 +244,32 @@ const RegisterPage = () => {
 
         <Form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputGroup}>
-            <Label className={styles.label}>Eu sou</Label>
-            <RadioGroup
-              defaultValue="PATIENT"
-              name="role"
-              value={formData.role}
-              onChange={handleRoleChange}
-              orientation="horizontal"
-            >
-              <Radio value="PATIENT">
-                <Radio.Control>
-                  <Radio.Indicator />
-                </Radio.Control>
-                <Radio.Content>
-                  <Label className={styles.label}>Paciente</Label>
-                </Radio.Content>
-              </Radio>
-              <Radio value="PROFESSIONAL">
-                <Radio.Control>
-                  <Radio.Indicator />
-                </Radio.Control>
-                <Radio.Content>
-                  <Label className={styles.label}>Profissional</Label>
-                </Radio.Content>
-              </Radio>
-            </RadioGroup>
+            <label className={styles.label}>Eu sou</label>
+            <div className={styles.radioWrapper}>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="role"
+                  value="PATIENT"
+                  checked={formData.role === "PATIENT"}
+                  onChange={(e) => handleRoleChange(e.target.value)}
+                  className={styles.nativeRadio}
+                />
+                <span>Paciente</span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="role"
+                  value="PROFESSIONAL"
+                  checked={formData.role === "PROFESSIONAL"}
+                  onChange={(e) => handleRoleChange(e.target.value)}
+                  className={styles.nativeRadio}
+                />
+                <span>Profissional</span>
+              </label>
+            </div>
           </div>
-
           <TextField isInvalid={!!errors.name} className="w-full">
             <Label htmlFor="name" className={styles.label}>
               Nome Completo

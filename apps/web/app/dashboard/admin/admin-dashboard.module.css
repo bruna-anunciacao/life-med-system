@@ -1,10 +1,12 @@
 .container {
+  min-height: 100vh;
+  margin: 0 auto;
   padding: 2rem;
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 0 auto;
-  min-height: 100vh;
+
   background-color: #f3f4f6;
 }
 
@@ -16,54 +18,63 @@
   font-size: 2rem;
   text-align: center;
   font-weight: 700;
-  color: #111827;
   letter-spacing: -0.025em;
+  color: #111827;
 }
 
 .subtitle {
-  color: #6b7280;
   margin-top: 0.5rem;
+
   font-size: 1rem;
+  color: #6b7280;
 }
 
 .section {
   width: 80%;
-  background: #ffffff;
   max-width: 800px;
   padding: 1.5rem;
+  margin-bottom: 2rem;
+
   border-radius: 16px;
+  border: 1px solid #e5e7eb;
+
+  background: #ffffff;
+
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.05),
     0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  margin-bottom: 2rem;
-  border: 1px solid #e5e7eb;
 }
 
 .sectionHeader {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+
   border-bottom: 1px solid #f3f4f6;
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #374151;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
 }
 
 .tableWrapper {
   width: 100%;
+
   overflow-x: auto;
 }
 
 .table {
   width: 100%;
+
   border-collapse: collapse;
 }
 
@@ -74,20 +85,24 @@
 .table tr {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
+
   color: #374151;
 }
 
 .table th {
-  text-align: left;
   padding: 12px 8px;
+
+  text-align: left;
   font-size: 0.875rem;
   font-weight: 600;
   color: #374151;
+
   border-bottom: 1px solid #e5e7eb;
 }
 
 .table td {
   padding: 12px 8px;
+
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -102,18 +117,21 @@
 }
 
 .empty {
+  padding: 24px 0;
+
   text-align: center;
   color: #6b7280;
-  padding: 24px 0;
 }
 
 .countBadge {
-  background-color: #e5e7eb;
-  color: #000;
-  font-size: 0.75rem;
   padding: 2px 8px;
+
+  font-size: 0.75rem;
   border-radius: 9999px;
   font-weight: 600;
+  color: #000;
+
+  background-color: #e5e7eb;
 }
 
 .textTable {
@@ -132,6 +150,7 @@
 
 .statusBtnContainer {
   width: 100%;
+
   display: flex;
   justify-content: center;
 }
@@ -148,20 +167,26 @@
 }
 
 .actionBtn {
-  font-size: 1.25rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
   padding: 4px;
-  border-radius: 8px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+
+  border-radius: 8px;
   border: none;
+
+  font-size: 1.25rem;
+
+  background: transparent;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .actionBtn:hover {
   background-color: #f3f4f6;
+
   transform: scale(1.1);
 }
 
