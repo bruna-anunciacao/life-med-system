@@ -1,15 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import  { Button } from '@heroui/react';
+import { Button } from "@heroui/react";
 import styles from "./page.module.css";
+import Logo from "./life-med-logo.png";
 
 export default function Home() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.logoContainer}>
-          <Image src="/globe.svg" alt="Life Med Logo" width={24} height={24} />
-          <span>Life Med</span>
+          <Image src={Logo} alt="Life Med Logo" width={200} />
         </div>
         <nav className={styles.nav}>
           <Link href="/auth/login">

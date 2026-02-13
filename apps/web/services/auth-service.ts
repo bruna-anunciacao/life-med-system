@@ -5,15 +5,21 @@ import Cookies from "js-cookie";
 export interface RegisterPatientDto {
   name: string;
   email: string;
+  phone: string;
+  dateOfBirth: Date | null;
+  gender: string;
   password: string;
 }
 
 export interface RegisterProfessionalDto {
   name: string;
   email: string;
-  password: string;
   professionalLicense: string;
   specialty: string;
+  subspecialty?: string;
+  modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+  bio?: string;
+  password: string;
 }
 
 export interface LoginDto {
@@ -35,6 +41,7 @@ export interface User {
   name: string;
   email: string;
   role: "PROFESSIONAL" | "PATIENT" | "ADMIN";
+  status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
 }
 
 export interface LoginResponse {
@@ -44,6 +51,7 @@ export interface LoginResponse {
 
 export const AUTH_TOKEN_KEY = "auth-token";
 export const USER_KEY = "user-role";
+export const USER_STATUS = "user-status";
 
 export const authService = {
   async registerPatient(data: RegisterPatientDto) {
@@ -93,13 +101,16 @@ export const authService = {
       if (accessToken) {
         localStorage.setItem(AUTH_TOKEN_KEY, accessToken);
 
-        Cookies.set(AUTH_TOKEN_KEY, accessToken, { expires: 7 });
+        Cookies.set(AUTH_TOKEN_KEY, accessToken, { expires: 1 });
 
-        Cookies.set("user-role", user.role, { expires: 7 });
+        Cookies.set(USER_KEY, user.role, { expires: 1 });
+
+        Cookies.set(USER_STATUS, user.status, { expires: 1 });
       }
 
       if (user) {
         localStorage.setItem(USER_KEY, user.role);
+        localStorage.setItem(USER_STATUS, user.status);
       }
 
       return response.data;
@@ -117,6 +128,7 @@ export const authService = {
       throw new Error("Erro de conexão com o servidor.");
     }
   },
+
   async forgotPassword(data: ForgotPasswordDto) {
     try {
       const response = await api.post("/auth/forgot-password", data);
@@ -160,14 +172,15 @@ export const authService = {
     localStorage.removeItem(USER_KEY);
 
     Cookies.remove(AUTH_TOKEN_KEY);
-    Cookies.remove("user-role");
-    
+    Cookies.remove(USER_KEY);
+    Cookies.remove(USER_STATUS);
+
     window.location.href = "/auth/login";
   },
 
-  getUser() {
+  getUserStatus() {
     if (typeof window === "undefined") return null;
-    const userJson = localStorage.getItem(USER_KEY);
-    return userJson ? (JSON.parse(userJson) as User) : null;
+    const userJson = localStorage.getItem(USER_STATUS);
+    return userJson;
   },
 };

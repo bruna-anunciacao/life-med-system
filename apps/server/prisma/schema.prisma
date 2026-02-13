@@ -19,6 +19,13 @@ enum UserRole {
   ADMIN
 }
 
+enum UserStatus {
+  PENDING
+  COMPLETED
+  VERIFIED
+  BLOCKED
+}
+
 enum AppointmentModality {
   VIRTUAL
   HOME_VISIT
@@ -39,11 +46,13 @@ model User {
   password String
   name     String
   role     UserRole @default(PATIENT)
+  status   UserStatus @default(PENDING)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   professionalProfile ProfessionalProfile?
+  patientProfile      PatientProfile?
 
   appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
   appointmentsAsPatient Appointment[] @relation("PatientAppointments")
@@ -70,6 +79,22 @@ model ProfessionalProfile {
   socialLinks         Json?               @map("social_links")
 
   @@map("professional_profiles")
+}
+
+model PatientProfile {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  phone       String?
+  dateOfBirth DateTime? @map("date_of_birth")
+  gender      String?
+  address     String?
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("patient_profiles")
 }
 
 model Availability {

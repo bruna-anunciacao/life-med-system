@@ -30,7 +30,7 @@ export class RegisterProfessionalDto {
 
   @IsOptional()
   @IsEnum(AppointmentModalityEnum)
-  modality?: AppointmentModalityEnum;
+  modality!: AppointmentModalityEnum;
 
   @IsOptional()
   @IsString()

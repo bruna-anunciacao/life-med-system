@@ -1,0 +1,6 @@
+export enum UserStatusEnum {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+  VERIFIED = 'VERIFIED',
+  BLOCKED = 'BLOCKED',
+}
