@@ -121,6 +121,8 @@
 
   text-align: center;
   color: #6b7280;
+
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .countBadge {

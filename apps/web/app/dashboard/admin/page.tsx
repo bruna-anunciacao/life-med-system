@@ -31,7 +31,7 @@ const AdminDashboard = () => {
   const handleStatusChange = async (
     userId: string,
     newStatus: "VERIFIED" | "BLOCKED",
-    role: string,
+    role: string
   ) => {
     try {
       await usersService.updateUserStatus(userId, newStatus);
@@ -112,11 +112,7 @@ const AdminDashboard = () => {
 
             <tbody>
               {patients.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className={styles.empty}>
-                    Nenhum paciente encontrado.
-                  </td>
-                </tr>
+                <div className={styles.empty}>Nenhum paciente encontrado.</div>
               ) : (
                 patients.map((user) => (
                   <tr key={user.id}>
@@ -157,7 +153,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  user.role
                                 )
                               }
                             >
@@ -174,7 +170,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "BLOCKED",
-                                  user.role,
+                                  user.role
                                 )
                               }
                             >
@@ -191,7 +187,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  user.role
                                 )
                               }
                             >
@@ -237,11 +233,9 @@ const AdminDashboard = () => {
 
             <tbody>
               {professionals.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className={styles.empty}>
-                    Nenhum profissional encontrado.
-                  </td>
-                </tr>
+                <div className={styles.empty}>
+                  Nenhum profissional encontrado.
+                </div>
               ) : (
                 professionals.map((user) => (
                   <tr key={user.id}>
@@ -282,7 +276,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  user.role
                                 )
                               }
                             >
@@ -299,7 +293,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "BLOCKED",
-                                  user.role,
+                                  user.role
                                 )
                               }
                             >
@@ -316,7 +310,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  user.role
                                 )
                               }
                             >
