@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@import "@heroui/styles"; 
+@import "@heroui/styles";
+@import "react-day-picker/dist/style.css";
 
 :root {
   --background: #ffffff;
@@ -37,6 +38,41 @@ a {
 
 .imgDark {
   display: none;
+}
+
+.rdp {
+  font-size: 0.85rem;
+}
+
+.rdp-months {
+  padding: .5rem;
+
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+
+  color: #111827;
+}
+
+.rdp-day_button {
+  width: 34px;
+  height: 34px;
+  font-size: 0.85rem;
+}
+
+.rdp-chevron {
+  fill: #006fee;
+}
+
+.rdp-caption_label {
+  text-transform: capitalize;
+}
+
+.rdp-selected .rdp-day_button {
+  border: 3px solid#006fee;
+}
+
+.rdp-today:not(.rdp-outside) {
+  color: #006fee;
 }
 
 @media (prefers-color-scheme: dark) {

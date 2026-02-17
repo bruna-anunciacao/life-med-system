@@ -1,0 +1,254 @@
+.container {
+  padding: 2rem;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+}
+
+.addButton {
+  padding: 0.5rem 1rem;
+  background-color: #006fee;
+  color: white;
+  font-weight: 600;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.dayOfAttendanceChip {
+  padding: 0.2rem 1rem;
+}
+
+.modalityChip {
+  padding: 0 0.25rem;
+}
+
+.calendar {
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 1024px) {
+  .rdp-day_button {
+    width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+  }
+
+  .rdp {
+    font-size: 0.8rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .contentGrid {
+    grid-template-columns: 360px 1fr;
+    align-items: start;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.calendarCard {
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  background: white;
+  border-radius: 16px;
+}
+
+.timelineArea {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  min-height: 600px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dateHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.currentDateTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.timeRow {
+  display: flex;
+  gap: 1.5rem;
+  min-height: 90px;
+}
+
+.timeLabel {
+  width: 60px;
+  padding-top: 1rem;
+  font-family: monospace;
+  font-weight: 600;
+  color: #9ca3af;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.slotContent {
+  flex: 1;
+  position: relative;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.timeRow:last-child .slotContent {
+  border-bottom: none;
+}
+
+.emptySlot {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background-color: #fafafa;
+}
+
+.emptySlot:hover {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+}
+
+.appointmentCard {
+  height: 100%;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f3f4f6;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.appointmentCard:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  border: 1px solid #e5e7eb;
+  padding: 0.25rem;
+  background-color: #fafafa;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.avatarNoPhoto {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #6b7280;
+  background-color: #fafafa;
+  border: 1px solid #e5e7eb;
+  padding: 0.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.apptTime {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+}
+
+.confirmed {
+  border-left: 4px solid #006fee;
+  background: linear-gradient(to right, #eff6ff, white 20%);
+}
+
+.completed {
+  border-left: 4px solid #17c964;
+  opacity: 0.8;
+  background-color: #fcfcfc;
+}
+
+.pending {
+  border-left: 4px solid #f5a524;
+  background: linear-gradient(to right, #fffbeb, white 20%);
+}
+
+.canceled {
+  border-left: 4px solid #f31260;
+  opacity: 0.6;
+  filter: grayscale(0.8);
+}
+
+.calendarCard {
+  border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 20px;
+  padding: 1rem;
+}
