@@ -10,8 +10,6 @@ import {
   Input,
   InputGroup,
   Label,
-  Radio,
-  RadioGroup,
   TextField,
   Spinner,
 } from "@heroui/react";
@@ -30,7 +28,7 @@ const registerPatientValidation = z
     phone: z.string().max(14, "Telefone inválido"),
     dateOfBirth: z
       .union([z.string(), z.date(), z.null()])
-      .transform((val) => (val ? new Date(val as any) : null)),
+      .transform((val) => (val ? new Date(val) : null)),
     gender: z.string(),
     password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
     confirmPassword: z
@@ -339,7 +337,7 @@ const RegisterPage = () => {
                     className={styles.input}
                     value={
                       formData.dateOfBirth
-                        ? new Date(formData.dateOfBirth as any)
+                        ? new Date(formData.dateOfBirth)
                             .toISOString()
                             .split("T")[0]
                         : ""

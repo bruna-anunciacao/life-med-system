@@ -1,0 +1,61 @@
+.container {
+  padding: 2rem;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.editButton {
+  padding: 0.5rem 1rem;
+  background-color: #006fee;
+  color: white;
+  font-weight: 600;
+}
+
+
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  border: 1px solid #e5e7eb;
+  padding: 0.25rem;
+  background-color: #fafafa;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.avatarNoPhoto {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #006fee;
+  background-color: #e6f1ff;
+  border: 1px solid #e5e7eb;
+  padding: 0.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
