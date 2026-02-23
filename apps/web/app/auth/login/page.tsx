@@ -20,7 +20,7 @@ import { toast } from "sonner";
 
 const formValidation = z.object({
   email: z.email("Email inválido"),
-  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
 });
 
 const LoginPage = () => {
@@ -68,6 +68,8 @@ const LoginPage = () => {
           formattedErrors[String(fieldName)] = issue.message;
         }
       });
+      setErrors(formattedErrors);
+      setIsLoading(false);
       return;
     }
     try {

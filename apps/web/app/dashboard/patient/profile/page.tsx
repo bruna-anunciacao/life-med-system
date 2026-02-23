@@ -7,6 +7,55 @@ import { Divider } from "@heroui/divider";
 import { usersService } from "../../../../services/users-service";
 import { toast } from "sonner";
 import styles from "./profile.module.css";
+import * as z from "zod";
+
+const profileValidation = z.object({
+  name: z
+    .string()
+    .min(2, "Nome deve ter no mínimo 2 caracteres")
+    .max(100, "Nome deve ter no máximo 100 caracteres")
+    .regex(
+      /^[a-zA-ZÀ-ÿ\s'-]+$/,
+      "Nome deve conter apenas letras, espaços, hífens e apóstrofos",
+    ),
+  phone: z
+    .string()
+    .regex(
+      /^\+[1-9]\d{6,14}$/,
+      "Telefone deve estar no formato internacional (ex: +5571999999999)",
+    )
+    .or(z.literal("")),
+  dateOfBirth: z
+    .string()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const date = new Date(val);
+        return !isNaN(date.getTime()) && date <= new Date();
+      },
+      { message: "Data de nascimento não pode ser no futuro" },
+    )
+    .refine(
+      (val) => {
+        if (!val) return true;
+        const date = new Date(val);
+        const ageDiff = Date.now() - date.getTime();
+        const ageDate = new Date(ageDiff);
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        return age <= 120;
+      },
+      { message: "Data de nascimento inválida" },
+    ),
+  gender: z
+    .enum(["MALE", "FEMALE", "OTHER", "Masculino", "Feminino", "Outro", "Prefiro não informar", ""], {
+      error: () => ({ message: "Selecione um gênero válido" }),
+    }),
+  address: z
+    .string()
+    .max(200, "Endereço deve ter no máximo 200 caracteres")
+    .optional()
+    .or(z.literal("")),
+});
 
 type UserProfile = {
   id: string;
@@ -28,6 +77,9 @@ const PatientProfilePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
 
   const [form, setForm] = useState({
     name: "",
@@ -67,14 +119,36 @@ const PatientProfilePage = () => {
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
   const handleSave = async () => {
+    setValidationErrors({});
+    const result = profileValidation.safeParse(form);
+
+    if (!result.success) {
+      const formattedErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const fieldName = issue.path[0];
+        if (fieldName) {
+          formattedErrors[String(fieldName)] = issue.message;
+        }
+      });
+      setValidationErrors(formattedErrors);
+      return;
+    }
+
     try {
       setIsSaving(true);
       await usersService.completeProfile({
         name: form.name,
-        phone: form.phone,
+        phone: form.phone || undefined,
       });
       toast.success("Perfil atualizado com sucesso!");
       setIsEditing(false);
@@ -155,6 +229,11 @@ const PatientProfilePage = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
               />
+              {validationErrors.name && (
+                <span className={styles.fieldError}>
+                  {validationErrors.name}
+                </span>
+              )}
             </div>
 
             <div className={styles.fieldGroup}>
@@ -178,6 +257,11 @@ const PatientProfilePage = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
               />
+              {validationErrors.phone && (
+                <span className={styles.fieldError}>
+                  {validationErrors.phone}
+                </span>
+              )}
             </div>
 
             <div className={styles.fieldGroup}>
@@ -190,6 +274,11 @@ const PatientProfilePage = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
               />
+              {validationErrors.dateOfBirth && (
+                <span className={styles.fieldError}>
+                  {validationErrors.dateOfBirth}
+                </span>
+              )}
             </div>
 
             <div className={styles.fieldGroup}>
@@ -209,6 +298,11 @@ const PatientProfilePage = () => {
                   Prefiro não informar
                 </option>
               </select>
+              {validationErrors.gender && (
+                <span className={styles.fieldError}>
+                  {validationErrors.gender}
+                </span>
+              )}
             </div>
 
             <div className={styles.fieldGroup}>
@@ -222,6 +316,11 @@ const PatientProfilePage = () => {
                 onChange={handleChange}
                 disabled={!isEditing}
               />
+              {validationErrors.address && (
+                <span className={styles.fieldError}>
+                  {validationErrors.address}
+                </span>
+              )}
             </div>
           </div>
 

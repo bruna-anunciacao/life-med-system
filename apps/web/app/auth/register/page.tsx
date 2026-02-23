@@ -21,19 +21,68 @@ import * as z from "zod";
 import { authService } from "../../../services/auth-service";
 import { toast } from "sonner";
 
+const passwordValidation = z
+  .string()
+  .min(8, "A senha deve ter no mínimo 8 caracteres")
+  .max(64, "A senha deve ter no máximo 64 caracteres")
+  .regex(/[a-z]/, "A senha deve conter pelo menos uma letra minúscula")
+  .regex(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula")
+  .regex(/\d/, "A senha deve conter pelo menos um número")
+  .regex(
+    /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
+    "A senha deve conter pelo menos um caractere especial",
+  );
+
+const nameValidation = z
+  .string()
+  .min(2, "Nome deve ter no mínimo 2 caracteres")
+  .max(100, "Nome deve ter no máximo 100 caracteres")
+  .regex(
+    /^[a-zA-ZÀ-ÿ\s'-]+$/,
+    "Nome deve conter apenas letras, espaços, hífens e apóstrofos",
+  );
+
+const phoneValidation = z
+  .string()
+  .min(1, "Telefone é obrigatório")
+  .regex(
+    /^\+[1-9]\d{6,14}$/,
+    "Telefone deve estar no formato internacional (ex: +5571999999999)",
+  );
+
 const registerPatientValidation = z
   .object({
-    name: z.string().min(1, "Nome é obrigatório"),
+    name: nameValidation,
     email: z.email("Email inválido"),
-    phone: z.string().max(14, "Telefone inválido"),
+    phone: phoneValidation,
     dateOfBirth: z
       .union([z.string(), z.date(), z.null()])
-      .transform((val) => (val ? new Date(val) : null)),
-    gender: z.string(),
-    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
-    confirmPassword: z
-      .string()
-      .min(6, "A senha deve ter no mínimo 6 caracteres"),
+      .transform((val) => (val ? new Date(val) : null))
+      .refine((val) => val !== null, {
+        message: "Data de nascimento é obrigatória",
+      })
+      .refine(
+        (val) => {
+          if (!val) return false;
+          return val <= new Date();
+        },
+        { message: "Data de nascimento não pode ser no futuro" },
+      )
+      .refine(
+        (val) => {
+          if (!val) return false;
+          const ageDiff = Date.now() - val.getTime();
+          const ageDate = new Date(ageDiff);
+          const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+          return age <= 120;
+        },
+        { message: "Data de nascimento inválida" },
+      ),
+    gender: z.enum(["MALE", "FEMALE", "OTHER"], {
+      error: () => ({ message: "Selecione um gênero válido" }),
+    }),
+    password: passwordValidation,
+    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -43,22 +92,30 @@ const registerPatientValidation = z
 
 const registerProfessionalValidation = z
   .object({
-    name: z.string().min(1, "Nome é obrigatório"),
+    name: nameValidation,
     email: z.email("Email inválido"),
-    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
-    confirmPassword: z
-      .string()
-      .min(6, "A senha deve ter no mínimo 6 caracteres"),
+    password: passwordValidation,
+    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
     professionalLicense: z
       .string()
-      .min(1, "Registro profissional é obrigatório"),
-    specialty: z.string().min(1, "Especialidade é obrigatória"),
-    subspecialty: z.string().optional(),
+      .min(4, "Registro profissional deve ter no mínimo 4 caracteres")
+      .max(20, "Registro profissional deve ter no máximo 20 caracteres"),
+    specialty: z
+      .string()
+      .min(2, "Especialidade deve ter no mínimo 2 caracteres")
+      .max(100, "Especialidade deve ter no máximo 100 caracteres"),
+    subspecialty: z
+      .string()
+      .max(100, "Subespecialidade deve ter no máximo 100 caracteres")
+      .optional(),
     modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"], {
       error: () => ({ message: "Selecione uma modalidade válida" }),
     }),
-    bio: z.string().optional(),
+    bio: z
+      .string()
+      .max(500, "Biografia deve ter no máximo 500 caracteres")
+      .optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não coincidem",

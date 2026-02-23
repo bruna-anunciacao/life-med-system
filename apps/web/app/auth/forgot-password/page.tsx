@@ -64,6 +64,8 @@ const ForgotPasswordPage = () => {
           formattedErrors[String(fieldName)] = issue.message;
         }
       });
+      setErrors(formattedErrors);
+      setIsLoading(false);
       return;
     }
 

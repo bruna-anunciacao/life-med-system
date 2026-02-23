@@ -201,6 +201,13 @@
   background-color: #0056b3;
 }
 
+/* Field Error */
+.fieldError {
+  font-size: 0.8rem;
+  color: #dc2626;
+  margin-top: 0.15rem;
+}
+
 /* Loading */
 .loadingContainer {
   padding: 6rem 2rem;
