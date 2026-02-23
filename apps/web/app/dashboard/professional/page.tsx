@@ -13,8 +13,15 @@ import {
   XIcon,
   VideoIcon,
 } from "../../utils/icons";
+import { useRouter } from "next/navigation";
 
 const ProfessionalDashboard = () => {
+  const router = useRouter();
+
+  const handleCalendarClick = () => {
+    router.push("/dashboard/professional/schedule");
+  };
+
   const stats = [
     {
       title: "Consultas Hoje",
@@ -90,7 +97,7 @@ const ProfessionalDashboard = () => {
             Gerencie suas consultas e acompanhe seu dia.
           </p>
         </div>
-        <Button className={styles.calendarButton}>
+        <Button className={styles.calendarButton} onPress={handleCalendarClick}>
           <CalendarIcon />
           Minha Agenda
         </Button>

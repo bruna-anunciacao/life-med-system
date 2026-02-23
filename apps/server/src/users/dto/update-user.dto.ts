@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsEmail, IsUrl, IsEnum } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  IsUrl,
+  IsEnum,
+  IsObject,
+} from 'class-validator';
 import { AppointmentModality } from '@prisma/client'; // Import enum from Prisma
 import { UserStatusEnum } from 'src/auth/enums/user-status-enum';
 
@@ -29,7 +36,7 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
-  crm?: string;
+  professionalLicense?: string;
 
   @IsOptional()
   @IsString()
@@ -42,4 +49,12 @@ export class UpdateUserDto {
   @IsOptional()
   @IsEnum(AppointmentModality)
   modality?: AppointmentModality;
+
+  @IsOptional()
+  @IsObject()
+  socialLinks?: {
+    linkedin?: string;
+    instagram?: string;
+    other?: string;
+  };
 }

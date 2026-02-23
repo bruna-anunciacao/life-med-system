@@ -1,15 +1,19 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
 
-export interface CompleteProfileDto {
+export interface UpdateProfileDto {
   name?: string;
   email?: string;
-  phone?: string;
-  speciality?: string;
-  subspeciality?: string;
-  crm?: string;
+  professionalLicense?: string;
+  specialty?: string;
+  subspecialty?: string;
   bio?: string;
   photoUrl?: string;
+  socialLinks?: {
+    linkedin?: string;
+    instagram?: string;
+    other?: string;
+  };
   modality?: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
 }
 
@@ -73,9 +77,13 @@ export const usersService = {
     }
   },
 
-  async completeProfile(data: CompleteProfileDto) {
+  async updateProfile(data: FormData | UpdateProfileDto) {
     try {
-      const response = await api.patch("users/me", data);
+      const response = await api.patch("/users/me", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

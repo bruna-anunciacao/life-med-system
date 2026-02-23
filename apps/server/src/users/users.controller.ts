@@ -6,10 +6,15 @@ import {
   UseGuards,
   Request,
   Param,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { extname } from 'path';
+import { diskStorage } from 'multer';
 
 @UseGuards(JwtAuthGuard)
 @Controller('users')
@@ -22,7 +27,27 @@ export class UsersController {
   }
 
   @Patch('me')
-  updateProfile(@Request() req, @Body() dto: UpdateUserDto) {
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      storage: diskStorage({
+        destination: './uploads/profile-photos',
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `user-${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  updateProfile(
+    @Request() req,
+    @Body() dto: UpdateUserDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (file) {
+      dto.photoUrl = `/uploads/profile-photos/${file.filename}`;
+    }
+
     return this.usersService.update(req.user.userId as string, dto);
   }
 

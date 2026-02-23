@@ -34,22 +34,24 @@ export class UsersService {
 
     const {
       specialty,
-      crm,
+      professionalLicense,
       bio,
       status,
       modality,
       subspecialty,
       photoUrl,
+      socialLinks,
       ...userData
     } = dto;
 
     let newStatus = status ? status : user.status;
 
     if (user.role === 'PROFESSIONAL' && user.status === 'PENDING') {
-      const hasCrm = crm || user.professionalProfile?.professionalLicense;
+      const hasProfessionalLicense =
+        professionalLicense || user.professionalProfile?.professionalLicense;
       const hasSpecialty = specialty || user.professionalProfile?.specialty;
 
-      if (hasCrm && hasSpecialty) {
+      if (hasProfessionalLicense && hasSpecialty) {
         newStatus = UserStatusEnum.COMPLETED;
       }
     }
@@ -63,25 +65,34 @@ export class UsersService {
     });
 
     if (user.role === 'PROFESSIONAL') {
-      if (specialty || crm || bio || modality || subspecialty || photoUrl) {
+      if (
+        specialty ||
+        professionalLicense ||
+        bio ||
+        modality ||
+        subspecialty ||
+        photoUrl
+      ) {
         await this.prisma.professionalProfile.upsert({
           where: { userId: id },
           create: {
             userId: id,
-            professionalLicense: crm || '',
+            professionalLicense: professionalLicense || '',
             specialty: specialty || '',
             modality: modality || 'VIRTUAL',
             bio: bio,
             subspecialty: subspecialty,
             photoUrl: photoUrl,
+            socialLinks: socialLinks,
           },
           update: {
-            professionalLicense: crm,
+            professionalLicense: professionalLicense,
             specialty: specialty,
             modality: modality,
             bio: bio,
             subspecialty: subspecialty,
-            photoUrl: photoUrl,
+            photoUrl: photoUrl ?? user.professionalProfile?.photoUrl,
+            socialLinks: socialLinks,
           },
         });
       }
@@ -105,6 +116,7 @@ export class UsersService {
             id: true,
             specialty: true,
             professionalLicense: true,
+            photoUrl: true,
           },
         },
       },
