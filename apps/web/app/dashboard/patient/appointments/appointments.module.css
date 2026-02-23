@@ -1,0 +1,424 @@
+.container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 2rem 4rem;
+
+  background-color: #f8fafc;
+}
+
+.header {
+  margin-bottom: 2rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.searchButton {
+  padding: 0.5rem 1rem;
+
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  border-radius: 0.5rem;
+
+  background-color: #006fee;
+
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.searchButton:hover {
+  background-color: #0056b3;
+}
+
+/* Tabs */
+.tabs {
+  margin-bottom: 1.5rem;
+
+  display: flex;
+  gap: 0.25rem;
+
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tab {
+  padding: 0.75rem 1.5rem;
+
+  border: none;
+  border-bottom: 2px solid transparent;
+
+  background: none;
+
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6b7280;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  margin-bottom: -2px;
+}
+
+.tab:hover {
+  color: #374151;
+}
+
+.tabActive {
+  padding: 0.75rem 1.5rem;
+
+  border: none;
+  border-bottom: 2px solid #006fee;
+
+  background: none;
+
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #006fee;
+
+  cursor: pointer;
+
+  margin-bottom: -2px;
+}
+
+.tabCount {
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.5rem;
+
+  border-radius: 1rem;
+
+  background-color: #f3f4f6;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.tabActive .tabCount {
+  background-color: rgba(0, 111, 238, 0.1);
+  color: #006fee;
+}
+
+/* Appointment Cards */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appointmentCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+
+  background-color: white;
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.appointmentCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.confirmed {
+  border-left: 4px solid #006fee;
+}
+
+.completed {
+  border-left: 4px solid #17c964;
+}
+
+.pending {
+  border-left: 4px solid #f5a524;
+}
+
+.cancelled {
+  border-left: 4px solid #f31260;
+}
+
+.cardBody {
+  padding: 1.25rem;
+
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+
+/* Date Badge */
+.dateBadge {
+  width: 64px;
+  padding: 0.5rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+
+  background-color: #f9fafb;
+
+  flex-shrink: 0;
+}
+
+.dateDay {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #006fee;
+  line-height: 1;
+}
+
+.dateMonth {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+.dateYear {
+  font-size: 0.65rem;
+  color: #9ca3af;
+}
+
+/* Info */
+.info {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.doctorName {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.specialty {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.meta {
+  margin-top: 0.25rem;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.timeText {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.modalityChip {
+  padding: 0.15rem 0.5rem;
+
+  border-radius: 0.25rem;
+
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.statusChip {
+  padding: 0.25rem 0.5rem;
+
+  border-radius: 3rem;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Actions */
+.cardActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  flex-shrink: 0;
+}
+
+.detailsButton {
+  padding: 0.4rem 1rem;
+
+  border-radius: 0.5rem;
+
+  background-color: #006fee;
+
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: white;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.detailsButton:hover {
+  background-color: #0056b3;
+}
+
+.cancelButton {
+  padding: 0.4rem 1rem;
+
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+
+  background-color: white;
+
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #ef4444;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background-color: #fef2f2;
+}
+
+.rebookButton {
+  padding: 0.4rem 1rem;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+
+  background-color: white;
+
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #374151;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rebookButton:hover {
+  background-color: #f9fafb;
+}
+
+/* Notes */
+.notesRow {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+
+  border-top: 1px solid #f3f4f6;
+}
+
+.notesText {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: #9ca3af;
+}
+
+/* Empty State */
+.emptyState {
+  padding: 4rem 2rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.emptyText {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.emptyButton {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.25rem;
+
+  border-radius: 0.5rem;
+
+  background-color: #006fee;
+
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: white;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.emptyButton:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cardBody {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dateBadge {
+    flex-direction: row;
+    width: auto;
+    gap: 0.5rem;
+  }
+
+  .cardActions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .detailsButton,
+  .cancelButton,
+  .rebookButton {
+    flex: 1;
+    text-align: center;
+  }
+
+  .tabs {
+    overflow-x: auto;
+  }
+}
