@@ -18,7 +18,7 @@ import {
 import { authService } from "../../../services/auth-service";
 
 const formValidation = z.object({
-  email: z.email("Email inválido"),
+  email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
 });
 
 const ForgotPasswordPage = () => {
@@ -137,6 +137,10 @@ const ForgotPasswordPage = () => {
               type="submit"
               className={styles.button}
               isDisabled={isLoading}
+              onPress={(e) => {
+                const form = e.target.closest('form');
+                if (form) form.requestSubmit();
+              }}
             >
               {isLoading ? <Spinner /> : "Enviar link"}
             </Button>

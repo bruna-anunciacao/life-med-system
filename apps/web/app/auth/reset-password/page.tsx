@@ -203,6 +203,10 @@ const ResetPasswordPage = () => {
             type="submit"
             className={styles.button}
             isDisabled={isLoading}
+            onPress={(e) => {
+              const form = e.target.closest('form');
+              if (form) form.requestSubmit();
+            }}
           >
             {isLoading ? <Spinner /> : "Enviar link"}
           </Button>

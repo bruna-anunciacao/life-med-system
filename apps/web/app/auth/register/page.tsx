@@ -53,7 +53,7 @@ const phoneValidation = z
 const registerPatientValidation = z
   .object({
     name: nameValidation,
-    email: z.email("Email inválido"),
+    email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
     phone: phoneValidation,
     dateOfBirth: z
       .union([z.string(), z.date(), z.null()])
@@ -93,7 +93,7 @@ const registerPatientValidation = z
 const registerProfessionalValidation = z
   .object({
     name: nameValidation,
-    email: z.email("Email inválido"),
+    email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
     password: passwordValidation,
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
@@ -182,7 +182,9 @@ const RegisterPage = () => {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -358,7 +360,7 @@ const RegisterPage = () => {
           {formData.role === "PATIENT" && (
             <>
               <TextField
-                isInvalid={!!errors.professionalLicense}
+                isInvalid={!!errors.phone}
                 className="w-full"
               >
                 <Label htmlFor="phone" className={styles.label}>
@@ -381,7 +383,7 @@ const RegisterPage = () => {
               </TextField>
               <div className={styles.multipleInputs}>
                 <TextField
-                  isInvalid={!!errors.professionalLicense}
+                  isInvalid={!!errors.dateOfBirth}
                   className="w-full"
                 >
                   <Label htmlFor="dateOfBirth" className={styles.label}>
@@ -412,12 +414,7 @@ const RegisterPage = () => {
                     name="gender"
                     className={styles.input}
                     value={formData.gender || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        gender: e.target.value,
-                      }))
-                    }
+                    onChange={handleChange}
                   >
                     <option value="" disabled>
                       Selecione
@@ -491,12 +488,7 @@ const RegisterPage = () => {
                     name="modality"
                     className={styles.input}
                     value={formData.modality || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        modality: e.target.value,
-                      }))
-                    }
+                    onChange={handleChange}
                   >
                     <option value="" disabled>
                       Selecione
@@ -596,6 +588,13 @@ const RegisterPage = () => {
             type="submit"
             className={styles.button}
             isDisabled={isLoading}
+            onPress={(e) => {
+              // HeroUI Button requires explicit form submission
+              const form = e.target.closest('form');
+              if (form) {
+                form.requestSubmit();
+              }
+            }}
           >
             {isLoading ? <Spinner /> : "Cadastrar"}
           </Button>
