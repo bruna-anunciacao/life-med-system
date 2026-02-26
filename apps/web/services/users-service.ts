@@ -4,6 +4,7 @@ import { AxiosError } from "axios";
 export interface UpdateProfileDto {
   name?: string;
   email?: string;
+  phone?: string;
   professionalLicense?: string;
   specialty?: string;
   subspecialty?: string;

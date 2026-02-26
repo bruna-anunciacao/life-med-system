@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-@import "react-day-picker/dist/style.css";
+@import "react-day-picker/style.css";
 
 :root {
   --background: #ffffff;

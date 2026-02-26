@@ -19,8 +19,8 @@ import { authService } from "../../../services/auth-service";
 import { toast } from "sonner";
 
 const formValidation = z.object({
-  email: z.email("Email inválido"),
-  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
+  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
 });
 
 const LoginPage = () => {
@@ -68,6 +68,8 @@ const LoginPage = () => {
           formattedErrors[String(fieldName)] = issue.message;
         }
       });
+      setErrors(formattedErrors);
+      setIsLoading(false);
       return;
     }
     try {
@@ -162,6 +164,10 @@ const LoginPage = () => {
             type="submit"
             className={styles.button}
             isDisabled={isLoading}
+            onPress={(e) => {
+              const form = e.target.closest('form');
+              if (form) form.requestSubmit();
+            }}
           >
             {isLoading ? <Spinner /> : "Entrar"}
           </Button>
