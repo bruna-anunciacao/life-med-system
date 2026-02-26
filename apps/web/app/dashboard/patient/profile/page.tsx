@@ -146,7 +146,7 @@ const PatientProfilePage = () => {
 
     try {
       setIsSaving(true);
-      await usersService.completeProfile({
+      await usersService.updateProfile({
         name: form.name,
         phone: form.phone || undefined,
       });
