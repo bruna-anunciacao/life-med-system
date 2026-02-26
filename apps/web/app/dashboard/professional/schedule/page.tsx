@@ -5,55 +5,66 @@ import { Button, Chip, ChipProps } from "@heroui/react";
 import { Divider } from "@heroui/divider";
 import { Card, CardBody } from "@heroui/card";
 import { DayPicker } from "react-day-picker";
-import { format } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import styles from "./schedule.module.css";
 import { toast } from "sonner";
 import { MoreVerticalIcon, PlusIcon } from "../../../utils/icons";
 import Image from "next/image";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/dropdown";
 
 type Appointment = {
   id: string;
   dateTime: string;
-  status: "PENDING" | "CONFIRMED" | "CANCELED" | "COMPLETED";
+  status: "PENDING" | "CONFIRMED" | "CANCELED" | "COMPLETED" | "NO_SHOW";
   notes?: string;
   patient: {
     name: string;
-    patientProfile?: {
-      photoUrl?: string;
-    };
   };
   type?: "VIRTUAL" | "CLINIC" | "HOME_VISIT";
 };
 
 const SchedulePage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    new Date()
+    new Date(),
   );
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   useEffect(() => {
+    const baseDate = selectedDate || new Date();
+
+    const date9AM = new Date(baseDate.setHours(9, 0, 0, 0)).toISOString();
+    const date2PM = new Date(baseDate.setHours(14, 0, 0, 0)).toISOString();
+
     const mockDataFromPrisma: Appointment[] = [
       {
         id: "uuid-1",
-        dateTime: "2026-02-16T09:00:00.000Z",
+        dateTime: date9AM,
         status: "COMPLETED",
         patient: {
           name: "Maria Clara",
-          patientProfile: {
-            photoUrl: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-          },
         },
         type: "CLINIC",
       },
       {
         id: "uuid-2",
-        dateTime: "2026-02-16T14:00:00.000Z",
+        dateTime: date2PM,
         status: "PENDING",
-        patient: {
-          name: "Lucas Mendes",
-        },
+        patient: { name: "Lucas Mendes" },
         type: "VIRTUAL",
+      },
+      {
+        id: "uuid-3",
+        dateTime: new Date(
+          new Date().setDate(new Date().getDate() + 1),
+        ).toISOString(),
+        status: "CONFIRMED",
+        patient: { name: "Aparece só amanha" },
       },
     ];
     setAppointments(mockDataFromPrisma);
@@ -65,10 +76,17 @@ const SchedulePage = () => {
   });
 
   const getAppointmentForSlot = (slotTime: string) => {
+    if (!selectedDate) return undefined;
+
     return appointments.find((apt) => {
-      const date = new Date(apt.dateTime);
-      const aptTime = date.getHours().toString().padStart(2, "0") + ":00";
-      return aptTime === slotTime;
+      const aptDate = new Date(apt.dateTime);
+
+      const isSameDayMatch = isSameDay(aptDate, selectedDate);
+
+      const aptHourStr = aptDate.getHours().toString().padStart(2, "0") + ":00";
+      const isTimeMatch = aptHourStr === slotTime;
+
+      return isSameDayMatch && isTimeMatch;
     });
   };
 
@@ -84,7 +102,9 @@ const SchedulePage = () => {
         />
       );
     }
-    return <div className={styles.avatarNoPhoto}>{name.charAt(0).toUpperCase()}</div>;
+    return (
+      <div className={styles.avatarNoPhoto}>{name.charAt(0).toUpperCase()}</div>
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -94,6 +114,8 @@ const SchedulePage = () => {
       case "COMPLETED":
         return "success";
       case "CANCELED":
+        return "danger";
+      case "NO_SHOW":
         return "danger";
       case "PENDING":
         return "warning";
@@ -110,10 +132,7 @@ const SchedulePage = () => {
           <p className={styles.subtitle}>Visualize e gerencie seus horários.</p>
         </div>
         <div className="flex gap-3">
-          <Button className={styles.addButton}>
-            <PlusIcon />
-            Novo Agendamento
-          </Button>
+          <Button className={styles.addButton}>Gerenciar Horários</Button>
         </div>
       </div>
 
@@ -167,7 +186,6 @@ const SchedulePage = () => {
                           <div className="flex items-center gap-3 flex-1">
                             {renderAvatar(
                               appointment.patient.name,
-                              appointment.patient.patientProfile?.photoUrl
                             )}
                             <div>
                               <p className="font-semibold text-sm text-gray-900">
@@ -179,7 +197,7 @@ const SchedulePage = () => {
                                   variant="soft"
                                   color={
                                     getStatusColor(
-                                      appointment.status
+                                      appointment.status,
                                     ) as ChipProps["color"]
                                   }
                                   className={styles.modalityChip}
@@ -193,14 +211,42 @@ const SchedulePage = () => {
                           </div>
 
                           <div className="flex gap-2">
-                            <Button
-                              isIconOnly
-                              size="sm"
-                              variant="ghost"
-                              className="text-gray-400"
-                            >
-                              <MoreVerticalIcon />
-                            </Button>
+                            <Dropdown>
+                              <DropdownTrigger>
+                                <Button
+                                  isIconOnly
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-gray-400"
+                                >
+                                  <MoreVerticalIcon />
+                                </Button>
+                              </DropdownTrigger>
+                              <DropdownMenu
+                                aria-label="Static Actions"
+                                className={styles.dropdown}
+                              >
+                                {appointment.status === "PENDING" ? (
+                                  <>
+                                    <DropdownItem key="CONFIRMED">
+                                      Confirmar
+                                    </DropdownItem>
+                                    <DropdownItem key="CANCELLED">
+                                      Cancelar
+                                    </DropdownItem>
+                                  </>
+                                ) : (
+                                  <>
+                                    <DropdownItem key="COMPLETED">
+                                      Realizado
+                                    </DropdownItem>
+                                    <DropdownItem key="NO_SHOW">
+                                      Não Compareceu
+                                    </DropdownItem>
+                                  </>
+                                )}
+                              </DropdownMenu>
+                            </Dropdown>
                           </div>
                         </CardBody>
                       </Card>
@@ -209,6 +255,24 @@ const SchedulePage = () => {
                         <span className="text-gray-400 text-sm">
                           Disponível
                         </span>
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button
+                              isIconOnly
+                              size="sm"
+                              variant="ghost"
+                              className="text-gray-400"
+                            >
+                              <MoreVerticalIcon />
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu
+                            aria-label="Static Actions"
+                            className={styles.dropdown}
+                          >
+                            <DropdownItem key="">Retirar Slot</DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
                       </div>
                     )}
                   </div>

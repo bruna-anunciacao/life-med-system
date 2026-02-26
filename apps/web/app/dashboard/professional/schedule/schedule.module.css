@@ -169,7 +169,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   border-radius: 12px;
   border: 1px solid transparent;
   transition: all 0.2s ease;
@@ -230,6 +230,19 @@
   padding: 0.25rem;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
+
+.dropdown {
+  padding: .5rem;
+
+  border-radius: .5rem;
+
+  background-color: #fff;
+
+  color: #374151;
+
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
 .apptTime {
   display: flex;
   flex-direction: column;
