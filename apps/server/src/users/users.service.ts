@@ -34,7 +34,7 @@ export class UsersService {
 
     const {
       specialty,
-      professionalLicense,
+      crm: professionalLicense,
       bio,
       status,
       modality,
