@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 export interface RegisterPatientDto {
   name: string;
   email: string;
+  cpf: string;
   phone: string;
   dateOfBirth: Date | null;
   gender: string;
@@ -19,6 +20,12 @@ export interface RegisterProfessionalDto {
   subspecialty?: string;
   modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
   bio?: string;
+  socialLinks?: {
+    linkedin?: string;
+    instagram?: string;
+    referenceLink?: string;
+    other?: string;
+  };
   password: string;
 }
 

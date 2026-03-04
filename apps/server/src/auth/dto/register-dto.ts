@@ -50,6 +50,10 @@ export class RegisterDto {
   })
   phone!: string;
 
+  @IsString({ message: 'CPF deve ser texto' })
+  @IsNotEmpty({ message: 'CPF é obrigatório' })
+  cpf!: string;
+
   @Type(() => Date)
   @IsDate({ message: 'Data de nascimento inválida' })
   @IsNotEmpty({ message: 'Data de nascimento é obrigatória' })
@@ -57,8 +61,8 @@ export class RegisterDto {
 
   @IsString({ message: 'Gênero deve ser texto' })
   @IsNotEmpty({ message: 'Gênero é obrigatório' })
-  @IsIn(['MALE', 'FEMALE', 'OTHER'], {
-    message: 'Gênero deve ser MALE, FEMALE ou OTHER',
+  @IsIn(['MALE', 'FEMALE', 'OTHER', 'UNDISCLOSED'], {
+    message: 'Gênero deve ser MALE, FEMALE, OTHER ou UNDISCLOSED',
   })
   gender!: string;
 }

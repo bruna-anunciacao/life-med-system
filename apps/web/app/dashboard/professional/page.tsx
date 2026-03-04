@@ -29,9 +29,9 @@ const ProfessionalDashboard = () => {
       icon: <CalendarIcon />,
       color: "primary",
     },
-    { title: "Pendentes", value: "3", icon: <ClockIcon />, color: "warning" },
+    { title: "Pendentes de Aprovação", value: "3", icon: <ClockIcon />, color: "warning" },
     {
-      title: "Total Pacientes",
+      title: "Pacientes Atendidos",
       value: "142",
       icon: <UsersIcon />,
       color: "success",

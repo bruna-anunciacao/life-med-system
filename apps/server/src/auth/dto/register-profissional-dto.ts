@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   Matches,
@@ -72,6 +73,14 @@ export class RegisterProfessionalDto {
     message: 'Modalidade deve ser VIRTUAL, HOME_VISIT ou CLINIC',
   })
   modality!: AppointmentModalityEnum;
+
+  @IsOptional()
+  @IsObject()
+  socialLinks?: {
+    referenceLink?: string;
+    instagram?: string;
+    other?: string;
+  };
 
   @IsOptional()
   @IsString({ message: 'Biografia deve ser texto' })

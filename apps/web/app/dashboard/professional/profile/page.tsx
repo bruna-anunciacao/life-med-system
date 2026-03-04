@@ -57,7 +57,7 @@ type ProfessionalProfile = {
     bio?: string;
     photoUrl?: string;
     socialLinks?: {
-      linkedin?: string;
+      referenceLink?: string;
       instagram?: string;
       other?: string;
     };
@@ -93,7 +93,7 @@ export default function PerfilPage() {
     bio: "",
     photoUrl: "",
     socialLinks: {
-      linkedin: "",
+      referenceLink: "",
       instagram: "",
       other: "",
     },
@@ -118,7 +118,7 @@ export default function PerfilPage() {
         bio: response.professionalProfile?.bio || "",
         photoUrl: response.professionalProfile?.photoUrl || "",
         socialLinks: response.professionalProfile?.socialLinks || {
-          linkedin: "",
+          referenceLink: "",
           instagram: "",
           other: "",
         },
@@ -172,7 +172,7 @@ export default function PerfilPage() {
       data.append("subspecialty", formData.subspecialty);
       data.append("modality", formData.modality);
       data.append("bio", formData.bio || "");
-      data.append("socialLinks[linkedin]", formData.socialLinks.linkedin || "");
+      data.append("socialLinks[referenceLink]", formData.socialLinks.referenceLink || "");
       data.append(
         "socialLinks[instagram]",
         formData.socialLinks.instagram || "",
@@ -211,7 +211,7 @@ export default function PerfilPage() {
       bio: user?.professionalProfile?.bio || "",
       photoUrl: user?.professionalProfile?.photoUrl || "",
       socialLinks: user?.professionalProfile?.socialLinks as {
-        linkedin: "";
+        referenceLink: "";
         instagram: "";
         other: "";
       },
@@ -431,18 +431,20 @@ export default function PerfilPage() {
 
           <div className={styles.formGrid}>
             <div className={styles.fieldGroup}>
-              <label className={styles.fieldLabel}>LinkedIn</label>
+              <label className={styles.fieldLabel}>
+                Link de referência (Linkedin/Lattes)
+              </label>
               <input
                 type="text"
-                name="linkedin"
+                name="referenceLink"
                 className={styles.fieldInput}
-                value={formData.socialLinks.linkedin}
+                value={formData.socialLinks.referenceLink}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
                     socialLinks: {
                       ...prev.socialLinks,
-                      linkedin: e.target.value,
+                      referenceLink: e.target.value,
                     },
                   }))
                 }
