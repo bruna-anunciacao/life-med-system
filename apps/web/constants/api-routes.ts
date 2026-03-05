@@ -12,4 +12,9 @@ export const API_ROUTES = {
     PATIENTS: '/users/patients',
     // Adicione outras rotas conforme necessário
   },
+  PROFESSIONALS: {
+    SETTINGS: '/professional/settings',
+    SCHEDULE: '/professional/schedule',
+    
+  },
 };

@@ -1,0 +1,229 @@
+.modalBackground {
+  width: 100%;
+  height: 100%;
+
+  background: #00000023;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 2;
+}
+
+.modalContainer {
+  width: 100%;
+  max-width: 850px;
+
+  padding: 1.5rem;
+
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  border-radius: 1rem;
+  background-color: #ffffff;
+  color: black;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  margin-bottom: 1rem;
+}
+
+.header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.header p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.sectionDescription {
+  font-size: 0.85rem;
+  color: #8a91a0;
+  margin-bottom: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.fieldFull {
+  grid-column: 1 / -1;
+}
+
+.input,
+.select {
+  width: 100%;
+  height: 42px;
+
+  padding: 0 0.75rem;
+
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+
+  font-size: 0.9rem;
+
+  transition: border 0.2s ease;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.checkboxGroup {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.dayRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0.75rem 0.9rem;
+
+  border-radius: 10px;
+
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+}
+
+.dayLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.dayInactive {
+  color: #9ca3af;
+}
+
+.timeGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timeInput {
+  width: 100px;
+  height: 38px;
+
+  padding: 0 0.5rem;
+
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
+.paymentAlert {
+  padding-left: 1rem;
+  font-size: .75rem;
+  color: #ff0000;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.button{
+  padding: 0.5rem 1rem;
+
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  border-radius: 0.5rem;
+
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.checkmark::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  top: 1px;
+  left: 5px;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.availabilityCard {
+  width: 100%;
+  padding: 0 .5rem;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+
+  background-color: #f3f4f6;
+  border-radius: .5rem;
+}
+
+.dayCheckbox {
+  display: flex;
+  gap: .5rem;
+}
+
+.dayCheckbox input:checked + .checkmark {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.dayCheckbox input:checked + .checkmark::after {
+  opacity: 1;
+}
+
+.dayLabel {
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.active {
+  color: #111827;
+  font-weight: 500;
+}
+
+.inactive {
+  color: #9ca3af;
+}

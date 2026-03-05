@@ -8,11 +8,13 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from 'services/mail.module';
 import { UsersModule } from './users/users.module';
 import { AdminSeederService } from './database/admin.seeder.service';
+import { ProfessionalModule } from './professional/professional.module';
 
 @Module({
   imports: [
     AuthModule,
     UsersModule,
+    ProfessionalModule,
     PrismaModule,
     MailModule,
     ConfigModule.forRoot({
