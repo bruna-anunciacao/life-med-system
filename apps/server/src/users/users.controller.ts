@@ -65,4 +65,9 @@ export class UsersController {
   updateUserStatus(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
+
+  @Get(':id')
+  getUserbyId(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
 }

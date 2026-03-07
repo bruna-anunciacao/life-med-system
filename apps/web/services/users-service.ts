@@ -119,4 +119,23 @@ export const usersService = {
       throw new Error("Erro de conexão com o servidor.");
     }
   },
+
+  async getUserById(id: string) {
+    try {
+      const response = await api.get(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao buscar dados do usuário.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
 };

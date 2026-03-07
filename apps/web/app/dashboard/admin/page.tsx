@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import React from "react";
 import styles from "./admin-dashboard.module.css";
 import { EyeIcon, CheckIcon, BanIcon, EditIcon } from "../../utils/icons";
+import { useRouter } from "next/navigation";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   VERIFIED: "success",
@@ -27,6 +28,7 @@ const AdminDashboard = () => {
   const [patients, setPatients] = useState<User[]>([]);
   const [professionals, setProfessionals] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const handleStatusChange = async (
     userId: string,
@@ -140,6 +142,7 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                           >
                             <EyeIcon />
                           </Button>
@@ -263,6 +266,7 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                           >
                             <EyeIcon />
                           </Button>
