@@ -33,7 +33,7 @@ const AdminDashboard = () => {
   const handleStatusChange = async (
     userId: string,
     newStatus: "VERIFIED" | "BLOCKED",
-    role: string
+    listType: "patient" | "professional"
   ) => {
     try {
       await usersService.updateUserStatus(userId, newStatus);
@@ -42,7 +42,7 @@ const AdminDashboard = () => {
       const updateList = (list: User[]) =>
         list.map((u) => (u.id === userId ? { ...u, status: newStatus } : u));
 
-      if (role === "PROFESSIONAL") {
+      if (listType === "professional") {
         setProfessionals((prev) => updateList(prev));
       } else {
         setPatients((prev) => updateList(prev));
@@ -156,7 +156,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role
+                                  "patient"
                                 )
                               }
                             >
@@ -173,7 +173,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "BLOCKED",
-                                  user.role
+                                  "patient"
                                 )
                               }
                             >
@@ -190,7 +190,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role
+                                  "patient"
                                 )
                               }
                             >
@@ -280,7 +280,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role
+                                  "professional"
                                 )
                               }
                             >
@@ -297,7 +297,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "BLOCKED",
-                                  user.role
+                                  "professional"
                                 )
                               }
                             >
@@ -314,7 +314,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role
+                                  "professional"
                                 )
                               }
                             >
