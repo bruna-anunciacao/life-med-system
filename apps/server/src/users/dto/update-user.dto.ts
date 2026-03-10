@@ -41,6 +41,26 @@ export class UpdateUserDto {
   phone?: string;
 
   @IsOptional()
+  @IsString({ message: 'Data de nascimento deve ser texto' })
+  dateOfBirth?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Gênero deve ser texto' })
+  @MaxLength(50, { message: 'Gênero deve ter no máximo 50 caracteres' })
+  gender?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Endereço deve ser texto' })
+  @MaxLength(200, { message: 'Endereço deve ter no máximo 200 caracteres' })
+  address?: string;
+
+  @IsOptional()
+  @IsString({ message: 'CPF deve ser texto' })
+  @MinLength(11, { message: 'CPF deve ter 11 caracteres' })
+  @MaxLength(14, { message: 'CPF deve ter no máximo 14 caracteres' })
+  cpf?: string;
+
+  @IsOptional()
   @IsString({ message: 'Especialidade deve ser texto' })
   @MinLength(2, { message: 'Especialidade deve ter no mínimo 2 caracteres' })
   @MaxLength(100, {

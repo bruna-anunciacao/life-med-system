@@ -27,7 +27,7 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { professionalProfile: true },
+      include: { professionalProfile: true, patientProfile: true },
     });
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
@@ -41,6 +41,11 @@ export class UsersService {
       subspecialty,
       photoUrl,
       socialLinks,
+      phone,
+      dateOfBirth,
+      gender,
+      address,
+      cpf,
       ...userData
     } = dto;
 
@@ -93,6 +98,21 @@ export class UsersService {
             subspecialty: subspecialty,
             photoUrl: photoUrl ?? user.professionalProfile?.photoUrl,
             socialLinks: socialLinks,
+          },
+        });
+      }
+    }
+
+    if (user.role === 'PATIENT' && user.patientProfile) {
+      if (phone || dateOfBirth || gender || address || cpf) {
+        await this.prisma.patientProfile.update({
+          where: { userId: id },
+          data: {
+            phone,
+            dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+            gender,
+            address,
+            cpf,
           },
         });
       }

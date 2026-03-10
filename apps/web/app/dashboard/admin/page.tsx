@@ -202,6 +202,9 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() =>
+                              router.push(`/dashboard/admin/users/${user.id}?edit=1`)
+                            }
                           >
                             <EditIcon />
                           </Button>
@@ -326,6 +329,9 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() =>
+                              router.push(`/dashboard/admin/users/${user.id}?edit=1`)
+                            }
                           >
                             <EditIcon />
                           </Button>
