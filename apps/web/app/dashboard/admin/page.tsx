@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import React from "react";
 import styles from "./admin-dashboard.module.css";
 import { EyeIcon, CheckIcon, BanIcon, EditIcon } from "../../utils/icons";
+import { useRouter } from "next/navigation";
 
 const statusColorMap: Record<string, ChipProps["color"]> = {
   VERIFIED: "success",
@@ -27,11 +28,12 @@ const AdminDashboard = () => {
   const [patients, setPatients] = useState<User[]>([]);
   const [professionals, setProfessionals] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const handleStatusChange = async (
     userId: string,
     newStatus: "VERIFIED" | "BLOCKED",
-    role: string,
+    listType: "patient" | "professional"
   ) => {
     try {
       await usersService.updateUserStatus(userId, newStatus);
@@ -40,7 +42,7 @@ const AdminDashboard = () => {
       const updateList = (list: User[]) =>
         list.map((u) => (u.id === userId ? { ...u, status: newStatus } : u));
 
-      if (role === "PROFESSIONAL") {
+      if (listType === "professional") {
         setProfessionals((prev) => updateList(prev));
       } else {
         setPatients((prev) => updateList(prev));
@@ -112,11 +114,7 @@ const AdminDashboard = () => {
 
             <tbody>
               {patients.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className={styles.empty}>
-                    Nenhum paciente encontrado.
-                  </td>
-                </tr>
+                <div className={styles.empty}>Nenhum paciente encontrado.</div>
               ) : (
                 patients.map((user) => (
                   <tr key={user.id}>
@@ -144,6 +142,7 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                           >
                             <EyeIcon />
                           </Button>
@@ -157,7 +156,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  "patient"
                                 )
                               }
                             >
@@ -174,7 +173,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "BLOCKED",
-                                  user.role,
+                                  "patient"
                                 )
                               }
                             >
@@ -191,7 +190,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  "patient"
                                 )
                               }
                             >
@@ -203,6 +202,9 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() =>
+                              router.push(`/dashboard/admin/users/${user.id}?edit=1`)
+                            }
                           >
                             <EditIcon />
                           </Button>
@@ -237,11 +239,9 @@ const AdminDashboard = () => {
 
             <tbody>
               {professionals.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className={styles.empty}>
-                    Nenhum profissional encontrado.
-                  </td>
-                </tr>
+                <div className={styles.empty}>
+                  Nenhum profissional encontrado.
+                </div>
               ) : (
                 professionals.map((user) => (
                   <tr key={user.id}>
@@ -269,6 +269,7 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                           >
                             <EyeIcon />
                           </Button>
@@ -282,7 +283,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  "professional"
                                 )
                               }
                             >
@@ -299,7 +300,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "BLOCKED",
-                                  user.role,
+                                  "professional"
                                 )
                               }
                             >
@@ -316,7 +317,7 @@ const AdminDashboard = () => {
                                 handleStatusChange(
                                   user.id,
                                   "VERIFIED",
-                                  user.role,
+                                  "professional"
                                 )
                               }
                             >
@@ -328,6 +329,9 @@ const AdminDashboard = () => {
                         <Tooltip>
                           <Button
                             className={`${styles.actionBtn} ${styles.iconDefault}`}
+                            onClick={() =>
+                              router.push(`/dashboard/admin/users/${user.id}?edit=1`)
+                            }
                           >
                             <EditIcon />
                           </Button>

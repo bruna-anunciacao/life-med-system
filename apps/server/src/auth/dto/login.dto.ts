@@ -1,10 +1,12 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @IsEmail()
+  @IsEmail({}, { message: 'Email inválido' })
+  @IsNotEmpty({ message: 'Email é obrigatório' })
   email!: string;
 
-  @IsString()
-  @MinLength(6)
+  @IsString({ message: 'Senha deve ser texto' })
+  @IsNotEmpty({ message: 'Senha é obrigatória' })
+  @MinLength(8, { message: 'A senha deve ter no mínimo 8 caracteres' })
   password!: string;
 }

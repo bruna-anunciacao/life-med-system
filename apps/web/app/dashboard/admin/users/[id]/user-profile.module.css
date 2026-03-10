@@ -1,0 +1,297 @@
+.container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 2rem 4rem;
+  background-color: #f8fafc;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  color: #6b7280;
+  margin-top: 0.25rem;
+  font-size: 1rem;
+}
+
+.editButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #006fee;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background-color: #0056b3;
+}
+
+.cancelButton {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #006fee;
+  border: 1px solid #006fee;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background-color: #e6e6e6;
+  color: #0066da;
+}
+
+.saveButton {
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.5rem;
+  background-color: #006fee;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.saveButton:hover {
+  background-color: #0056b3;
+}
+
+.card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.avatarNoPhoto {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #e6f1ff;
+  border: 2px solid #006fee;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #006fee;
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cardEmail {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.cardRole {
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.6rem;
+  display: inline-block;
+  border-radius: 1rem;
+  background-color: rgba(0, 111, 238, 0.08);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #006fee;
+}
+
+.sectionLabel {
+  margin-top: 1.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.socialLinksTitle {
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Grid de campos */
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.textAreaGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1.25rem;
+}
+
+.statusGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 1.25rem;
+  max-width: 50%;
+}
+
+.fieldLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.fieldInput {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  font-size: 0.95rem;
+  color: #111827;
+  transition: border-color 0.2s ease;
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: #006fee;
+  box-shadow: 0 0 0 3px rgba(0, 111, 238, 0.1);
+}
+
+.fieldInput:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.fieldSelect {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  font-size: 0.95rem;
+  color: #111827;
+  transition: border-color 0.2s ease;
+  appearance: none;
+  cursor: pointer;
+}
+
+.fieldSelect:focus {
+  outline: none;
+  border-color: #006fee;
+  box-shadow: 0 0 0 3px rgba(0, 111, 238, 0.1);
+}
+
+.fieldSelect:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.textArea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  font-size: 0.95rem;
+  color: #111827;
+  resize: none;
+  font-family: inherit;
+}
+
+.textArea:focus {
+  outline: none;
+  border-color: #006fee;
+  box-shadow: 0 0 0 3px rgba(0, 111, 238, 0.1);
+}
+
+.textArea:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.fieldError {
+  font-size: 0.8rem;
+  color: #dc2626;
+  margin-top: 0.15rem;
+}
+
+.actionsRow {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.loadingContainer {
+  padding: 6rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Responsivo */
+@media (min-width: 768px) {
+  .formGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1.5rem 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .saveButton {
+    margin-top: 1rem;
+  }
+
+  .statusGroup {
+    max-width: 100%;
+  }
+
+}

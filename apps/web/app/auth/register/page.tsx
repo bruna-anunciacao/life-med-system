@@ -10,8 +10,6 @@ import {
   Input,
   InputGroup,
   Label,
-  Radio,
-  RadioGroup,
   TextField,
   Spinner,
 } from "@heroui/react";
@@ -23,19 +21,74 @@ import * as z from "zod";
 import { authService } from "../../../services/auth-service";
 import { toast } from "sonner";
 
+const passwordValidation = z
+  .string()
+  .min(8, "A senha deve ter no mínimo 8 caracteres")
+  .max(64, "A senha deve ter no máximo 64 caracteres")
+  .regex(/[a-z]/, "A senha deve conter pelo menos uma letra minúscula")
+  .regex(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula")
+  .regex(/\d/, "A senha deve conter pelo menos um número")
+  .regex(
+    /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
+    "A senha deve conter pelo menos um caractere especial",
+  );
+
+const nameValidation = z
+  .string()
+  .min(2, "Nome deve ter no mínimo 2 caracteres")
+  .max(100, "Nome deve ter no máximo 100 caracteres")
+  .regex(
+    /^[a-zA-ZÀ-ÿ\s'-]+$/,
+    "Nome deve conter apenas letras, espaços, hífens e apóstrofos",
+  );
+
+const phoneValidation = z
+  .string()
+  .min(1, "Celular é obrigatório")
+  .regex(
+    /^\+[1-9]\d{6,14}$/,
+    "Celular deve estar no formato internacional (ex: +5571999999999)",
+  );
+
+const cpfValidation = z
+  .string()
+  .min(1, "CPF é obrigatório")
+  .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "Formato de CPF inválido");
+
 const registerPatientValidation = z
   .object({
-    name: z.string().min(1, "Nome é obrigatório"),
-    email: z.email("Email inválido"),
-    phone: z.string().max(14, "Telefone inválido"),
+    name: nameValidation,
+    email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
+    cpf: cpfValidation,
+    phone: phoneValidation,
     dateOfBirth: z
       .union([z.string(), z.date(), z.null()])
-      .transform((val) => (val ? new Date(val as any) : null)),
-    gender: z.string(),
-    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
-    confirmPassword: z
-      .string()
-      .min(6, "A senha deve ter no mínimo 6 caracteres"),
+      .transform((val) => (val ? new Date(val) : null))
+      .refine((val) => val !== null, {
+        message: "Data de nascimento é obrigatória",
+      })
+      .refine(
+        (val) => {
+          if (!val) return false;
+          return val <= new Date();
+        },
+        { message: "Data de nascimento não pode ser no futuro" },
+      )
+      .refine(
+        (val) => {
+          if (!val) return false;
+          const ageDiff = Date.now() - val.getTime();
+          const ageDate = new Date(ageDiff);
+          const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+          return age <= 120;
+        },
+        { message: "Data de nascimento inválida" },
+      ),
+    gender: z.enum(["MALE", "FEMALE", "OTHER", "UNDISCLOSED"], {
+      error: () => ({ message: "Selecione um gênero válido" }),
+    }),
+    password: passwordValidation,
+    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -45,22 +98,35 @@ const registerPatientValidation = z
 
 const registerProfessionalValidation = z
   .object({
-    name: z.string().min(1, "Nome é obrigatório"),
-    email: z.email("Email inválido"),
-    password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
-    confirmPassword: z
-      .string()
-      .min(6, "A senha deve ter no mínimo 6 caracteres"),
+    name: nameValidation,
+    email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
+    password: passwordValidation,
+    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
     professionalLicense: z
       .string()
-      .min(1, "Registro profissional é obrigatório"),
-    specialty: z.string().min(1, "Especialidade é obrigatória"),
-    subspecialty: z.string().optional(),
+      .min(4, "Registro profissional deve ter no mínimo 4 caracteres")
+      .max(20, "Registro profissional deve ter no máximo 20 caracteres"),
+    specialty: z
+      .string()
+      .min(2, "Especialidade deve ter no mínimo 2 caracteres")
+      .max(100, "Especialidade deve ter no máximo 100 caracteres"),
+    subspecialty: z
+      .string()
+      .max(100, "Subespecialidade deve ter no máximo 100 caracteres")
+      .optional(),
     modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"], {
       error: () => ({ message: "Selecione uma modalidade válida" }),
     }),
-    bio: z.string().optional(),
+    socialLinks: z.object({
+      referenceLink: z.string().optional(),
+      instagram: z.string().optional(),
+      other: z.string().optional(),
+    }),
+    bio: z
+      .string()
+      .max(500, "Biografia deve ter no máximo 500 caracteres")
+      .optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas não coincidem",
@@ -82,6 +148,7 @@ const RegisterPage = () => {
     password: string;
     confirmPassword: string;
     role: string;
+    cpf: string;
     professionalLicense: string;
     phone: string;
     dateOfBirth: Date | null;
@@ -90,6 +157,11 @@ const RegisterPage = () => {
     modality: string;
     bio: string;
     specialty: string;
+    socialLinks?: {
+      referenceLink?: string;
+      instagram?: string;
+      other?: string;
+    };
   };
 
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -98,6 +170,7 @@ const RegisterPage = () => {
     password: "",
     confirmPassword: "",
     role: "PATIENT",
+    cpf: "",
     professionalLicense: "",
     phone: "",
     dateOfBirth: null,
@@ -106,6 +179,11 @@ const RegisterPage = () => {
     modality: "VIRTUAL",
     bio: "",
     specialty: "",
+    socialLinks: {
+      referenceLink: "",
+      instagram: "",
+      other: "",
+    },
   });
 
   const resetForm = (role: string) => {
@@ -115,6 +193,7 @@ const RegisterPage = () => {
       password: "",
       confirmPassword: "",
       role: role,
+      cpf: "",
       professionalLicense: "",
       phone: "",
       dateOfBirth: null,
@@ -123,11 +202,18 @@ const RegisterPage = () => {
       modality: "VIRTUAL",
       bio: "",
       specialty: "",
+      socialLinks: {
+        referenceLink: "",
+        instagram: "",
+        other: "",
+      },
     });
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -135,6 +221,47 @@ const RegisterPage = () => {
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+
+    value = value.replace(/\D/g, "");
+
+    if (value.length > 11) value = value.slice(0, 11);
+
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d)/, "$1.$2");
+    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
+    setFormData((prev) => ({ ...prev, cpf: value }));
+
+    if (errors.cpf) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.cpf;
+        return newErrors;
+      });
+    }
+  };
+
+  const handleSocialLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      socialLinks: {
+        ...(prev.socialLinks || {}),
+        [name]: value,
+      },
+    }));
+
+    if (errors.socialLinks) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.socialLinks;
         return newErrors;
       });
     }
@@ -202,6 +329,7 @@ const RegisterPage = () => {
           subspecialty: data.subspecialty,
           bio: data.bio,
           modality: data.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
+          socialLinks: data.socialLinks,
         });
       } else {
         const data = result.data as z.infer<typeof registerPatientValidation>;
@@ -211,6 +339,7 @@ const RegisterPage = () => {
           email: data.email,
           password: data.password,
           phone: data.phone,
+          cpf: data.cpf.replace(/\D/g, ""),
           dateOfBirth: data.dateOfBirth,
           gender: data.gender,
         });
@@ -272,7 +401,7 @@ const RegisterPage = () => {
           </div>
           <TextField isInvalid={!!errors.name} className="w-full">
             <Label htmlFor="name" className={styles.label}>
-              Nome Completo
+              Nome completo
             </Label>
             <Input
               id="name"
@@ -302,12 +431,25 @@ const RegisterPage = () => {
           </TextField>
           {formData.role === "PATIENT" && (
             <>
-              <TextField
-                isInvalid={!!errors.professionalLicense}
-                className="w-full"
-              >
+              <TextField isInvalid={!!errors.cpf} className="w-full">
+                <Label htmlFor="cpf" className={styles.label}>
+                  CPF
+                </Label>
+                <Input
+                  id="cpf"
+                  name="cpf"
+                  placeholder="000.000.000-00"
+                  type="text"
+                  className={styles.input}
+                  value={formData.cpf}
+                  onChange={handleCpfChange}
+                  maxLength={14}
+                />
+                <FieldError>{errors.cpf}</FieldError>
+              </TextField>
+              <TextField isInvalid={!!errors.phone} className="w-full">
                 <Label htmlFor="phone" className={styles.label}>
-                  Telefone
+                  Celular
                 </Label>
                 <PhoneInput
                   id="phone"
@@ -325,10 +467,7 @@ const RegisterPage = () => {
                 <FieldError>{errors.phone}</FieldError>
               </TextField>
               <div className={styles.multipleInputs}>
-                <TextField
-                  isInvalid={!!errors.professionalLicense}
-                  className="w-full"
-                >
+                <TextField isInvalid={!!errors.dateOfBirth} className="w-full">
                   <Label htmlFor="dateOfBirth" className={styles.label}>
                     Data de nascimento
                   </Label>
@@ -339,7 +478,7 @@ const RegisterPage = () => {
                     className={styles.input}
                     value={
                       formData.dateOfBirth
-                        ? new Date(formData.dateOfBirth as any)
+                        ? new Date(formData.dateOfBirth)
                             .toISOString()
                             .split("T")[0]
                         : ""
@@ -357,12 +496,7 @@ const RegisterPage = () => {
                     name="gender"
                     className={styles.input}
                     value={formData.gender || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        gender: e.target.value,
-                      }))
-                    }
+                    onChange={handleChange}
                   >
                     <option value="" disabled>
                       Selecione
@@ -370,6 +504,7 @@ const RegisterPage = () => {
                     <option value="MALE">Masculino</option>
                     <option value="FEMALE">Feminino</option>
                     <option value="OTHER">Outro</option>
+                    <option value="UNDISCLOSED">Prefiro não informar</option>
                   </select>
                   <FieldError>{errors.gender}</FieldError>
                 </TextField>
@@ -384,7 +519,7 @@ const RegisterPage = () => {
                   className="w-full"
                 >
                   <Label htmlFor="professionalLicense" className={styles.label}>
-                    Registro Profissional (CRM/CRP)
+                    Registro profissional (CRM/CRP)
                   </Label>
                   <Input
                     id="professionalLicense"
@@ -429,19 +564,14 @@ const RegisterPage = () => {
                 </TextField>
                 <TextField isInvalid={!!errors.modality} className="w-full">
                   <Label htmlFor="modality" className={styles.label}>
-                    Modalidade
+                    Modalidade de atendimento
                   </Label>
                   <select
                     id="modality"
                     name="modality"
                     className={styles.input}
                     value={formData.modality || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        modality: e.target.value,
-                      }))
-                    }
+                    onChange={handleChange}
                   >
                     <option value="" disabled>
                       Selecione
@@ -467,6 +597,21 @@ const RegisterPage = () => {
                   rows={4}
                 />
                 <FieldError>{errors.bio}</FieldError>
+              </TextField>
+              <TextField isInvalid={!!errors.socialLinks} className="w-full">
+                <Label htmlFor="referenceLink" className={styles.label}>
+                  Link de referência (Linkedin/Lattes)
+                </Label>
+                <Input
+                  id="referenceLink"
+                  placeholder="Ex: https://..."
+                  type="url"
+                  name="referenceLink"
+                  className={styles.input}
+                  value={formData.socialLinks?.referenceLink}
+                  onChange={handleSocialLinkChange}
+                />
+                <FieldError>{errors.socialLinks}</FieldError>
               </TextField>
             </div>
           )}
@@ -541,6 +686,13 @@ const RegisterPage = () => {
             type="submit"
             className={styles.button}
             isDisabled={isLoading}
+            onPress={(e) => {
+              // HeroUI Button requires explicit form submission
+              const form = e.target.closest("form");
+              if (form) {
+                form.requestSubmit();
+              }
+            }}
           >
             {isLoading ? <Spinner /> : "Cadastrar"}
           </Button>

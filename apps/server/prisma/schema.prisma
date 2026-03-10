@@ -90,6 +90,7 @@ model PatientProfile {
   dateOfBirth DateTime? @map("date_of_birth")
   gender      String?
   address     String?
+  cpf         String @unique
   
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

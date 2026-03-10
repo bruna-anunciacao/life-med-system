@@ -1,0 +1,370 @@
+.container {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 2rem 4rem;
+
+  background-color: #f8fafc;
+}
+
+.header {
+  margin-bottom: 2.5rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.statsGrid {
+  margin-bottom: 2rem;
+
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+.statCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+
+  transition: transform 0.2s ease;
+}
+
+.statCardBody {
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.calendarButton {
+  padding: 0.5rem 1rem;
+
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  border-radius: 0.5rem;
+
+  background-color: #006fee;
+
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+}
+
+.statTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.statValue {
+  margin-top: 0.25rem;
+
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+}
+
+.iconWrapper.primary {
+  background-color: rgba(0, 111, 238, 0.1);
+
+  color: #006fee;
+}
+.iconWrapper.warning {
+  background-color: rgba(245, 165, 36, 0.1);
+
+  color: #f5a524;
+}
+.iconWrapper.success {
+  background-color: rgba(23, 201, 100, 0.1);
+
+  color: #17c964;
+}
+
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+.sectionHeader {
+  margin-bottom: 1rem;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.nextApptCard {
+  margin-bottom: 2rem;
+
+  border-left: 4px solid #006fee;
+}
+
+.nextApptBody {
+  padding: 1.5rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.nextApptName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.modalityChip {
+  padding: 0.25rem 0.5rem;
+
+  border-radius: 0.25rem;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.actions {
+  width: 100%;
+
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actionButton {
+  padding: 0.5rem 1rem;
+
+  border-radius: 0.5rem;
+
+  background-color: #006fee;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: white;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+.pulseDot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background-color: #17c964;
+
+  animation: pulse 2s infinite;
+}
+
+.scheduleCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.scheduleRow {
+  padding: 1rem;
+
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  border-bottom: 1px solid #f3f4f6;
+
+  transition: background-color 0.2s;
+  &:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.scheduleRow:last-child {
+  border-bottom: none;
+}
+
+.scheduleRow:hover {
+  background-color: #f9fafb;
+}
+
+.statusChip {
+  padding: 0.25rem 0.5rem;
+
+  border-radius: 3rem;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.timeSlot {
+  width: 60px;
+
+  font-family: monospace;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: center;
+}
+
+.requestCardBody {
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+
+  border-radius: 0.5rem;
+}
+
+.requestActions {
+    width: 100%;
+    
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.approveButton {
+  padding: 0.5rem 1rem;
+
+  border-radius: 0.5rem;
+
+  background-color: #10b981;
+
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: white;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+  &:hover {
+    background-color: #059669;
+  }
+}
+.rejectButton {
+  padding: 0.5rem 1rem;
+
+  border-radius: 0.5rem;
+
+  background-color: #ef4444;
+
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: white;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+  &:hover {
+    background-color: #b92c28;
+  }
+}
+
+.tipCard {
+  margin-top: 0.5rem;
+  padding: 1rem;
+
+  border: 1px solid #cce7ff;
+  border-radius: 0.5rem;
+
+  background-color: #f0f9ff;
+}
+.tipTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.tipText {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+@media (min-width: 1024px) {
+  .mainContent {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .actions {
+    width: auto;
+  }
+
+  .nextApptBody {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(23, 201, 100, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(23, 201, 100, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(23, 201, 100, 0);
+  }
+}
