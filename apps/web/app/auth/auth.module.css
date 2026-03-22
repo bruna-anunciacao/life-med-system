@@ -1,18 +1,18 @@
 .container {
-  margin-top: 100px;
+  width: 100%;
   padding: 2rem 1rem;
 
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 
   background-color: #f8fafc;
 }
 
 .card {
-  width: 600px;
+  width: 100%;
+  max-width: 600px;
   height: auto;
-  min-height: 50vh;
   padding: 2.5rem;
 
   border-radius: 1rem;
@@ -310,4 +310,36 @@
 }
 .noToken {
   color: #ff0000;
+}
+
+/* ── Responsividade ──────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  .container {
+    padding: 1rem 0.75rem;
+  }
+
+  .card {
+    padding: 1.5rem 1.25rem;
+    border-radius: 0.75rem;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .multipleInputs {
+    grid-template-columns: 1fr;
+  }
+
+  .radioWrapper {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .card {
+    padding: 1.25rem 1rem;
+  }
 }
