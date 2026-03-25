@@ -64,6 +64,22 @@ export const usersService = {
     }
   },
 
+  async updateProfile(data: UpdateProfileDto) {
+    try {
+      const response = await api.patch("/users/me", data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+        throw new Error(message || "Erro ao atualizar perfil.");
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
   async getAllProfessionals() {
     try {
       const response = await api.get("/users/professionals");
@@ -77,29 +93,6 @@ export const usersService = {
         }
 
         throw new Error(message || "Erro ao resgatar os profissionais.");
-      }
-
-      throw new Error("Erro de conexão com o servidor.");
-    }
-  },
-
-  async updateProfile(data: FormData | UpdateProfileDto) {
-    try {
-      const response = await api.patch("/users/me", data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      return response.data;
-    } catch (error) {
-      if (error instanceof AxiosError && error.response) {
-        const message = error.response.data.message;
-
-        if (Array.isArray(message)) {
-          throw new Error(message.join(", "));
-        }
-
-        throw new Error(message || "Erro ao completar o cadastro.");
       }
 
       throw new Error("Erro de conexão com o servidor.");

@@ -164,26 +164,17 @@ export default function PerfilPage() {
 
     try {
       setIsSaving(true);
-      const data = new FormData();
-      data.append("name", formData.name);
-      data.append("email", formData.email);
-      data.append("professionalLicense", formData.professionalLicense);
-      data.append("specialty", formData.specialty);
-      data.append("subspecialty", formData.subspecialty);
-      data.append("modality", formData.modality);
-      data.append("bio", formData.bio || "");
-      data.append("socialLinks[referenceLink]", formData.socialLinks.referenceLink || "");
-      data.append(
-        "socialLinks[instagram]",
-        formData.socialLinks.instagram || "",
-      );
-      data.append("socialLinks[other]", formData.socialLinks.other || "");
+      const payload = {
+        ...formData,
+        modality: formData.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
+        socialLinks: {
+          linkedin: formData.socialLinks.referenceLink,
+          instagram: formData.socialLinks.instagram,
+          other: formData.socialLinks.other,
+        },
+      };
 
-      if (selectedFile) {
-        data.append("photo", selectedFile);
-      }
-
-      await usersService.updateProfile(data);
+      await usersService.updateProfile(payload);
 
       toast.success("Perfil atualizado com sucesso!");
       setIsEditing(false);

@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import styles from "../auth.module.css";
 import {
@@ -12,94 +11,17 @@ import {
   Button,
   Spinner,
 } from "@heroui/react";
-import { useRouter } from "next/navigation";
 import { Eye, EyeSlash } from "@gravity-ui/icons";
-import * as z from "zod";
-import { authService } from "../../../services/auth-service";
-import { toast } from "sonner";
-
-const formValidation = z.object({
-  email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
-  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
-});
+import { useLoginForm } from "./useLoginForm";
 
 const LoginPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const router = useRouter();
+  const { form, isLoading, isPasswordVisible, setIsPasswordVisible, onSubmit } = useLoginForm();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const resetForm = () => {
-    setFormData({
-      email: "",
-      password: "",
-    });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setIsLoading(true);
-    const result = formValidation.safeParse(formData);
-
-    if (!result.success) {
-      const formattedErrors: Record<string, string> = {};
-
-      result.error.issues.forEach((issue) => {
-        const fieldName = issue.path[0];
-        if (fieldName) {
-          formattedErrors[String(fieldName)] = issue.message;
-        }
-      });
-      setErrors(formattedErrors);
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const response = await authService.login({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      toast.success(`Bem-vindo(a), ${response.user.name}!`);
-      resetForm();
-      switch (response.user.role) {
-        case "PROFESSIONAL":
-          router.push("/dashboard/professional");
-          break;
-        case "PATIENT":
-          router.push("/dashboard/patient");
-          break;
-        default:
-          router.push("/dashboard/admin");
-          break;
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Erro desconhecido.");
-      }
-      setIsLoading(false);
-    }
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = form;
 
   return (
     <div className={styles.container}>
@@ -108,7 +30,7 @@ const LoginPage = () => {
           <h1 className={styles.title}>Bem-vindo de volta</h1>
           <p className={styles.subtitle}>Acesse sua conta para continuar</p>
         </div>
-        <Form onSubmit={handleSubmit} className={styles.form}>
+        <Form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
           <TextField isInvalid={!!errors.email} className="w-full">
             <Label htmlFor="email" className={styles.label}>
               E-mail
@@ -117,23 +39,19 @@ const LoginPage = () => {
               id="email"
               placeholder="exemplo@email.com"
               type="email"
-              name="email"
               className={styles.input}
-              value={formData.email}
-              onChange={handleChange}
+              {...register("email")}
             />
-            <FieldError>{errors.email}</FieldError>
+            <FieldError>{errors.email?.message as string}</FieldError>
           </TextField>
 
           <TextField isInvalid={!!errors.password} className="w-full">
             <Label className={styles.label}>Senha</Label>
             <InputGroup fullWidth className={styles.input}>
               <InputGroup.Input
-                name="password"
                 placeholder="Insira a senha"
                 type={isPasswordVisible ? "text" : "password"}
-                value={formData.password}
-                onChange={handleChange}
+                {...register("password")}
               />
               <InputGroup.Suffix className="pr-0">
                 <Button
@@ -153,7 +71,7 @@ const LoginPage = () => {
                 </Button>
               </InputGroup.Suffix>
             </InputGroup>
-            <FieldError>{errors.password}</FieldError>
+            <FieldError>{errors.password?.message as string}</FieldError>
           </TextField>
 
           <Link href="/auth/forgot-password" className={styles.forgotLink}>
