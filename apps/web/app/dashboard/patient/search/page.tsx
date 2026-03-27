@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Button, Chip, Spinner } from "@heroui/react";
-import { Card, CardBody } from "@heroui/card";
+import { useEffect, useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import { usersService } from "../../../../services/users-service";
 import { toast } from "sonner";
-import { SearchIcon, CalendarIcon } from "../../../utils/icons";
 import styles from "./search.module.css";
+import { SearchBar } from "./components/SearchBar";
+import { DoctorCard } from "./components/DoctorCard";
+import { EmptySearch } from "./components/EmptySearch";
 
 type Professional = {
   id: string;
@@ -22,18 +23,6 @@ type Professional = {
   };
 };
 
-const SPECIALTIES = [
-  "Todas",
-  "Cardiologia",
-  "Dermatologia",
-  "Clínico Geral",
-  "Nutrição",
-  "Ortopedia",
-  "Pediatria",
-  "Psicologia",
-  "Psiquiatria",
-];
-
 const SearchDoctorsPage = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
@@ -41,60 +30,34 @@ const SearchDoctorsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadProfessionals();
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const data = await usersService.getAllProfessionals();
+        setProfessionals(data);
+      } catch {
+        toast.error("Erro ao carregar profissionais.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
   }, []);
 
-  const loadProfessionals = async () => {
-    try {
-      setIsLoading(true);
-      const data = await usersService.getAllProfessionals();
-      setProfessionals(data);
-    } catch {
-      toast.error("Erro ao carregar profissionais.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const filtered = professionals
-    .filter((prof) => prof.status !== "PENDING" && prof.status !== "BLOCKED")
-    .filter((prof) => {
+    .filter((p) => p.status !== "PENDING" && p.status !== "BLOCKED")
+    .filter((p) => {
       const term = search.toLowerCase();
       const matchesSearch =
-        prof.name.toLowerCase().includes(term) ||
-        (prof.professionalProfile?.specialty || "")
-          .toLowerCase()
-          .includes(term);
-
+        p.name.toLowerCase().includes(term) ||
+        (p.professionalProfile?.specialty || "").toLowerCase().includes(term);
       const matchesSpecialty =
         selectedSpecialty === "Todas" ||
-        (prof.professionalProfile?.specialty || "")
+        (p.professionalProfile?.specialty || "")
           .toLowerCase()
           .includes(selectedSpecialty.toLowerCase());
-
       return matchesSearch && matchesSpecialty;
     });
-
-  const getModalityLabel = (modality?: string) => {
-    switch (modality) {
-      case "VIRTUAL":
-        return "Online";
-      case "HOME_VISIT":
-        return "Domiciliar";
-      case "CLINIC":
-        return "Presencial";
-      default:
-        return "Online";
-    }
-  };
-
-  const renderAvatar = (name: string) => {
-    return (
-      <div className={styles.avatarNoPhoto}>
-        {name.charAt(0).toUpperCase()}
-      </div>
-    );
-  };
 
   return (
     <section className={styles.container}>
@@ -102,113 +65,28 @@ const SearchDoctorsPage = () => {
         <div>
           <h1 className={styles.title}>Buscar Médicos</h1>
           <p className={styles.subtitle}>
-            Encontre profissionais de saúde voluntários e agende sua consulta
-            gratuitamente.
+            Encontre profissionais de saúde voluntários e agende sua consulta gratuitamente.
           </p>
         </div>
       </div>
 
-      <div className={styles.searchArea}>
-        <div className={styles.searchBar}>
-          <span className={styles.searchIcon}>
-            <SearchIcon />
-          </span>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Buscar por nome ou especialidade..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <div className={styles.filtersRow}>
-          {SPECIALTIES.map((spec) => (
-            <button
-              key={spec}
-              className={
-                selectedSpecialty === spec
-                  ? styles.filterChipActive
-                  : styles.filterChip
-              }
-              onClick={() => setSelectedSpecialty(spec)}
-            >
-              {spec}
-            </button>
-          ))}
-        </div>
-
-        {!isLoading && (
-          <p className={styles.resultsInfo}>
-            {filtered.length}{" "}
-            {filtered.length === 1
-              ? "profissional encontrado"
-              : "profissionais encontrados"}
-          </p>
-        )}
-      </div>
+      <SearchBar
+        search={search}
+        selectedSpecialty={selectedSpecialty}
+        resultsCount={filtered.length}
+        isLoading={isLoading}
+        onSearchChange={setSearch}
+        onSpecialtyChange={setSelectedSpecialty}
+      />
 
       {isLoading ? (
-        <div className={styles.loadingContainer}>
-          <Spinner size="lg" />
-        </div>
+        <div className={styles.loadingContainer}><Spinner size="lg" /></div>
       ) : filtered.length === 0 ? (
-        <div className={styles.emptyState}>
-          <SearchIcon />
-          <h3 className={styles.emptyTitle}>
-            Nenhum profissional encontrado
-          </h3>
-          <p className={styles.emptyText}>
-            Tente alterar os filtros ou buscar por outro termo.
-          </p>
-        </div>
+        <EmptySearch />
       ) : (
         <div className={styles.grid}>
           {filtered.map((prof) => (
-            <Card key={prof.id} className={styles.doctorCard}>
-              <CardBody className={styles.doctorCardBody}>
-                {renderAvatar(prof.name)}
-
-                <div className={styles.doctorInfo}>
-                  <h3 className={styles.doctorName}>{prof.name}</h3>
-                  <p className={styles.doctorSpecialty}>
-                    {prof.professionalProfile?.specialty || "Especialidade não informada"}
-                  </p>
-                  {prof.professionalProfile?.professionalLicense && (
-                    <p className={styles.doctorLicense}>
-                      CRM: {prof.professionalProfile.professionalLicense}
-                    </p>
-                  )}
-
-                  <div className={styles.doctorMeta}>
-                    <Chip
-                      size="sm"
-                      variant="soft"
-                      color="accent"
-                      className={styles.modalityChip}
-                    >
-                      {getModalityLabel(prof.professionalProfile?.modality)}
-                    </Chip>
-                    {prof.status === "VERIFIED" && (
-                      <>
-                        <span className={styles.statusDot}></span>
-                        <span className={styles.statusText}>Verificado</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.cardActions}>
-                  <Button size="sm" className={styles.scheduleButton}>
-                    <CalendarIcon />
-                    Agendar
-                  </Button>
-                  <Button size="sm" className={styles.profileButton}>
-                    Ver Perfil
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
+            <DoctorCard key={prof.id} professional={prof} />
           ))}
         </div>
       )}
