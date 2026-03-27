@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { usersService } from "../../../../../services/users-service";
+import { usersService, type UpdateProfileDto } from "../../../../../services/users-service";
 import {
   patientFormSchema,
   professionalFormSchema,
@@ -110,7 +110,7 @@ export function useAdminUserForm() {
       await usersService.updateUser(user.id, {
         name: data.name,
         email: data.email,
-        status: data.status,
+        status: data.status as UpdateProfileDto["status"],
         phone: data.phone || undefined,
         dateOfBirth: data.dateOfBirth || undefined,
         gender: data.gender || undefined,
@@ -134,11 +134,11 @@ export function useAdminUserForm() {
       await usersService.updateUser(user.id, {
         name: data.name,
         email: data.email,
-        status: data.status,
+        status: data.status as UpdateProfileDto["status"],
         professionalLicense: data.professionalLicense || undefined,
         specialty: data.specialty || undefined,
         subspecialty: data.subspecialty || undefined,
-        modality: data.modality || undefined,
+        modality: (data.modality || undefined) as UpdateProfileDto["modality"],
         bio: data.bio || undefined,
         socialLinks: {
           linkedin: data.linkedin || undefined,

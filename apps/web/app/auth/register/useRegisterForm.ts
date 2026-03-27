@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -41,7 +41,8 @@ export function useRegisterForm() {
         data.role === "PROFESSIONAL"
           ? registerProfessionalValidation
           : registerPatientValidation;
-      return zodResolver(schema)(data, context, options);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return zodResolver(schema)(data as any, context, options as any) as any;
     },
     defaultValues: INITIAL_FORM,
     mode: "onSubmit",
@@ -53,7 +54,7 @@ export function useRegisterForm() {
     form.reset({ ...INITIAL_FORM, role: value });
   };
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setIsLoading(true);
     try {
       if (data.role === "PROFESSIONAL") {
