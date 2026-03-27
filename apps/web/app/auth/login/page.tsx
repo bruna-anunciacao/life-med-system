@@ -1,17 +1,11 @@
 "use client";
 import Link from "next/link";
 import styles from "../auth.module.css";
-import {
-  FieldError,
-  Input,
-  Label,
-  TextField,
-  Form,
-  InputGroup,
-  Button,
-  Spinner,
-} from "@heroui/react";
-import { Eye, EyeSlash } from "@gravity-ui/icons";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { Eye, EyeOff } from "lucide-react";
 import { useLoginForm } from "./useLoginForm";
 
 const LoginPage = () => {
@@ -30,8 +24,8 @@ const LoginPage = () => {
           <h1 className={styles.title}>Bem-vindo de volta</h1>
           <p className={styles.subtitle}>Acesse sua conta para continuar</p>
         </div>
-        <Form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-          <TextField isInvalid={!!errors.email} className="w-full">
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+          <div className="w-full flex flex-col gap-1">
             <Label htmlFor="email" className={styles.label}>
               E-mail
             </Label>
@@ -42,37 +36,39 @@ const LoginPage = () => {
               className={styles.input}
               {...register("email")}
             />
-            <FieldError>{errors.email?.message as string}</FieldError>
-          </TextField>
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+          </div>
 
-          <TextField isInvalid={!!errors.password} className="w-full">
+          <div className="w-full flex flex-col gap-1">
             <Label className={styles.label}>Senha</Label>
-            <InputGroup fullWidth className={styles.input}>
-              <InputGroup.Input
+            <div className="relative">
+              <Input
                 placeholder="Insira a senha"
                 type={isPasswordVisible ? "text" : "password"}
+                className={styles.input}
                 {...register("password")}
               />
-              <InputGroup.Suffix className="pr-0">
-                <Button
-                  isIconOnly
-                  aria-label={
-                    isPasswordVisible ? "Esconder senha" : "Mostrar senha"
-                  }
-                  size="sm"
-                  variant="ghost"
-                  onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                >
-                  {isPasswordVisible ? (
-                    <Eye className="size-4" />
-                  ) : (
-                    <EyeSlash className="size-4" />
-                  )}
-                </Button>
-              </InputGroup.Suffix>
-            </InputGroup>
-            <FieldError>{errors.password?.message as string}</FieldError>
-          </TextField>
+              <Button
+                type="button"
+                aria-label={isPasswordVisible ? "Esconder senha" : "Mostrar senha"}
+                size="sm"
+                variant="ghost"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+              >
+                {isPasswordVisible ? (
+                  <Eye className="size-4" />
+                ) : (
+                  <EyeOff className="size-4" />
+                )}
+              </Button>
+            </div>
+            {errors.password && (
+              <p className="text-sm text-destructive">{errors.password.message}</p>
+            )}
+          </div>
 
           <Link href="/auth/forgot-password" className={styles.forgotLink}>
             Esqueceu a senha?
@@ -81,15 +77,11 @@ const LoginPage = () => {
           <Button
             type="submit"
             className={styles.button}
-            isDisabled={isLoading}
-            onPress={(e) => {
-              const form = e.target.closest('form');
-              if (form) form.requestSubmit();
-            }}
+            disabled={isLoading}
           >
-            {isLoading ? <Spinner /> : "Entrar"}
+            {isLoading ? <Spinner size="sm" /> : "Entrar"}
           </Button>
-        </Form>
+        </form>
 
         <div className={styles.footer}>
           Não tem uma conta?
