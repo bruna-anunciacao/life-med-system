@@ -44,6 +44,12 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
+    if (!user.emailVerified) {
+      throw new UnauthorizedException(
+        'Sua conta ainda não foi aprovada. Aguarde a verificação do administrador.',
+      );
+    }
+
     const payload = {
       sub: user.id,
       role: user.role,
@@ -61,6 +67,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         status: user.status,
+        emailVerified: user.emailVerified,
       },
     };
   }
@@ -96,6 +103,25 @@ export class AuthService {
         patientProfile: true,
       },
     });
+    this.notifyAdminsOfNewUser({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }).catch((err) => {
+      console.error(
+        `Falha ao notificar admins sobre novo usuário ${user.email}:`,
+        err.message,
+      );
+    });
+
+    this.mailService
+      .sendAccountPendingEmail({ name: user.name, email: user.email })
+      .catch((err) => {
+        console.error(
+          `Falha ao enviar email de conta pendente para ${user.email}:`,
+          err.message,
+        );
+      });
 
     return {
       id: user.id,
@@ -139,6 +165,25 @@ export class AuthService {
         professionalProfile: true,
       },
     });
+    this.notifyAdminsOfNewUser({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }).catch((err) => {
+      console.error(
+        `Falha ao notificar admins sobre novo usuário ${user.email}:`,
+        err.message,
+      );
+    });
+
+    this.mailService
+      .sendAccountPendingEmail({ name: user.name, email: user.email })
+      .catch((err) => {
+        console.error(
+          `Falha ao enviar email de conta pendente para ${user.email}:`,
+          err.message,
+        );
+      });
 
     return {
       id: user.id,
@@ -238,5 +283,29 @@ export class AuthService {
     ]);
 
     return { message: 'Senha atualizada com sucesso' };
+  }
+  async notifyAdminsOfNewUser(newUser: {
+    name: string;
+    email: string;
+    role: string;
+  }) {
+    const admins = await this.prisma.user.findMany({
+      where: { role: UserRoleEnum.ADMIN },
+      select: { name: true, email: true },
+    });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const approveUrl = `${frontendUrl}/dashboard/admin`;
+
+    for (const admin of admins) {
+      this.mailService
+        .sendNewUserNotificationEmail(admin, newUser, approveUrl)
+        .catch((err) => {
+          console.error(
+            `Falha ao notificar admin ${admin.email}:`,
+            err.message,
+          );
+        });
+    }
   }
 }

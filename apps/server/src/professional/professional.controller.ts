@@ -11,19 +11,20 @@ import { AuthGuard } from '@nestjs/passport';
 import { ProfessionalService } from './professional.service';
 import { UpdateProfessionalSettingsDto } from './dto/update-setting.dto';
 import { ProfessionalRoleGuard } from './guards/professional-role.guard';
+import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
 @Controller('professional')
 export class ProfessionalController {
   constructor(private readonly professionalService: ProfessionalService) {}
 
   @Get('settings')
-  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard)
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
   getSettings(@Req() req) {
     return this.professionalService.getSettings(req.user.id as string);
   }
 
   @Get('schedule')
-  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard)
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
   getDailySchedule(@Req() req, @Query('date') date: string) {
     return this.professionalService.getDailySchedule(
       req.user.id as string,
@@ -32,7 +33,7 @@ export class ProfessionalController {
   }
 
   @Patch('settings')
-  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard)
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
   updateSettings(@Req() req, @Body() dto: UpdateProfessionalSettingsDto) {
     return this.professionalService.updateSettings(req.user.id as string, dto);
   }
