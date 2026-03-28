@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
@@ -45,7 +47,7 @@ const DashboardHeader = ({ role }: { role: string }) => {
         <Image src={Logo} alt="Life Med Logo" height={100} />
       </div>
 
-      <nav className="ml-8 flex flex-1 gap-3">
+      <nav className="ml-8 hidden flex-1 gap-3 md:flex">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -64,7 +66,7 @@ const DashboardHeader = ({ role }: { role: string }) => {
         })}
       </nav>
 
-      <div className="flex items-center gap-3">
+      <div className={`ml-auto flex items-center gap-3 ${role !== "ADMIN" ? "hidden md:flex" : ""}`}>
         <Button variant="destructive" onClick={handleLogout} className="px-4">
           <LogOut className="size-4" />
           Sair
