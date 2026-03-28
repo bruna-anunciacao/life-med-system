@@ -9,7 +9,6 @@ import { Appointment, TabKey } from "./appointments.types";
 import { AppointmentTabs } from "./components/AppointmentTabs";
 import { AppointmentCard } from "./components/AppointmentCard";
 import { EmptyAppointments } from "./components/EmptyAppointments";
-import styles from "./appointments.module.css";
 
 const MOCK_APPOINTMENTS: Appointment[] = [
   { id: "1", doctorName: "Dra. Ana Paula", specialty: "Cardiologista", dateTime: "2026-02-24T14:00:00.000Z", status: "CONFIRMED", modality: "VIRTUAL" },
@@ -47,13 +46,13 @@ const AppointmentsPage = () => {
   });
 
   return (
-    <section className={styles.container}>
-      <div className={styles.header}>
+    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className={styles.title}>Minhas Consultas</h1>
-          <p className={styles.subtitle}>Acompanhe e gerencie suas consultas agendadas.</p>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Minhas Consultas</h1>
+          <p className="mt-1 text-base text-gray-500">Acompanhe e gerencie suas consultas agendadas.</p>
         </div>
-        <Button className={styles.searchButton} onClick={() => router.push("/dashboard/patient/search")}>
+        <Button className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]" onClick={() => router.push("/dashboard/patient/search")}>
           <SearchIcon />
           Nova Consulta
         </Button>
@@ -71,7 +70,7 @@ const AppointmentsPage = () => {
           onSearch={() => router.push("/dashboard/patient/search")}
         />
       ) : (
-        <div className={styles.list}>
+        <div className="flex flex-col gap-4">
           {filtered.map((appt) => (
             <AppointmentCard
               key={appt.id}

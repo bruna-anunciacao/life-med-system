@@ -1,5 +1,3 @@
-import styles from "./appointments.module.css";
-
 export const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   return {
@@ -45,10 +43,10 @@ export const getModalityLabel = (modality: string) => {
 
 export const getCardStatusClass = (status: string) => {
   switch (status) {
-    case "CONFIRMED": return styles.confirmed;
-    case "PENDING": return styles.pending;
-    case "COMPLETED": return styles.completed;
-    case "CANCELLED": return styles.cancelled;
+    case "CONFIRMED": return "border-l-4 border-l-[#006fee]";
+    case "PENDING": return "border-l-4 border-l-[#f5a524]";
+    case "COMPLETED": return "border-l-4 border-l-[#17c964]";
+    case "CANCELLED": return "border-l-4 border-l-[#f31260]";
     default: return "";
   }
 };
