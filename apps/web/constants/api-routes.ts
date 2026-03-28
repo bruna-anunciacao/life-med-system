@@ -10,7 +10,8 @@ export const API_ROUTES = {
   USERS: {
     ME: '/users/me',
     PATIENTS: '/users/patients',
-    // Adicione outras rotas conforme necessário
+    PROFESSIONALS: '/users/professionals',
+    VERIFY: (id: string) => `/users/${id}/verify`,
   },
   PROFESSIONALS: {
     SETTINGS: '/professional/settings',

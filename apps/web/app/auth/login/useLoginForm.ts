@@ -42,11 +42,16 @@ export function useLoginForm() {
           }
         },
         onError: (error: any) => {
-          if (error instanceof Error) {
-            toast.error(error.message);
-          } else {
-            toast.error("Erro desconhecido.");
+          const message =
+            error instanceof Error ? error.message : "Erro desconhecido.";
+
+          if (message.includes("ainda não foi aprovada")) {
+            toast.info(message);
+            router.push("/auth/pending-approval");
+            return;
           }
+
+          toast.error(message);
         },
         onSettled: () => {
           setIsLoading(false);
