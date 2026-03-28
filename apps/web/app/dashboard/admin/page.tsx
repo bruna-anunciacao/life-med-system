@@ -5,7 +5,6 @@ import { usersService } from "../../../services/users-service";
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
-import styles from "./admin-dashboard.module.css";
 import { UsersTable } from "./components/UsersTable";
 
 const AdminDashboard = () => {
@@ -65,10 +64,10 @@ const AdminDashboard = () => {
   }
 
   return (
-    <section className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Painel Administrativo</h1>
-        <p className={styles.subtitle}>Gerencie permissões e visualize usuários do sistema.</p>
+    <section className="min-h-screen mx-auto px-8 py-8 flex flex-col items-center bg-gray-100">
+      <div className="mb-10">
+        <h1 className="text-4xl text-center font-bold tracking-tight text-gray-900">Painel Administrativo</h1>
+        <p className="mt-2 text-base text-gray-500">Gerencie permissões e visualize usuários do sistema.</p>
       </div>
 
       <UsersTable

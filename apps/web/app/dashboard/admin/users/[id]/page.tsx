@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import styles from "./user-profile.module.css";
 import { UserProfileHeader } from "./components/UserProfileHeader";
 import { PatientProfileForm } from "./components/PatientProfileForm";
 import { ProfessionalProfileForm } from "./components/ProfessionalProfileForm";
@@ -26,17 +25,21 @@ const AdminUserProfilePage = () => {
     onSubmitProfessional,
   } = useAdminUserForm();
 
-  if (isLoading) return <div className={styles.loadingContainer}><Spinner size="lg" /></div>;
+  if (isLoading) return (
+    <div className="py-24 px-8 flex justify-center items-center">
+      <Spinner size="lg" />
+    </div>
+  );
 
   if (!user) {
     return (
-      <section className={styles.container}>
-        <div className={styles.header}>
+      <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+        <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
           <div>
-            <h1 className={styles.title}>Perfil do Usuário</h1>
-            <p className={styles.subtitle}>{error ?? "Usuário não encontrado."}</p>
+            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
+            <p className="mt-1 text-base text-gray-500">{error ?? "Usuário não encontrado."}</p>
           </div>
-          <Button className={styles.editButton} onClick={() => router.back()}>Voltar</Button>
+          <Button className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]" onClick={() => router.back()}>Voltar</Button>
         </div>
       </section>
     );
@@ -49,16 +52,16 @@ const AdminUserProfilePage = () => {
     : null;
 
   return (
-    <section className={styles.container}>
-      <div className={styles.header}>
+    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className={styles.title}>Perfil do Usuário</h1>
-          <p className={styles.subtitle}>Visualização e edição de dados cadastrais.</p>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
+          <p className="mt-1 text-base text-gray-500">Visualização e edição de dados cadastrais.</p>
         </div>
-        <div className={styles.headerActions}>
-          <Button className={styles.editButton} onClick={() => router.back()}>Voltar</Button>
+        <div className="flex items-center gap-3">
+          <Button className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]" onClick={() => router.back()}>Voltar</Button>
           <Button
-            className={styles.editButton}
+            className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
             onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
             disabled={isSaving}
           >
@@ -67,7 +70,7 @@ const AdminUserProfilePage = () => {
         </div>
       </div>
 
-      <Card className={styles.card}>
+      <Card className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-12 space-y-8">
           <UserProfileHeader
             name={user.name}
@@ -102,9 +105,9 @@ const AdminUserProfilePage = () => {
           {isEditing && (
             <>
               <Separator />
-              <div className={styles.actionsRow}>
+              <div className="mt-6 flex justify-end">
                 <Button
-                  className={styles.editButton}
+                  className="px-6 py-2.5 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
                   type="submit"
                   form={user.role === "PATIENT" ? "admin-patient-form" : "admin-professional-form"}
                   disabled={isSaving}
