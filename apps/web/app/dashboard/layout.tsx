@@ -32,7 +32,7 @@ const DashboardLayout = ({
   return (
     <div>
       <DashboardHeader role={role} />
-      <main className="ml-64 flex-1 p-8 overflow-y-auto h-full">
+      <main>
         {children}
       </main>
     </div>
