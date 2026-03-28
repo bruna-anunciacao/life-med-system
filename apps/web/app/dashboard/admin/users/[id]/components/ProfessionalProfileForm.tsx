@@ -1,7 +1,6 @@
 import { type UseFormRegister, type FieldErrors } from "react-hook-form";
 import { Separator } from "@/components/ui/separator";
 import type { ProfessionalFormSchema } from "../admin-user.validation";
-import styles from "../user-profile.module.css";
 
 type ProfessionalProfileFormProps = {
   register: UseFormRegister<ProfessionalFormSchema>;
@@ -12,33 +11,33 @@ type ProfessionalProfileFormProps = {
 export function ProfessionalProfileForm({ register, errors, isEditing }: ProfessionalProfileFormProps) {
   return (
     <>
-      <h3 className={styles.sectionLabel}>Informações Profissionais</h3>
-      <div className={styles.formGrid}>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Nome Completo</label>
-          <input className={styles.fieldInput} disabled={!isEditing} {...register("name")} />
-          {errors.name && <span className={styles.fieldError}>{errors.name.message}</span>}
+      <h3 className="mt-6 mb-1 text-base font-semibold text-gray-700">Informações Profissionais</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Nome Completo</label>
+          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("name")} />
+          {errors.name && <span className="text-xs text-red-600 mt-0.5">{errors.name.message}</span>}
         </div>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Email</label>
-          <input className={styles.fieldInput} disabled={!isEditing} {...register("email")} />
-          {errors.email && <span className={styles.fieldError}>{errors.email.message}</span>}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Email</label>
+          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("email")} />
+          {errors.email && <span className="text-xs text-red-600 mt-0.5">{errors.email.message}</span>}
         </div>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>CRM</label>
-          <input className={styles.fieldInput} disabled={!isEditing} {...register("professionalLicense")} />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">CRM</label>
+          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("professionalLicense")} />
         </div>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Especialidade</label>
-          <input className={styles.fieldInput} disabled={!isEditing} {...register("specialty")} />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Especialidade</label>
+          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("specialty")} />
         </div>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Subespecialidade</label>
-          <input className={styles.fieldInput} disabled={!isEditing} {...register("subspecialty")} />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Subespecialidade</label>
+          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("subspecialty")} />
         </div>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Modalidade</label>
-          <select className={styles.fieldInput} disabled={!isEditing} {...register("modality")}>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Modalidade</label>
+          <select className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("modality")}>
             <option value="VIRTUAL">Virtual</option>
             <option value="HOME_VISIT">Domiciliar</option>
             <option value="CLINIC">Clínica</option>
@@ -46,34 +45,34 @@ export function ProfessionalProfileForm({ register, errors, isEditing }: Profess
         </div>
       </div>
 
-      <div className={styles.textAreaGroup}>
-        <label className={styles.fieldLabel}>Biografia Profissional</label>
-        <textarea className={styles.textArea} rows={4} disabled={!isEditing} {...register("bio")} />
+      <div className="flex flex-col gap-1.5 mt-5">
+        <label className="text-sm font-semibold text-gray-700">Biografia Profissional</label>
+        <textarea className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 resize-none font-[inherit] focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" rows={4} disabled={!isEditing} {...register("bio")} />
       </div>
 
       <Separator />
-      <h3 className={styles.socialLinksTitle}>Links Sociais</h3>
-      <div className={styles.formGrid}>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Link de referência (LinkedIn/Lattes)</label>
-          <input className={styles.fieldInput} disabled={!isEditing} {...register("linkedin")} />
+      <h3 className="mt-6 text-base font-semibold text-gray-700">Links Sociais</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Link de referência (LinkedIn/Lattes)</label>
+          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("linkedin")} />
         </div>
-        <div className={styles.fieldGroup}>
-          <label className={styles.fieldLabel}>Instagram</label>
-          <input className={styles.fieldInput} disabled={!isEditing} {...register("instagram")} />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Instagram</label>
+          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("instagram")} />
         </div>
       </div>
 
       <Separator />
-      <div className={styles.statusGroup}>
-        <label className={styles.fieldLabel}>Status</label>
-        <select className={styles.fieldInput} disabled={!isEditing} {...register("status")}>
+      <div className="flex flex-col gap-1.5 mt-5 max-w-[50%]">
+        <label className="text-sm font-semibold text-gray-700">Status</label>
+        <select className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("status")}>
           <option value="PENDING">Pendente</option>
           <option value="COMPLETED">Completo</option>
           <option value="VERIFIED">Verificado</option>
           <option value="BLOCKED">Bloqueado</option>
         </select>
-        {errors.status && <span className={styles.fieldError}>{errors.status.message}</span>}
+        {errors.status && <span className="text-xs text-red-600 mt-0.5">{errors.status.message}</span>}
       </div>
     </>
   );

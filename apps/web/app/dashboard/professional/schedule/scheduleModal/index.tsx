@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
-import styles from "./schedule-modal.module.css";
 import { useProfessionalSettingsQuery } from "../../../../../queries/useProfessionalSettingsQuery";
 import { useScheduleModalForm } from "./useScheduleModalForm";
 
@@ -126,11 +125,11 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className={`${styles.modalBackground} max-w-3xl max-h-[90vh] overflow-y-auto`}>
-        <div className={styles.modalContainer}>
-          <DialogHeader className={styles.header}>
-            <h2 className={styles.sectionTitle}>Gerenciar Atendimento</h2>
-            <p className={styles.sectionDescription}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <div className="w-full max-w-[850px] p-6 flex flex-col overflow-auto rounded-2xl bg-white text-black">
+          <DialogHeader className="flex flex-col items-center text-center mb-4">
+            <h2 className="text-2xl font-semibold">Gerenciar Atendimento</h2>
+            <p className="text-sm text-gray-500 mt-1">
               Defina sua disponibilidade e informações de consulta.
             </p>
           </DialogHeader>
@@ -143,11 +142,15 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
             ) : (
               <>
                 <div>
-                  <h3 className={styles.sectionTitle}>Detalhes da Consulta</h3>
+                  <h3 className="text-lg font-semibold mb-2">Detalhes da Consulta</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className={styles.field}>
+                    <div className="flex flex-col gap-[0.35rem] w-full">
                       <label htmlFor="modality">Modalidade de atendimento</label>
-                      <select id="modality" className={styles.input} {...register("modality")}>
+                      <select
+                        id="modality"
+                        className="w-full h-[42px] px-3 rounded-lg border border-gray-300 text-[0.9rem] transition-colors duration-200 focus:outline-none focus:border-blue-600"
+                        {...register("modality")}
+                      >
                         <option value="VIRTUAL">Virtual</option>
                         <option value="HOME_VISIT">Domiciliar</option>
                         <option value="CLINIC">Clínica</option>
@@ -156,7 +159,7 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                         <span className="text-red-500 text-xs mt-1">{errors.modality.message}</span>
                       )}
                     </div>
-                    <div className={styles.field}>
+                    <div className="flex flex-col gap-[0.35rem] w-full">
                       <label htmlFor="price">Valor da Consulta</label>
                       <input
                         type="text"
@@ -164,22 +167,22 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                         placeholder="R$ 0,00"
                         value={priceDisplay}
                         onChange={handlePriceChange}
-                        className={styles.input}
+                        className="w-full h-[42px] px-3 rounded-lg border border-gray-300 text-[0.9rem] transition-colors duration-200 focus:outline-none focus:border-blue-600"
                       />
                       {errors.price ? (
                         <span className="text-red-500 text-xs mt-1">{errors.price.message}</span>
                       ) : (
-                        <span className={styles.paymentAlert}>* Pagamentos externos ao sistema.</span>
+                        <span className="pl-4 text-xs text-red-600">* Pagamentos externos ao sistema.</span>
                       )}
                     </div>
                     {currentModality === "CLINIC" && (
-                      <div className={`${styles.field} col-span-1 md:col-span-2`}>
+                      <div className="flex flex-col gap-[0.35rem] w-full col-span-1 md:col-span-2">
                         <label htmlFor="address">Endereço da Clínica</label>
                         <input
                           type="text"
                           id="address"
                           placeholder="Ex: Rua das Flores, 123 - Sala 4"
-                          className={styles.input}
+                          className="w-full h-[42px] px-3 rounded-lg border border-gray-300 text-[0.9rem] transition-colors duration-200 focus:outline-none focus:border-blue-600"
                           {...register("address")}
                         />
                         {errors.address && (
@@ -192,14 +195,14 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
 
                 <Separator className="my-4" />
 
-                <div className={styles.checkboxGroup}>
-                  <label className={styles.sectionTitle}>Métodos de pagamento aceitos</label>
+                <div className="w-1/2 flex flex-col gap-[0.6rem]">
+                  <label className="text-lg font-semibold mb-2">Métodos de pagamento aceitos</label>
                   {errors.payments && (
                     <span className="text-red-500 text-xs mb-2 block">{errors.payments.message}</span>
                   )}
                   <div className="flex flex-wrap gap-4 mt-2">
                     {paymentMethods.map((option) => (
-                      <label key={option.value} className={styles.checkboxItem}>
+                      <label key={option.value} className="flex items-center gap-2 text-[0.9rem] cursor-pointer">
                         <input
                           type="checkbox"
                           value={option.value}
@@ -215,8 +218,8 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                 <Separator className="my-4" />
 
                 <div>
-                  <h3 className={styles.sectionTitle}>Horários de Disponibilidade</h3>
-                  <p className={styles.sectionDescription}>
+                  <h3 className="text-lg font-semibold mb-2">Horários de Disponibilidade</h3>
+                  <p className="text-[0.85rem] text-[#8a91a0] mb-4">
                     Selecione os dias da semana e a janela de horário que você atende.
                   </p>
                   {errors.availability && (
@@ -224,16 +227,16 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                   )}
                   <div className="flex flex-col gap-4 mt-4">
                     {localAvailability.map((day) => (
-                      <div key={day.id} className={styles.availabilityCard}>
+                      <div key={day.id} className="w-full px-2 flex justify-between gap-4 bg-gray-100 rounded-lg">
                         <div className="flex items-center gap-3 w-40">
-                          <label className={styles.dayCheckbox}>
+                          <label className="flex gap-2">
                             <input
                               type="checkbox"
                               checked={day.active}
                               onChange={() => handleToggleDay(day.id)}
                             />
-                            <span className={styles.checkmark}></span>
-                            <span className={`${styles.dayLabel} ${day.active ? styles.active : styles.inactive}`}>
+                            <span></span>
+                            <span className={`text-sm transition-colors duration-200 ${day.active ? "text-gray-900 font-medium" : "text-gray-400"}`}>
                               {day.label}
                             </span>
                           </label>
@@ -263,19 +266,19 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
             )}
           </div>
 
-          <DialogFooter className={styles.modalFooter}>
+          <DialogFooter className="flex justify-end gap-3 mt-4">
             <Button
               variant="destructive"
               onClick={closeModal}
               disabled={isSaving || isLoadingData}
-              className={styles.button}
+              className="px-4 py-2 flex items-center gap-2 rounded-lg font-semibold text-base text-white cursor-pointer transition-all duration-200"
             >
               Cancelar
             </Button>
             <Button
               onClick={() => handleSubmit(onSubmit)()}
               disabled={isSaving || isLoadingData}
-              className={styles.button}
+              className="px-4 py-2 flex items-center gap-2 rounded-lg font-semibold text-base text-white cursor-pointer transition-all duration-200"
             >
               {isSaving ? "Salvando..." : "Salvar Configurações"}
             </Button>

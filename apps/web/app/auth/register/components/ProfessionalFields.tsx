@@ -3,7 +3,6 @@
 import { type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import styles from "../../auth.module.css";
 import type { RegisterFormData } from "../register-validation";
 
 type ProfessionalFieldsProps = {
@@ -13,16 +12,16 @@ type ProfessionalFieldsProps = {
 
 export function ProfessionalFields({ register, errors }: ProfessionalFieldsProps) {
   return (
-    <div className={styles.professionalInputsWrapper}>
-      <div className={styles.multipleInputs}>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-1">
         <div className="w-full flex flex-col gap-1">
-          <Label htmlFor="professionalLicense" className={styles.label}>
+          <Label htmlFor="professionalLicense" className="text-sm font-medium text-[#334155]">
             Registro profissional (CRM/CRP)
           </Label>
           <Input
             id="professionalLicense"
             placeholder="Ex: 123456-SP"
-            className={styles.input}
+            className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
             {...register("professionalLicense")}
           />
           {errors.professionalLicense && (
@@ -31,30 +30,30 @@ export function ProfessionalFields({ register, errors }: ProfessionalFieldsProps
         </div>
 
         <div className="w-full flex flex-col gap-1">
-          <Label htmlFor="specialty" className={styles.label}>Especialidade</Label>
+          <Label htmlFor="specialty" className="text-sm font-medium text-[#334155]">Especialidade</Label>
           <Input
             id="specialty"
             placeholder="Ex: Cardiologia"
-            className={styles.input}
+            className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
             {...register("specialty")}
           />
           {errors.specialty && <p className="text-sm text-destructive">{errors.specialty.message}</p>}
         </div>
 
         <div className="w-full flex flex-col gap-1">
-          <Label htmlFor="subspecialty" className={styles.label}>Subespecialidade</Label>
+          <Label htmlFor="subspecialty" className="text-sm font-medium text-[#334155]">Subespecialidade</Label>
           <Input
             id="subspecialty"
             placeholder="Ex: Cardiologia infantil"
-            className={styles.input}
+            className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
             {...register("subspecialty")}
           />
           {errors.subspecialty && <p className="text-sm text-destructive">{errors.subspecialty.message}</p>}
         </div>
 
         <div className="w-full flex flex-col gap-1">
-          <Label htmlFor="modality" className={styles.label}>Modalidade de atendimento</Label>
-          <select id="modality" className={styles.input} {...register("modality")}>
+          <Label htmlFor="modality" className="text-sm font-medium text-[#334155]">Modalidade de atendimento</Label>
+          <select id="modality" className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]" {...register("modality")}>
             <option value="" disabled>Selecione</option>
             <option value="VIRTUAL">Virtual</option>
             <option value="HOME_VISIT">Domiciliar</option>
@@ -65,11 +64,11 @@ export function ProfessionalFields({ register, errors }: ProfessionalFieldsProps
       </div>
 
       <div className="w-full flex flex-col gap-1">
-        <Label htmlFor="bio" className={styles.label}>Biografia</Label>
+        <Label htmlFor="bio" className="text-sm font-medium text-[#334155]">Biografia</Label>
         <textarea
           id="bio"
           placeholder="Ex: Sou um profissional de saúde com 10 anos de experiência"
-          className={styles.textarea}
+          className="w-full px-4 py-3 rounded-lg border border-[#cbd5e1] transition-all bg-white text-sm text-[#334155] outline-none resize-none focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
           rows={4}
           {...register("bio")}
         />
@@ -77,14 +76,14 @@ export function ProfessionalFields({ register, errors }: ProfessionalFieldsProps
       </div>
 
       <div className="w-full flex flex-col gap-1">
-        <Label htmlFor="referenceLink" className={styles.label}>
+        <Label htmlFor="referenceLink" className="text-sm font-medium text-[#334155]">
           Link de referência (Linkedin/Lattes)
         </Label>
         <Input
           id="referenceLink"
           placeholder="Ex: https://..."
           type="url"
-          className={styles.input}
+          className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
           {...register("socialLinks.referenceLink")}
         />
         {errors.socialLinks && <p className="text-sm text-destructive">{errors.socialLinks.message}</p>}

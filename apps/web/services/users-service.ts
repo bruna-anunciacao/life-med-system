@@ -155,4 +155,25 @@ export const usersService = {
       throw new Error("Erro de conexão com o servidor.");
     }
   },
+
+  async verifyUser(userId: string, emailVerified: boolean) {
+    try {
+      const response = await api.patch(`/users/${userId}/verify`, {
+        emailVerified,
+      });
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao verificar usuário.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
 };

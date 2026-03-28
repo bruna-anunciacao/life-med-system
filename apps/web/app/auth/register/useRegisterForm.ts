@@ -58,7 +58,9 @@ export function useRegisterForm() {
     setIsLoading(true);
     try {
       if (data.role === "PROFESSIONAL") {
-        const professional = data as z.infer<typeof registerProfessionalValidation>;
+        const professional = data as z.infer<
+          typeof registerProfessionalValidation
+        >;
         await authService.registerProfessional({
           name: professional.name,
           email: professional.email,
@@ -67,7 +69,10 @@ export function useRegisterForm() {
           specialty: professional.specialty,
           subspecialty: professional.subspecialty,
           bio: professional.bio,
-          modality: professional.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
+          modality: professional.modality as
+            | "VIRTUAL"
+            | "HOME_VISIT"
+            | "CLINIC",
           socialLinks: professional.socialLinks,
         });
       } else {
@@ -82,11 +87,15 @@ export function useRegisterForm() {
           gender: patient.gender,
         });
       }
-      toast.success("Seu cadastro foi realizado com sucesso!");
+      toast.success(
+        "Sua solicitação foi enviada para a administração, aguarde. Sua resposta virá via email.",
+      );
       form.reset(INITIAL_FORM);
       setTimeout(() => router.push("/auth/login"), 1000);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro desconhecido.");
+      toast.error(
+        error instanceof Error ? error.message : "Erro desconhecido.",
+      );
     } finally {
       setIsLoading(false);
     }

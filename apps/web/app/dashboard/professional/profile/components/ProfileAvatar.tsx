@@ -1,7 +1,5 @@
 "use client";
 
-import styles from "../profile.module.css";
-
 type ProfileAvatarProps = {
   name: string;
   photoUrl: string | null;
@@ -25,7 +23,7 @@ export function ProfileAvatar({ name, photoUrl, previewUrl, isEditing, onFileCha
         <img
           src={currentPhoto}
           alt={name}
-          className={`${styles.avatar} object-cover rounded-full`}
+          className="object-cover rounded-full"
           style={{ width: "70px", height: "70px" }}
         />
         {isEditing && (
@@ -40,7 +38,9 @@ export function ProfileAvatar({ name, photoUrl, previewUrl, isEditing, onFileCha
 
   return (
     <label className="relative cursor-pointer">
-      <div className={styles.avatarNoPhoto}>{name.charAt(0).toUpperCase()}</div>
+      <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#e6f1ff] border-2 border-[#006fee] text-2xl font-bold text-[#006fee] shrink-0">
+        {name.charAt(0).toUpperCase()}
+      </div>
       {isEditing && (
         <input type="file" className="hidden" accept="image/*" onChange={onFileChange} />
       )}

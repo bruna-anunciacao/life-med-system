@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { DayPicker } from "react-day-picker";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import styles from "./schedule.module.css";
 import { toast } from "sonner";
 import { useDailyScheduleQuery } from "../../../../queries/useDailyScheduleQuery";
 import { ScheduleTimeline } from "./components/ScheduleTimeline";
@@ -58,33 +57,36 @@ const SchedulePage = () => {
   };
 
   return (
-    <section className={styles.container}>
-      <div className={styles.header}>
+    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+      <div className="mb-10 flex justify-between items-center">
         <div>
-          <h1 className={styles.title}>Minha Agenda</h1>
-          <p className={styles.subtitle}>Visualize e gerencie seus horários.</p>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Minha Agenda</h1>
+          <p className="mt-1 text-base text-gray-500">Visualize e gerencie seus horários.</p>
         </div>
-        <Button className={styles.addButton} onClick={() => setIsOpen(true)}>
+        <Button
+          className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200"
+          onClick={() => setIsOpen(true)}
+        >
           Gerenciar Horários
         </Button>
       </div>
 
-      <div className={styles.contentGrid}>
-        <aside className={styles.sidebar}>
-          <div className={styles.calendarCard}>
+      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-8">
+        <aside className="flex flex-col gap-6">
+          <div className="border border-gray-200 shadow-sm bg-white rounded-[20px] p-4">
             <DayPicker mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={ptBR} />
           </div>
         </aside>
 
-        <main className={styles.timelineArea}>
-          <div className={styles.dateHeader}>
-            <h2 className={styles.currentDateTitle}>
+        <main className="bg-white rounded-2xl border border-gray-200 p-6 min-h-[600px] shadow-sm">
+          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
+            <h2 className="text-xl font-semibold text-gray-700 capitalize">
               {selectedDate && format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
             </h2>
-            {isAvailableToday && <Badge className={styles.dayOfAttendanceChip}>Dia de Atendimento</Badge>}
+            {isAvailableToday && <Badge className="py-1 px-4">Dia de Atendimento</Badge>}
           </div>
 
-          <div className={styles.timeline}>
+          <div className="flex flex-col gap-2">
             <ScheduleTimeline
               isLoading={isLoading}
               isAvailableToday={isAvailableToday}

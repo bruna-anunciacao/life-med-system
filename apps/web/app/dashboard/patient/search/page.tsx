@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { usersService } from "../../../../services/users-service";
 import { toast } from "sonner";
-import styles from "./search.module.css";
 import { SearchBar } from "./components/SearchBar";
 import { DoctorCard } from "./components/DoctorCard";
 import { EmptySearch } from "./components/EmptySearch";
@@ -60,11 +59,11 @@ const SearchDoctorsPage = () => {
     });
 
   return (
-    <section className={styles.container}>
-      <div className={styles.header}>
+    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className={styles.title}>Buscar Médicos</h1>
-          <p className={styles.subtitle}>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Buscar Médicos</h1>
+          <p className="mt-1 text-base text-gray-500">
             Encontre profissionais de saúde voluntários e agende sua consulta gratuitamente.
           </p>
         </div>
@@ -80,11 +79,11 @@ const SearchDoctorsPage = () => {
       />
 
       {isLoading ? (
-        <div className={styles.loadingContainer}><Spinner size="lg" /></div>
+        <div className="py-16 px-8 flex justify-center items-center"><Spinner size="lg" /></div>
       ) : filtered.length === 0 ? (
         <EmptySearch />
       ) : (
-        <div className={styles.grid}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filtered.map((prof) => (
             <DoctorCard key={prof.id} professional={prof} />
           ))}

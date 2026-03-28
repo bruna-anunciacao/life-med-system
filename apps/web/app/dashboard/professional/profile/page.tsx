@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import styles from "./profile.module.css";
 import { ProfileAvatar } from "./components/ProfileAvatar";
 import { ProfessionalInfoForm } from "./components/ProfessionalInfoForm";
 import { SocialLinksForm } from "./components/SocialLinksForm";
@@ -27,18 +26,25 @@ export default function PerfilPage() {
   const { register, handleSubmit, formState: { errors } } = form;
 
   if (isLoading) {
-    return <div className={styles.loadingContainer}><Spinner size="lg" /></div>;
+    return (
+      <div className="py-24 px-8 flex justify-center items-center">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
+    <div className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+      <div className="flex justify-between items-start mb-8 flex-wrap gap-4 max-sm:flex-col max-sm:items-start">
         <div>
-          <h1 className={styles.title}>Meu Perfil</h1>
-          <p className={styles.subtitle}>Gerencie suas informações profissionais.</p>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Meu Perfil</h1>
+          <p className="mt-1 text-base text-gray-500">Gerencie suas informações profissionais.</p>
         </div>
         <Button
-          className={isEditing ? styles.cancelButton : styles.editButton}
+          className={isEditing
+            ? "px-4 py-2 rounded-lg bg-white text-[#006fee] border border-[#006fee] font-semibold text-base cursor-pointer transition-all duration-200 hover:bg-gray-100"
+            : "px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
+          }
           onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
           variant={isEditing ? "secondary" : "default"}
         >
@@ -46,9 +52,9 @@ export default function PerfilPage() {
         </Button>
       </div>
 
-      <Card className={styles.card}>
+      <Card className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-8 space-y-8">
-          <div className={styles.cardHeader}>
+          <div className="flex items-center gap-5 max-[425px]:flex-col">
             <ProfileAvatar
               name={user?.name || ""}
               photoUrl={user?.professionalProfile?.photoUrl || null}
@@ -57,14 +63,16 @@ export default function PerfilPage() {
               onFileChange={handleFileChange}
             />
             <div>
-              <h2 className={styles.cardTitle}>{user?.name}</h2>
-              <p className={styles.cardEmail}>{user?.email}</p>
-              <p className={styles.cardRole}>{user?.professionalProfile?.specialty}</p>
+              <h2 className="text-xl font-semibold text-gray-900">{user?.name}</h2>
+              <p className="text-[0.9rem] text-gray-500">{user?.email}</p>
+              <p className="mt-1 px-[0.6rem] py-[0.15rem] inline-block rounded-2xl bg-[rgba(0,111,238,0.08)] text-xs font-semibold text-[#006fee]">
+                {user?.professionalProfile?.specialty}
+              </p>
             </div>
           </div>
 
           <Separator />
-          <h3 className={styles.sectionLabel}>Informações Pessoais</h3>
+          <h3 className="mt-2 text-base font-semibold text-gray-700">Informações Pessoais</h3>
 
           <form onSubmit={handleSubmit(onSubmit)} id="profile-form">
             <ProfessionalInfoForm
@@ -74,7 +82,7 @@ export default function PerfilPage() {
               errors={errors}
             />
 
-            <h3 className={styles.socialLinksTitle}>Links Sociais</h3>
+            <h3 className="mt-2 pt-[0.8rem] text-base font-semibold text-gray-700">Links Sociais</h3>
 
             <SocialLinksForm isEditing={isEditing} register={register} />
           </form>
@@ -82,7 +90,7 @@ export default function PerfilPage() {
           {isEditing && (
             <div className="flex justify-end">
               <Button
-                className={styles.saveButton}
+                className="px-6 py-[0.6rem] rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
                 type="submit"
                 form="profile-form"
                 disabled={isSaving}

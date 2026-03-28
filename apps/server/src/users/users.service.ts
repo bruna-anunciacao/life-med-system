@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from 'services/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRoleEnum } from '../auth/enums/user-role-enum';
 import { UserStatusEnum } from '../auth/enums/user-status-enum';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -116,6 +120,39 @@ export class UsersService {
           },
         });
       }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = updatedUser;
+    return result;
+  }
+
+  async verifyUser(id: string, emailVerified: boolean) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!user) throw new NotFoundException('Usuário não encontrado');
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { emailVerified },
+    });
+
+    const emailData = { name: user.name, email: user.email };
+
+    if (emailVerified) {
+      this.mailService.sendAccountApprovedEmail(emailData).catch((err) => {
+        console.error(
+          `Falha ao enviar email de aprovação para ${user.email}:`,
+          err.message,
+        );
+      });
+    } else {
+      this.mailService.sendAccountRejectedEmail(emailData).catch((err) => {
+        console.error(
+          `Falha ao enviar email de rejeição para ${user.email}:`,
+          err.message,
+        );
+      });
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

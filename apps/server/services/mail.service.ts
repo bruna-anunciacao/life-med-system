@@ -2,7 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 import { createPasswordResetEmail } from 'templates/mail/password-reset.template';
-
+import { createNewUserNotificationEmail } from 'templates/mail/new-user-notification.template';
+import { createAccountPendingEmail } from 'templates/mail/account-pending.template';
+import { createAccountApprovedEmail } from 'templates/mail/account-approved.template';
+import { createAccountRejectedEmail } from 'templates/mail/account-rejected.template';
 export type EmailAttachment = {
   filename: string;
   content: string | Buffer;
@@ -82,6 +85,62 @@ export class MailService {
     await this.sendEmail({
       to: user.email,
       subject: 'Recuperação de Senha - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendAccountPendingEmail(user: { name: string; email: string }) {
+    const htmlBody = createAccountPendingEmail({ userName: user.name });
+
+    await this.sendEmail({
+      to: user.email,
+      subject: 'Conta em Análise - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendAccountApprovedEmail(user: { name: string; email: string }) {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const loginUrl = `${frontendUrl}/auth/login`;
+
+    const htmlBody = createAccountApprovedEmail({
+      userName: user.name,
+      loginUrl,
+    });
+
+    await this.sendEmail({
+      to: user.email,
+      subject: 'Conta Aprovada - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendAccountRejectedEmail(user: { name: string; email: string }) {
+    const htmlBody = createAccountRejectedEmail({ userName: user.name });
+
+    await this.sendEmail({
+      to: user.email,
+      subject: 'Cadastro Não Aprovado - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendNewUserNotificationEmail(
+    admin: { name: string; email: string },
+    user: { name: string; email: string; role: string },
+    approveUrl: string,
+  ) {
+    const htmlBody = createNewUserNotificationEmail({
+      adminName: admin.name,
+      userName: user.name,
+      userEmail: user.email,
+      userRole: user.role,
+      approveUrl: approveUrl,
+    });
+
+    await this.sendEmail({
+      to: admin.email,
+      subject: 'Nova Solicitação de Cadastro - LifeMed',
       html: htmlBody,
     });
   }

@@ -49,6 +49,7 @@ export interface User {
   email: string;
   role: "PROFESSIONAL" | "PATIENT" | "ADMIN";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
+  emailVerified: boolean;
 }
 
 export interface LoginResponse {
