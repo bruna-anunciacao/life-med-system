@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SearchIcon, PlusIcon } from "../../../utils/icons";
 import Image from "next/image";
-import styles from "./patients.module.css";
 
 type Patient = {
   id: string;
@@ -34,25 +33,37 @@ export default function PatientsPage() {
 
   const renderAvatar = (name: string, photoUrl?: string) => {
     if (photoUrl) {
-      return <Image src={photoUrl} alt={name} width={48} height={48} className={styles.avatar} />;
+      return (
+        <Image
+          src={photoUrl}
+          alt={name}
+          width={48}
+          height={48}
+          className="w-12 h-12 rounded-full object-cover object-center border border-gray-200 p-1 bg-[#fafafa] shadow-sm"
+        />
+      );
     }
-    return <div className={styles.avatarNoPhoto}>{name.charAt(0).toUpperCase()}</div>;
+    return (
+      <div className="w-12 h-12 rounded-full font-semibold flex items-center justify-center text-[#006fee] bg-[#e6f1ff] border border-gray-200 p-1 shadow-sm">
+        {name.charAt(0).toUpperCase()}
+      </div>
+    );
   };
 
   return (
-    <section className={styles.container}>
-      <div className={styles.header}>
+    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+      <div className="flex justify-between items-start mb-8 flex-wrap gap-4">
         <div>
-          <h1 className={styles.title}>Pacientes</h1>
-          <p className={styles.subtitle}>Gerencie e visualize seus pacientes cadastrados.</p>
+          <h1 className="text-4xl font-bold text-gray-900">Pacientes</h1>
+          <p className="mt-1 text-gray-500">Gerencie e visualize seus pacientes cadastrados.</p>
         </div>
-        <Button className={styles.addButton}>
+        <Button className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200">
           <PlusIcon />
           Novo Paciente
         </Button>
       </div>
 
-      <div className={`${styles.searchBar} relative`}>
+      <div className="mb-8 max-w-[400px] relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
           <SearchIcon />
         </span>
@@ -60,26 +71,29 @@ export default function PatientsPage() {
           placeholder="Buscar paciente..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className={`${styles.input} pl-10`}
+          className="h-12 px-4 rounded-lg border border-slate-300 text-sm text-slate-700 bg-white outline-none transition-all duration-200 pl-10"
         />
       </div>
 
-      <div className={styles.grid}>
+      <div className="grid gap-6 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
         {filtered.map((patient) => (
-          <div key={patient.id} className={styles.card}>
-            <div className={styles.cardHeader}>
+          <div
+            key={patient.id}
+            className="bg-white rounded-2xl border border-gray-200 p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.05)]"
+          >
+            <div className="flex gap-4 items-center mb-4">
               {renderAvatar(patient.name, patient.photoUrl)}
               <div>
-                <h3 className={styles.patientName}>{patient.name}</h3>
-                <p className={styles.email}>{patient.email}</p>
+                <h3 className="font-semibold text-base text-gray-900">{patient.name}</h3>
+                <p className="text-[0.85rem] text-gray-500">{patient.email}</p>
               </div>
             </div>
-            <div className={styles.cardBody}>
+            <div className="text-[0.9rem] text-gray-700 mb-4">
               <p><strong>Telefone:</strong> {patient.phone}</p>
               <p><strong>Última Consulta:</strong> {patient.lastVisit ?? "—"}</p>
             </div>
-            <div className={styles.cardFooter}>
-              <Button size="sm" className={styles.profileButton}>Ver Perfil</Button>
+            <div className="flex justify-end">
+              <Button size="sm" className="px-4 py-2">Ver Perfil</Button>
             </div>
           </div>
         ))}
