@@ -3,6 +3,7 @@
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../ui/dashboard/header";
+import MobileNav from "../ui/dashboard/mobile-nav";
 import { Spinner } from "@/components/ui/spinner";
 
 const DashboardLayout = ({
@@ -32,9 +33,10 @@ const DashboardLayout = ({
   return (
     <div>
       <DashboardHeader role={role} />
-      <main>
+      <main className="pb-16 md:pb-0">
         {children}
       </main>
+      <MobileNav role={role} />
     </div>
   );
 };
