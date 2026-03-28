@@ -23,9 +23,9 @@ const ProfessionalDashboard = () => {
   };
 
   const stats = [
-    { title: "Consultas Hoje", value: "8", icon: <CalendarIcon />, color: "primary" },
-    { title: "Pendentes de Aprovação", value: "3", icon: <ClockIcon />, color: "warning" },
-    { title: "Pacientes Atendidos", value: "142", icon: <UsersIcon />, color: "success" },
+    { title: "Consultas Hoje", value: "8", icon: <CalendarIcon size={24} weight="duotone" />, color: "primary" },
+    { title: "Pendentes de Aprovação", value: "3", icon: <ClockIcon size={24} weight="duotone" />, color: "warning" },
+    { title: "Pacientes Atendidos", value: "142", icon: <UsersIcon size={24} weight="duotone" />, color: "success" },
   ];
 
   const nextAppointment = {

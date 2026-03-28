@@ -17,9 +17,9 @@ const PatientDashboard = () => {
   }, []);
 
   const stats = [
-    { title: "Próximas Consultas", value: "2", icon: <CalendarIcon />, colorClass: "bg-blue-50 text-blue-500" },
-    { title: "Aguardando Confirmação", value: "1", icon: <ClockIcon />, colorClass: "bg-yellow-50 text-yellow-500" },
-    { title: "Consultas Realizadas", value: "5", icon: <CheckIcon />, colorClass: "bg-green-50 text-green-500" },
+    { title: "Próximas Consultas", value: "2", icon: <CalendarIcon size={24} weight="duotone" />, colorClass: "bg-blue-50 text-blue-500" },
+    { title: "Aguardando Confirmação", value: "1", icon: <ClockIcon size={24} weight="duotone" />, colorClass: "bg-yellow-50 text-yellow-500" },
+    { title: "Consultas Realizadas", value: "5", icon: <CheckIcon size={24} weight="duotone" />, colorClass: "bg-green-50 text-green-500" },
   ];
 
   const nextAppointment = {
