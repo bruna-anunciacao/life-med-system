@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Eye, EyeOff } from "lucide-react";
 import type { ResetPasswordSchema } from "../reset-password.validation";
-import styles from "../../auth.module.css";
 
 type ResetPasswordFormProps = {
   form: UseFormReturn<ResetPasswordSchema>;
@@ -23,14 +22,14 @@ export function ResetPasswordForm({ form, isLoading, onSubmit }: ResetPasswordFo
   const { register, handleSubmit, formState: { errors } } = form;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
       <div className="w-full flex flex-col gap-1">
-        <Label className={styles.label}>Senha</Label>
+        <Label className="text-sm font-medium text-[#334155]">Senha</Label>
         <div className="relative">
           <Input
             placeholder="Insira a senha"
             type={isPasswordVisible ? "text" : "password"}
-            className={styles.input}
+            className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
             {...register("password")}
           />
           <Button
@@ -50,12 +49,12 @@ export function ResetPasswordForm({ form, isLoading, onSubmit }: ResetPasswordFo
       </div>
 
       <div className="w-full flex flex-col gap-1">
-        <Label className={styles.label}>Confirmar a senha</Label>
+        <Label className="text-sm font-medium text-[#334155]">Confirmar a senha</Label>
         <div className="relative">
           <Input
             placeholder="Confirme a senha"
             type={isConfirmPasswordVisible ? "text" : "password"}
-            className={styles.input}
+            className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
             {...register("confirmPassword")}
           />
           <Button
@@ -74,7 +73,7 @@ export function ResetPasswordForm({ form, isLoading, onSubmit }: ResetPasswordFo
         )}
       </div>
 
-      <Button type="submit" className={styles.button} disabled={isLoading}>
+      <Button type="submit" className="w-full mt-2 py-3 rounded-full border-none font-semibold text-white bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] transition-transform hover:-translate-y-px hover:brightness-110 active:translate-y-0 cursor-pointer" disabled={isLoading}>
         {isLoading ? <Spinner size="sm" /> : "Redefinir senha"}
       </Button>
     </form>

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import styles from "../../auth.module.css";
 import type { RegisterFormData } from "../register-validation";
 
 type PasswordFieldName = "password" | "confirmPassword";
@@ -24,12 +23,12 @@ export function PasswordField({ name, label, register, errors }: PasswordFieldPr
 
   return (
     <div className="w-full flex flex-col gap-1">
-      <Label className={styles.label}>{label}</Label>
+      <Label className="text-sm font-medium text-[#334155]">{label}</Label>
       <div className="relative">
         <Input
           placeholder="Insira a senha"
           type={isVisible ? "text" : "password"}
-          className={styles.input}
+          className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
           {...register(name)}
         />
         <Button
