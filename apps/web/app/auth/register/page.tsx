@@ -1,364 +1,26 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import styles from "../auth.module.css";
-import {
-  Button,
-  FieldError,
-  Form,
-  Input,
-  InputGroup,
-  Label,
-  TextField,
-  Spinner,
-} from "@heroui/react";
-import PhoneInput from "react-phone-number-input";
-import ptBr from "react-phone-number-input/locale/pt-BR";
-import { useRouter } from "next/navigation";
-import { Eye, EyeSlash } from "@gravity-ui/icons";
-import * as z from "zod";
-import { authService } from "../../../services/auth-service";
-import { toast } from "sonner";
-
-const passwordValidation = z
-  .string()
-  .min(8, "A senha deve ter no mínimo 8 caracteres")
-  .max(64, "A senha deve ter no máximo 64 caracteres")
-  .regex(/[a-z]/, "A senha deve conter pelo menos uma letra minúscula")
-  .regex(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula")
-  .regex(/\d/, "A senha deve conter pelo menos um número")
-  .regex(
-    /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
-    "A senha deve conter pelo menos um caractere especial",
-  );
-
-const nameValidation = z
-  .string()
-  .min(2, "Nome deve ter no mínimo 2 caracteres")
-  .max(100, "Nome deve ter no máximo 100 caracteres")
-  .regex(
-    /^[a-zA-ZÀ-ÿ\s'-]+$/,
-    "Nome deve conter apenas letras, espaços, hífens e apóstrofos",
-  );
-
-const phoneValidation = z
-  .string()
-  .min(1, "Celular é obrigatório")
-  .regex(
-    /^\+[1-9]\d{6,14}$/,
-    "Celular deve estar no formato internacional (ex: +5571999999999)",
-  );
-
-const cpfValidation = z
-  .string()
-  .min(1, "CPF é obrigatório")
-  .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "Formato de CPF inválido");
-
-const registerPatientValidation = z
-  .object({
-    name: nameValidation,
-    email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
-    cpf: cpfValidation,
-    phone: phoneValidation,
-    dateOfBirth: z
-      .union([z.string(), z.date(), z.null()])
-      .transform((val) => (val ? new Date(val) : null))
-      .refine((val) => val !== null, {
-        message: "Data de nascimento é obrigatória",
-      })
-      .refine(
-        (val) => {
-          if (!val) return false;
-          return val <= new Date();
-        },
-        { message: "Data de nascimento não pode ser no futuro" },
-      )
-      .refine(
-        (val) => {
-          if (!val) return false;
-          const ageDiff = Date.now() - val.getTime();
-          const ageDate = new Date(ageDiff);
-          const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-          return age <= 120;
-        },
-        { message: "Data de nascimento inválida" },
-      ),
-    gender: z.enum(["MALE", "FEMALE", "OTHER", "UNDISCLOSED"], {
-      error: () => ({ message: "Selecione um gênero válido" }),
-    }),
-    password: passwordValidation,
-    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
-    role: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas não coincidem",
-    path: ["confirmPassword"],
-  });
-
-const registerProfessionalValidation = z
-  .object({
-    name: nameValidation,
-    email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
-    password: passwordValidation,
-    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
-    role: z.string(),
-    professionalLicense: z
-      .string()
-      .min(4, "Registro profissional deve ter no mínimo 4 caracteres")
-      .max(20, "Registro profissional deve ter no máximo 20 caracteres"),
-    specialty: z
-      .string()
-      .min(2, "Especialidade deve ter no mínimo 2 caracteres")
-      .max(100, "Especialidade deve ter no máximo 100 caracteres"),
-    subspecialty: z
-      .string()
-      .max(100, "Subespecialidade deve ter no máximo 100 caracteres")
-      .optional(),
-    modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"], {
-      error: () => ({ message: "Selecione uma modalidade válida" }),
-    }),
-    socialLinks: z.object({
-      referenceLink: z.string().optional(),
-      instagram: z.string().optional(),
-      other: z.string().optional(),
-    }),
-    bio: z
-      .string()
-      .max(500, "Biografia deve ter no máximo 500 caracteres")
-      .optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "As senhas não coincidem",
-    path: ["confirmPassword"],
-  });
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { useRegisterForm } from "./useRegisterForm";
+import { PatientFields } from "./components/PatientFields";
+import { ProfessionalFields } from "./components/ProfessionalFields";
+import { PasswordField } from "./components/PasswordField";
 
 const RegisterPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] =
-    useState(false);
-  const router = useRouter();
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  type RegisterFormData = {
-    name: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    role: string;
-    cpf: string;
-    professionalLicense: string;
-    phone: string;
-    dateOfBirth: Date | null;
-    gender: string;
-    subspecialty: string;
-    modality: string;
-    bio: string;
-    specialty: string;
-    socialLinks?: {
-      referenceLink?: string;
-      instagram?: string;
-      other?: string;
-    };
-  };
-
-  const [formData, setFormData] = useState<RegisterFormData>({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "PATIENT",
-    cpf: "",
-    professionalLicense: "",
-    phone: "",
-    dateOfBirth: null,
-    gender: "",
-    subspecialty: "",
-    modality: "VIRTUAL",
-    bio: "",
-    specialty: "",
-    socialLinks: {
-      referenceLink: "",
-      instagram: "",
-      other: "",
-    },
-  });
-
-  const resetForm = (role: string) => {
-    setFormData({
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      role: role,
-      cpf: "",
-      professionalLicense: "",
-      phone: "",
-      dateOfBirth: null,
-      gender: "",
-      subspecialty: "",
-      modality: "VIRTUAL",
-      bio: "",
-      specialty: "",
-      socialLinks: {
-        referenceLink: "",
-        instagram: "",
-        other: "",
-      },
-    });
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
+  const { form, role, isLoading, handleRoleChange, onSubmit } = useRegisterForm();
+  const { register, handleSubmit, control, setValue, formState: { errors } } = form;
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-
-    value = value.replace(/\D/g, "");
-
-    if (value.length > 11) value = value.slice(0, 11);
-
+    let value = e.target.value.replace(/\D/g, "").slice(0, 11);
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
     value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-
-    setFormData((prev) => ({ ...prev, cpf: value }));
-
-    if (errors.cpf) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.cpf;
-        return newErrors;
-      });
-    }
-  };
-
-  const handleSocialLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      socialLinks: {
-        ...(prev.socialLinks || {}),
-        [name]: value,
-      },
-    }));
-
-    if (errors.socialLinks) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.socialLinks;
-        return newErrors;
-      });
-    }
-  };
-
-  const handlePhoneChange = (value?: string) => {
-    setFormData((prev) => ({ ...prev, phone: value || "" }));
-    if (errors.phone) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors.phone;
-        return newErrors;
-      });
-    }
-  };
-
-  const handleRoleChange = (value: string) => {
-    resetForm(value);
-    setErrors({});
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setIsLoading(true);
-
-    const dataForValidation = {
-      ...formData,
-    };
-
-    const schema =
-      formData.role === "PROFESSIONAL"
-        ? registerProfessionalValidation
-        : registerPatientValidation;
-
-    const result = schema.safeParse(dataForValidation);
-
-    if (!result.success) {
-      const formattedErrors: Record<string, string> = {};
-
-      result.error.issues.forEach((issue) => {
-        const fieldName = issue.path[0];
-        if (fieldName) {
-          formattedErrors[String(fieldName)] = issue.message;
-        }
-      });
-
-      setErrors(formattedErrors);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      if (formData.role === "PROFESSIONAL") {
-        const data = result.data as z.infer<
-          typeof registerProfessionalValidation
-        >;
-
-        await authService.registerProfessional({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          professionalLicense: data.professionalLicense,
-          specialty: data.specialty,
-          subspecialty: data.subspecialty,
-          bio: data.bio,
-          modality: data.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
-          socialLinks: data.socialLinks,
-        });
-      } else {
-        const data = result.data as z.infer<typeof registerPatientValidation>;
-
-        await authService.registerPatient({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          phone: data.phone,
-          cpf: data.cpf.replace(/\D/g, ""),
-          dateOfBirth: data.dateOfBirth,
-          gender: data.gender,
-        });
-      }
-
-      toast.success("Seu cadastro foi realizado com sucesso!");
-      resetForm(formData.role);
-      setTimeout(() => {
-        router.push("/auth/login");
-      }, 1000);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Erro desconhecido.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    setValue("cpf", value, { shouldValidate: false });
   };
 
   return (
@@ -366,21 +28,18 @@ const RegisterPage = () => {
       <div className={styles.card}>
         <div className={styles.header}>
           <h1 className={styles.title}>Crie sua conta</h1>
-          <p className={styles.subtitle}>
-            Preencha os dados abaixo para começar
-          </p>
+          <p className={styles.subtitle}>Preencha os dados abaixo para começar</p>
         </div>
 
-        <Form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
           <div className={styles.inputGroup}>
             <label className={styles.label}>Eu sou</label>
             <div className={styles.radioWrapper}>
               <label className={styles.radioLabel}>
                 <input
                   type="radio"
-                  name="role"
                   value="PATIENT"
-                  checked={formData.role === "PATIENT"}
+                  checked={role === "PATIENT"}
                   onChange={(e) => handleRoleChange(e.target.value)}
                   className={styles.nativeRadio}
                 />
@@ -389,9 +48,8 @@ const RegisterPage = () => {
               <label className={styles.radioLabel}>
                 <input
                   type="radio"
-                  name="role"
                   value="PROFESSIONAL"
-                  checked={formData.role === "PROFESSIONAL"}
+                  checked={role === "PROFESSIONAL"}
                   onChange={(e) => handleRoleChange(e.target.value)}
                   className={styles.nativeRadio}
                 />
@@ -399,310 +57,56 @@ const RegisterPage = () => {
               </label>
             </div>
           </div>
-          <TextField isInvalid={!!errors.name} className="w-full">
-            <Label htmlFor="name" className={styles.label}>
-              Nome completo
-            </Label>
+
+          <div className="w-full flex flex-col gap-1">
+            <Label htmlFor="name" className={styles.label}>Nome completo</Label>
             <Input
               id="name"
               placeholder="Ex: Maria Silva"
               type="text"
-              name="name"
               className={styles.input}
-              value={formData.name}
-              onChange={handleChange}
+              {...register("name")}
             />
-            <FieldError>{errors.name}</FieldError>
-          </TextField>
-          <TextField isInvalid={!!errors.email} className="w-full">
-            <Label htmlFor="email" className={styles.label}>
-              E-mail
-            </Label>
+            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+          </div>
+
+          <div className="w-full flex flex-col gap-1">
+            <Label htmlFor="email" className={styles.label}>E-mail</Label>
             <Input
               id="email"
               placeholder="jane@example.com"
               type="email"
-              name="email"
               className={styles.input}
-              value={formData.email}
-              onChange={handleChange}
+              {...register("email")}
             />
-            <FieldError>{errors.email}</FieldError>
-          </TextField>
-          {formData.role === "PATIENT" && (
-            <>
-              <TextField isInvalid={!!errors.cpf} className="w-full">
-                <Label htmlFor="cpf" className={styles.label}>
-                  CPF
-                </Label>
-                <Input
-                  id="cpf"
-                  name="cpf"
-                  placeholder="000.000.000-00"
-                  type="text"
-                  className={styles.input}
-                  value={formData.cpf}
-                  onChange={handleCpfChange}
-                  maxLength={14}
-                />
-                <FieldError>{errors.cpf}</FieldError>
-              </TextField>
-              <TextField isInvalid={!!errors.phone} className="w-full">
-                <Label htmlFor="phone" className={styles.label}>
-                  Celular
-                </Label>
-                <PhoneInput
-                  id="phone"
-                  placeholder="71 99999 9999"
-                  name="phone"
-                  international
-                  countryCallingCodeEditable={false}
-                  labels={ptBr}
-                  className={styles.phoneInput}
-                  value={formData.phone}
-                  onChange={handlePhoneChange}
-                  disabled={isLoading}
-                  defaultCountry="BR"
-                />
-                <FieldError>{errors.phone}</FieldError>
-              </TextField>
-              <div className={styles.multipleInputs}>
-                <TextField isInvalid={!!errors.dateOfBirth} className="w-full">
-                  <Label htmlFor="dateOfBirth" className={styles.label}>
-                    Data de nascimento
-                  </Label>
-                  <input
-                    id="dateOfBirth"
-                    name="dateOfBirth"
-                    type="date"
-                    className={styles.input}
-                    value={
-                      formData.dateOfBirth
-                        ? new Date(formData.dateOfBirth)
-                            .toISOString()
-                            .split("T")[0]
-                        : ""
-                    }
-                    onChange={handleChange}
-                  />
-                  <FieldError>{errors.dateOfBirth}</FieldError>
-                </TextField>
-                <TextField isInvalid={!!errors.gender} className="w-full">
-                  <Label htmlFor="gender" className={styles.label}>
-                    Gênero
-                  </Label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    className={styles.input}
-                    value={formData.gender || ""}
-                    onChange={handleChange}
-                  >
-                    <option value="" disabled>
-                      Selecione
-                    </option>
-                    <option value="MALE">Masculino</option>
-                    <option value="FEMALE">Feminino</option>
-                    <option value="OTHER">Outro</option>
-                    <option value="UNDISCLOSED">Prefiro não informar</option>
-                  </select>
-                  <FieldError>{errors.gender}</FieldError>
-                </TextField>
-              </div>
-            </>
-          )}
-          {formData.role === "PROFESSIONAL" && (
-            <div className={styles.professionalInputsWrapper}>
-              <div className={styles.multipleInputs}>
-                <TextField
-                  isInvalid={!!errors.professionalLicense}
-                  className="w-full"
-                >
-                  <Label htmlFor="professionalLicense" className={styles.label}>
-                    Registro profissional (CRM/CRP)
-                  </Label>
-                  <Input
-                    id="professionalLicense"
-                    placeholder="Ex: 123456-SP"
-                    type="string"
-                    name="professionalLicense"
-                    className={styles.input}
-                    value={formData.professionalLicense}
-                    onChange={handleChange}
-                  />
-                  <FieldError>{errors.professionalLicense}</FieldError>
-                </TextField>
-                <TextField isInvalid={!!errors.specialty} className="w-full">
-                  <Label htmlFor="specialty" className={styles.label}>
-                    Especialidade
-                  </Label>
-                  <Input
-                    id="specialty"
-                    placeholder="Ex: Cardiologia"
-                    type="string"
-                    name="specialty"
-                    className={styles.input}
-                    value={formData.specialty}
-                    onChange={handleChange}
-                  />
-                  <FieldError>{errors.specialty}</FieldError>
-                </TextField>
-                <TextField isInvalid={!!errors.subspecialty} className="w-full">
-                  <Label htmlFor="subspecialty" className={styles.label}>
-                    Subespecialidade
-                  </Label>
-                  <Input
-                    id="subspecialty"
-                    placeholder="Ex: Cardiologia infantil"
-                    type="string"
-                    name="subspecialty"
-                    className={styles.input}
-                    value={formData.subspecialty}
-                    onChange={handleChange}
-                  />
-                  <FieldError>{errors.subspecialty}</FieldError>
-                </TextField>
-                <TextField isInvalid={!!errors.modality} className="w-full">
-                  <Label htmlFor="modality" className={styles.label}>
-                    Modalidade de atendimento
-                  </Label>
-                  <select
-                    id="modality"
-                    name="modality"
-                    className={styles.input}
-                    value={formData.modality || ""}
-                    onChange={handleChange}
-                  >
-                    <option value="" disabled>
-                      Selecione
-                    </option>
-                    <option value="VIRTUAL">Virtual</option>
-                    <option value="HOME_VISIT">Domiciliar</option>
-                    <option value="CLINIC">Clínica</option>
-                  </select>
-                  <FieldError>{errors.modality}</FieldError>
-                </TextField>
-              </div>
-              <TextField isInvalid={!!errors.bio} className="w-full">
-                <Label htmlFor="bio" className={styles.label}>
-                  Biografia
-                </Label>
-                <textarea
-                  id="bio"
-                  name="bio"
-                  placeholder="Ex: Sou um profissional de saúde com 10 anos de experiência"
-                  className={styles.textarea}
-                  value={formData.bio}
-                  onChange={handleChange}
-                  rows={4}
-                />
-                <FieldError>{errors.bio}</FieldError>
-              </TextField>
-              <TextField isInvalid={!!errors.socialLinks} className="w-full">
-                <Label htmlFor="referenceLink" className={styles.label}>
-                  Link de referência (Linkedin/Lattes)
-                </Label>
-                <Input
-                  id="referenceLink"
-                  placeholder="Ex: https://..."
-                  type="url"
-                  name="referenceLink"
-                  className={styles.input}
-                  value={formData.socialLinks?.referenceLink}
-                  onChange={handleSocialLinkChange}
-                />
-                <FieldError>{errors.socialLinks}</FieldError>
-              </TextField>
-            </div>
+            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+          </div>
+
+          {role === "PATIENT" && (
+            <PatientFields
+              register={register}
+              control={control}
+              errors={errors}
+              isLoading={isLoading}
+              onCpfChange={handleCpfChange}
+            />
           )}
 
-          <TextField isInvalid={!!errors.password} className="w-full">
-            <Label className={styles.label}>Senha</Label>
-            <InputGroup fullWidth className={styles.input}>
-              <InputGroup.Input
-                name="password"
-                placeholder="Insira a senha"
-                type={isPasswordVisible ? "text" : "password"}
-                value={formData.password}
-                onChange={handleChange}
-              />
-              <InputGroup.Suffix className="pr-0">
-                <Button
-                  isIconOnly
-                  aria-label={
-                    isPasswordVisible ? "Esconder senha" : "Mostrar senha"
-                  }
-                  size="sm"
-                  variant="ghost"
-                  onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                >
-                  {isPasswordVisible ? (
-                    <Eye className="size-4" />
-                  ) : (
-                    <EyeSlash className="size-4" />
-                  )}
-                </Button>
-              </InputGroup.Suffix>
-            </InputGroup>
-            <FieldError>{errors.password}</FieldError>
-          </TextField>
+          {role === "PROFESSIONAL" && (
+            <ProfessionalFields register={register} errors={errors} />
+          )}
 
-          <TextField isInvalid={!!errors.confirmPassword} className="w-full">
-            <Label className={styles.label}>Confirmar a senha</Label>
-            <InputGroup fullWidth className={styles.input}>
-              <InputGroup.Input
-                name="confirmPassword"
-                placeholder="Insira a senha"
-                type={isConfirmPasswordVisible ? "text" : "password"}
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
-              <InputGroup.Suffix className="pr-0">
-                <Button
-                  isIconOnly
-                  aria-label={
-                    isConfirmPasswordVisible
-                      ? "Esconder senha"
-                      : "Mostrar senha"
-                  }
-                  size="sm"
-                  variant="ghost"
-                  onPress={() =>
-                    setIsConfirmPasswordVisible(!isConfirmPasswordVisible)
-                  }
-                >
-                  {isConfirmPasswordVisible ? (
-                    <Eye className="size-4" />
-                  ) : (
-                    <EyeSlash className="size-4" />
-                  )}
-                </Button>
-              </InputGroup.Suffix>
-            </InputGroup>
-            <FieldError>{errors.confirmPassword}</FieldError>
-          </TextField>
+          <PasswordField name="password" label="Senha" register={register} errors={errors} />
+          <PasswordField name="confirmPassword" label="Confirmar a senha" register={register} errors={errors} />
 
-          <Button
-            type="submit"
-            className={styles.button}
-            isDisabled={isLoading}
-            onPress={(e) => {
-              // HeroUI Button requires explicit form submission
-              const form = e.target.closest("form");
-              if (form) {
-                form.requestSubmit();
-              }
-            }}
-          >
-            {isLoading ? <Spinner /> : "Cadastrar"}
+          <Button type="submit" className={styles.button} disabled={isLoading}>
+            {isLoading ? <Spinner size="sm" /> : "Cadastrar"}
           </Button>
-        </Form>
+        </form>
 
         <div className={styles.footer}>
           Já tem uma conta?
-          <Link href="/auth/login" className={styles.link}>
-            Faça login
-          </Link>
+          <Link href="/auth/login" className={styles.link}>Faça login</Link>
         </div>
       </div>
     </div>

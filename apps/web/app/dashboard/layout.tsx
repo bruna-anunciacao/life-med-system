@@ -3,7 +3,7 @@
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import DashboardHeader from "../ui/dashboard/header";
-import { Spinner } from "@heroui/react";
+import { Spinner } from "@/components/ui/spinner";
 
 const DashboardLayout = ({
   children,

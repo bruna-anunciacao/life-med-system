@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import styles from "./page.module.css";
 import Logo from "./life-med-logo.png";
 

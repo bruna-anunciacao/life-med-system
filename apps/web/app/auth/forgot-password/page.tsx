@@ -1,94 +1,16 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import styles from "../auth.module.css";
-import { useRouter } from "next/navigation";
-import * as z from "zod";
-import { toast } from "sonner";
-import {
-  Button,
-  FieldError,
-  Form,
-  Input,
-  Label,
-  Spinner,
-  TextField,
-} from "@heroui/react";
-import { authService } from "../../../services/auth-service";
-
-const formValidation = z.object({
-  email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
-});
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { useForgotPasswordForm } from "./useForgotPasswordForm";
 
 const ForgotPasswordPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const router = useRouter();
-
-  const [formData, setFormData] = useState({
-    email: "",
-  });
-
-  const resetForm = () => {
-    setFormData({
-      email: "",
-    });
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-    setIsLoading(true);
-    const result = formValidation.safeParse(formData);
-
-    if (!result.success) {
-      const formattedErrors: Record<string, string> = {};
-
-      result.error.issues.forEach((issue) => {
-        const fieldName = issue.path[0];
-        if (fieldName) {
-          formattedErrors[String(fieldName)] = issue.message;
-        }
-      });
-      setErrors(formattedErrors);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      await authService.forgotPassword({
-        email: formData.email,
-      });
-
-      toast.success(`Enviamos um link de recuperação para ${formData.email}. Verifique sua caixa de
-              entrada e spam.`);
-      resetForm();
-      setTimeout(() => {
-        router.push("/auth/login");
-      }, 1000);
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Erro desconhecido.");
-      }
-      setIsLoading(false);
-    }
-  };
+  const { form, isLoading, submitted, onSubmit } = useForgotPasswordForm();
+  const { register, handleSubmit, formState: { errors } } = form;
 
   return (
     <div className={styles.container}>
@@ -96,62 +18,45 @@ const ForgotPasswordPage = () => {
         <div className={styles.header}>
           <h1 className={styles.title}>Redefinir senha</h1>
           <p className={styles.subtitle}>
-            {submitted
-              ? "Verifique seu e-mail"
-              : "Digite seu e-mail para receber o link"}
+            {submitted ? "Verifique seu e-mail" : "Digite seu e-mail para receber o link"}
           </p>
         </div>
 
         {submitted ? (
           <div className={styles.form}>
             <p style={{ textAlign: "center", color: "#334155" }}>
-              Enviamos um link de recuperação para. Verifique sua caixa de
-              entrada e spam.
+              Enviamos um link de recuperação para o seu e-mail. Verifique sua caixa de entrada e spam.
             </p>
-            <Link
-              href="/auth/login"
-              className={styles.button}
-              style={{ textAlign: "center", textDecoration: "none" }}
-            >
+            <Link href="/auth/login" className={styles.button} style={{ textAlign: "center", textDecoration: "none" }}>
               Voltar para o Login
             </Link>
           </div>
         ) : (
-          <Form onSubmit={handleSubmit} className={styles.form}>
-            <TextField isInvalid={!!errors.email} className="w-full">
-              <Label htmlFor="email" className={styles.label}>
-                E-mail
-              </Label>
+          <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+            <div className="w-full flex flex-col gap-1">
+              <Label htmlFor="email" className={styles.label}>E-mail</Label>
               <Input
                 id="email"
                 placeholder="exemplo@email.com"
                 type="email"
-                name="email"
                 className={styles.input}
-                value={formData.email}
-                onChange={handleChange}
+                {...register("email")}
               />
-              <FieldError>{errors.email}</FieldError>
-            </TextField>
-            <Button
-              type="submit"
-              className={styles.button}
-              isDisabled={isLoading}
-              onPress={(e) => {
-                const form = e.target.closest('form');
-                if (form) form.requestSubmit();
-              }}
-            >
-              {isLoading ? <Spinner /> : "Enviar link"}
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
+              )}
+            </div>
+
+            <Button type="submit" className={styles.button} disabled={isLoading}>
+              {isLoading ? <Spinner size="sm" /> : "Enviar link"}
             </Button>
-          </Form>
+          </form>
         )}
+
         {!submitted && (
           <div className={styles.footer}>
             Lembrou sua senha?
-            <Link href="/auth/login" className={styles.link}>
-              Voltar
-            </Link>
+            <Link href="/auth/login" className={styles.link}>Voltar</Link>
           </div>
         )}
       </div>

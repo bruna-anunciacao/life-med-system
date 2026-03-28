@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button, InputGroup, TextField } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { SearchIcon, PlusIcon } from "../../../utils/icons";
 import Image from "next/image";
 import styles from "./patients.module.css";
@@ -16,27 +17,9 @@ type Patient = {
 };
 
 const mockPatients: Patient[] = [
-  {
-    id: "1",
-    name: "Maria Clara",
-    email: "maria@email.com",
-    phone: "(11) 99999-1111",
-    lastVisit: "10/02/2026",
-    photoUrl: "",
-  },
-  {
-    id: "2",
-    name: "Lucas Mendes",
-    email: "lucas@email.com",
-    phone: "(11) 98888-2222",
-    lastVisit: "05/02/2026",
-  },
-  {
-    id: "3",
-    name: "Ana Souza",
-    email: "ana@email.com",
-    phone: "(11) 97777-3333",
-  },
+  { id: "1", name: "Maria Clara", email: "maria@email.com", phone: "(11) 99999-1111", lastVisit: "10/02/2026", photoUrl: "" },
+  { id: "2", name: "Lucas Mendes", email: "lucas@email.com", phone: "(11) 98888-2222", lastVisit: "05/02/2026" },
+  { id: "3", name: "Ana Souza", email: "ana@email.com", phone: "(11) 97777-3333" },
 ];
 
 export default function PatientsPage() {
@@ -44,7 +27,6 @@ export default function PatientsPage() {
 
   const filtered = mockPatients.filter((p) => {
     const term = search.toLowerCase();
-
     return Object.values(p)
       .filter((value) => typeof value === "string")
       .some((value) => value.toLowerCase().includes(term));
@@ -52,20 +34,9 @@ export default function PatientsPage() {
 
   const renderAvatar = (name: string, photoUrl?: string) => {
     if (photoUrl) {
-      return (
-        <Image
-          src={photoUrl}
-          alt={name}
-          width={48}
-          height={48}
-          className={styles.avatar}
-        />
-      );
+      return <Image src={photoUrl} alt={name} width={48} height={48} className={styles.avatar} />;
     }
-
-    return (
-      <div className={styles.avatarNoPhoto}>{name.charAt(0).toUpperCase()}</div>
-    );
+    return <div className={styles.avatarNoPhoto}>{name.charAt(0).toUpperCase()}</div>;
   };
 
   return (
@@ -73,28 +44,25 @@ export default function PatientsPage() {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Pacientes</h1>
-          <p className={styles.subtitle}>
-            Gerencie e visualize seus pacientes cadastrados.
-          </p>
+          <p className={styles.subtitle}>Gerencie e visualize seus pacientes cadastrados.</p>
         </div>
-
         <Button className={styles.addButton}>
           <PlusIcon />
           Novo Paciente
         </Button>
       </div>
 
-      <TextField className={styles.searchBar}>
-        <InputGroup fullWidth className={styles.input}>
-          <InputGroup.Input
-            name="password"
-            placeholder="Buscar paciente..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className={`${styles.searchBar} relative`}>
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
           <SearchIcon />
-        </InputGroup>
-      </TextField>
+        </span>
+        <Input
+          placeholder="Buscar paciente..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={`${styles.input} pl-10`}
+        />
+      </div>
 
       <div className={styles.grid}>
         {filtered.map((patient) => (
@@ -106,20 +74,12 @@ export default function PatientsPage() {
                 <p className={styles.email}>{patient.email}</p>
               </div>
             </div>
-
             <div className={styles.cardBody}>
-              <p>
-                <strong>Telefone:</strong> {patient.phone}
-              </p>
-              <p>
-                <strong>Última Consulta:</strong> {patient.lastVisit ?? "—"}
-              </p>
+              <p><strong>Telefone:</strong> {patient.phone}</p>
+              <p><strong>Última Consulta:</strong> {patient.lastVisit ?? "—"}</p>
             </div>
-
             <div className={styles.cardFooter}>
-              <Button size="sm" className={styles.profileButton}>
-                Ver Perfil
-              </Button>
+              <Button size="sm" className={styles.profileButton}>Ver Perfil</Button>
             </div>
           </div>
         ))}

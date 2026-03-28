@@ -3,7 +3,11 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "sonner";
 
-import { QueryProvider } from "./QueryProvider";
+import { ReactQueryProvider } from "./ReactQueryProvider";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,12 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" className={cn("font-sans", geist.variable)}>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <QueryProvider>
+        <ReactQueryProvider>
           <Toaster richColors position="top-center" />
           {children}
-        </QueryProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
-import { Button, Link } from "@heroui/react";
-import { ArrowRightFromSquare } from "@gravity-ui/icons";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import styles from "./header.module.css";
@@ -62,11 +63,11 @@ const DashboardHeader = ({ role }: { role: string }) => {
 
       <div className={styles.right}>
         <Button
-          variant="danger-soft"
+          variant="destructive"
           onClick={handleLogout}
           className={styles.logoutButton}
         >
-          <ArrowRightFromSquare />
+          <LogOut className="size-4" />
           Sair
         </Button>
       </div>

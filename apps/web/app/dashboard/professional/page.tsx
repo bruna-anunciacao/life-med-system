@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Button, Chip } from "@heroui/react";
-import { Card, CardBody } from "@heroui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import styles from "./professional-dashboard.module.css";
 import { toast } from "sonner";
 import {
@@ -23,69 +24,28 @@ const ProfessionalDashboard = () => {
   };
 
   const stats = [
-    {
-      title: "Consultas Hoje",
-      value: "8",
-      icon: <CalendarIcon />,
-      color: "primary",
-    },
+    { title: "Consultas Hoje", value: "8", icon: <CalendarIcon />, color: "primary" },
     { title: "Pendentes de Aprovação", value: "3", icon: <ClockIcon />, color: "warning" },
-    {
-      title: "Pacientes Atendidos",
-      value: "142",
-      icon: <UsersIcon />,
-      color: "success",
-    },
+    { title: "Pacientes Atendidos", value: "142", icon: <UsersIcon />, color: "success" },
   ];
 
   const nextAppointment = {
     patientName: "Lucas Mendes",
     time: "14:00 - 15:00",
     type: "VIRTUAL",
-    avatar: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
     status: "CONFIRMED",
   };
 
   const schedule = [
-    {
-      time: "09:00",
-      name: "Maria Clara",
-      status: "COMPLETED",
-      type: "Retorno",
-    },
-    {
-      time: "10:00",
-      name: "João Pedro",
-      status: "COMPLETED",
-      type: "Primeira Vez",
-    },
-    {
-      time: "14:00",
-      name: "Lucas Mendes",
-      status: "UPCOMING",
-      type: "Retorno",
-    },
-    {
-      time: "15:30",
-      name: "Fernanda Lima",
-      status: "UPCOMING",
-      type: "Exames",
-    },
+    { time: "09:00", name: "Maria Clara", status: "COMPLETED", type: "Retorno" },
+    { time: "10:00", name: "João Pedro", status: "COMPLETED", type: "Primeira Vez" },
+    { time: "14:00", name: "Lucas Mendes", status: "UPCOMING", type: "Retorno" },
+    { time: "15:30", name: "Fernanda Lima", status: "UPCOMING", type: "Exames" },
   ];
 
   const requests = [
-    {
-      id: 1,
-      name: "Ana Souza",
-      date: "Hoje, 16:30",
-      avatar: "https://i.pravatar.cc/150?u=a04258114e29026708c",
-    },
-    {
-      id: 2,
-      name: "Carlos Lima",
-      date: "Amanhã, 09:00",
-      avatar: "https://i.pravatar.cc/150?u=a04258114e29026302d",
-    },
+    { id: 1, name: "Ana Souza", date: "Hoje, 16:30" },
+    { id: 2, name: "Carlos Lima", date: "Amanhã, 09:00" },
   ];
 
   return (
@@ -93,19 +53,18 @@ const ProfessionalDashboard = () => {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title}>Painel Profissional</h1>
-          <p className={styles.subtitle}>
-            Gerencie suas consultas e acompanhe seu dia.
-          </p>
+          <p className={styles.subtitle}>Gerencie suas consultas e acompanhe seu dia.</p>
         </div>
-        <Button className={styles.calendarButton} onPress={handleCalendarClick}>
+        <Button className={styles.calendarButton} onClick={handleCalendarClick}>
           <CalendarIcon />
           Minha Agenda
         </Button>
       </div>
+
       <div className={styles.statsGrid}>
         {stats.map((stat, index) => (
           <Card key={index} className={styles.statCard}>
-            <CardBody className={styles.statCardBody}>
+            <CardContent className={styles.statCardBody}>
               <div>
                 <p className={styles.statTitle}>{stat.title}</p>
                 <h3 className={styles.statValue}>{stat.value}</h3>
@@ -113,10 +72,11 @@ const ProfessionalDashboard = () => {
               <div className={`${styles.iconWrapper} ${styles[stat.color]}`}>
                 {stat.icon}
               </div>
-            </CardBody>
+            </CardContent>
           </Card>
         ))}
       </div>
+
       <div className={styles.mainContent}>
         <div className={styles.leftColumn}>
           <div className={styles.sectionHeader}>
@@ -125,16 +85,12 @@ const ProfessionalDashboard = () => {
             </h2>
           </div>
           <Card className={styles.nextApptCard}>
-            <CardBody className={styles.nextApptBody}>
+            <CardContent className={styles.nextApptBody}>
               <div className="flex items-center gap-4">
                 <div>
-                  <h3 className={styles.nextApptName}>
-                    {nextAppointment.patientName}
-                  </h3>
+                  <h3 className={styles.nextApptName}>{nextAppointment.patientName}</h3>
                   <div className="flex items-center gap-2 text-gray-500 mt-1">
-                    <Chip size="sm" className={styles.modalityChip}>
-                      Consulta Online
-                    </Chip>
+                    <Badge className={styles.modalityChip}>Consulta Online</Badge>
                     <span className="flex items-center gap-1 text-sm font-medium">
                       <ClockIcon /> {nextAppointment.time}
                     </span>
@@ -148,13 +104,14 @@ const ProfessionalDashboard = () => {
                   Iniciar Vídeo
                 </Button>
               </div>
-            </CardBody>
+            </CardContent>
           </Card>
+
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Agenda de Hoje</h2>
           </div>
           <Card className={styles.scheduleCard}>
-            <CardBody>
+            <CardContent>
               {schedule.map((item, idx) => (
                 <div key={idx} className={styles.scheduleRow}>
                   <div className={styles.timeSlot}>{item.time}</div>
@@ -162,31 +119,27 @@ const ProfessionalDashboard = () => {
                     <p className="font-semibold text-gray-800">{item.name}</p>
                     <p className="text-xs text-gray-500">{item.type}</p>
                   </div>
-                  <Chip
-                    size="sm"
-                    className={styles.statusChip}
-                    color={item.status === "COMPLETED" ? "success" : "default"}
+                  <Badge
+                    className={`${styles.statusChip} ${item.status === "COMPLETED" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}`}
                   >
                     {item.status === "COMPLETED" ? "Realizado" : "Agendado"}
-                  </Chip>
+                  </Badge>
                 </div>
               ))}
-            </CardBody>
+            </CardContent>
           </Card>
         </div>
 
         <div className={styles.rightColumn}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Solicitações</h2>
-            <Chip size="sm" color="warning" className={styles.statusChip}>
-              2 Novas
-            </Chip>
+            <Badge className={`${styles.statusChip} bg-yellow-100 text-yellow-700`}>2 Novas</Badge>
           </div>
 
           <div className="flex flex-col gap-3">
             {requests.map((req) => (
               <Card key={req.id} className="border-none shadow-sm">
-                <CardBody className={styles.requestCardBody}>
+                <CardContent className={styles.requestCardBody}>
                   <div>
                     <p className="font-semibold text-gray-800">{req.name}</p>
                     <p className="text-xs text-gray-500">{req.date}</p>
@@ -195,7 +148,7 @@ const ProfessionalDashboard = () => {
                     <Button
                       size="sm"
                       className={styles.approveButton}
-                      onPress={() => toast.success("Agendamento aprovado")}
+                      onClick={() => toast.success("Agendamento aprovado")}
                     >
                       <CheckIcon />
                       Aceitar
@@ -205,18 +158,18 @@ const ProfessionalDashboard = () => {
                       Recusar
                     </Button>
                   </div>
-                </CardBody>
+                </CardContent>
               </Card>
             ))}
           </div>
 
           <Card className={styles.tipCard}>
-            <CardBody>
+            <CardContent>
               <h4 className={styles.tipTitle}>Dica do Sistema</h4>
               <p className={styles.tipText}>
                 Mantenha sua agenda atualizada para evitar conflitos de horário.
               </p>
-            </CardBody>
+            </CardContent>
           </Card>
         </div>
       </div>
