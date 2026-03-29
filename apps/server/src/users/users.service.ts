@@ -10,7 +10,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
-  ) {}
+  ) { }
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -69,6 +69,7 @@ export class UsersService {
       where: { id },
       data: {
         ...userData,
+        cpf: cpf,
         status: newStatus,
       },
     });
@@ -116,7 +117,6 @@ export class UsersService {
             dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
             gender,
             address,
-            cpf,
           },
         });
       }

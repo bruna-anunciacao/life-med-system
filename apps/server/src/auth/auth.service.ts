@@ -27,7 +27,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -81,11 +81,20 @@ export class AuthService {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
+        cpf: dto.cpf,
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PATIENT,
@@ -95,7 +104,6 @@ export class AuthService {
             phone: dto.phone,
             dateOfBirth: dto.dateOfBirth,
             gender: dto.gender,
-            cpf: dto.cpf,
           },
         },
       },
@@ -141,11 +149,20 @@ export class AuthService {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
+        cpf: dto.cpf,
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.PROFESSIONAL,
@@ -204,11 +221,20 @@ export class AuthService {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
+        cpf: dto.cpf,
         password: passwordHash,
         name: dto.name,
         role: UserRoleEnum.ADMIN,

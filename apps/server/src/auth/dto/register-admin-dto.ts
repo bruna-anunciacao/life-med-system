@@ -35,4 +35,8 @@ export class RegisterAdminDto {
   @MinLength(2, { message: 'Nome deve ter no mínimo 2 caracteres' })
   @MaxLength(100, { message: 'Nome deve ter no máximo 100 caracteres' })
   name!: string;
+
+  @IsString({ message: 'CPF deve ser texto' })
+  @IsNotEmpty({ message: 'CPF é obrigatório' })
+  cpf!: string;
 }
