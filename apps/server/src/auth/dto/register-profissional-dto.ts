@@ -10,6 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { AppointmentModalityEnum } from '../enums/appointment-modality-enum';
+import { AppointmentModality } from '@prisma/client';
 
 export class RegisterProfessionalDto {
   @IsEmail({}, { message: 'Email inválido' })
@@ -69,10 +70,10 @@ export class RegisterProfessionalDto {
   subspecialty?: string;
 
   @IsOptional()
-  @IsEnum(AppointmentModalityEnum, {
+  @IsEnum(AppointmentModality, {
     message: 'Modalidade deve ser VIRTUAL, HOME_VISIT ou CLINIC',
   })
-  modality!: AppointmentModalityEnum;
+  modality!: AppointmentModality;
 
   @IsOptional()
   @IsObject()
@@ -86,4 +87,8 @@ export class RegisterProfessionalDto {
   @IsString({ message: 'Biografia deve ser texto' })
   @MaxLength(500, { message: 'Biografia deve ter no máximo 500 caracteres' })
   bio?: string;
+
+  @IsString({ message: 'CPF deve ser texto' })
+  @IsNotEmpty({ message: 'CPF é obrigatório' })
+  cpf!: string;
 }
