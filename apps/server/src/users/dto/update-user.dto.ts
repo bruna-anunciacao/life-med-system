@@ -10,7 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { AppointmentModality } from '@prisma/client';
-import { UserStatusEnum } from 'src/auth/enums/user-status-enum';
+import { UserStatus } from '@prisma/client';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -27,10 +27,10 @@ export class UpdateUserDto {
   email?: string;
 
   @IsOptional()
-  @IsEnum(UserStatusEnum, {
+  @IsEnum(UserStatus, {
     message: 'Status deve ser PENDING, COMPLETED, VERIFIED ou BLOCKED',
   })
-  status?: UserStatusEnum;
+  status?: UserStatus;
 
   @IsOptional()
   @IsString({ message: 'Telefone deve ser texto' })
