@@ -108,6 +108,34 @@ export class GestorService {
     });
   }
 
+  async getPatient(patientId: string) {
+    const patient = await this.prisma.user.findUnique({
+      where: { id: patientId },
+      include: { patientProfile: true },
+    });
+
+    if (!patient || patient.role !== UserRoleEnum.PATIENT) {
+      throw new NotFoundException('Paciente não encontrado');
+    }
+
+    return {
+      id: patient.id,
+      email: patient.email,
+      name: patient.name,
+      cpf: patient.cpf,
+      role: patient.role,
+      status: patient.status,
+      emailVerified: patient.emailVerified,
+      createdAt: patient.createdAt,
+      updatedAt: patient.updatedAt,
+      phone: patient.patientProfile?.phone,
+      dateOfBirth: patient.patientProfile?.dateOfBirth,
+      gender: patient.patientProfile?.gender,
+      address: patient.patientProfile?.address,
+      patientProfile: patient.patientProfile,
+    };
+  }
+
   async createAppointment(dto: CreateAppointmentDto) {
 
     const patient = await this.prisma.user.findUnique({
@@ -179,5 +207,38 @@ export class GestorService {
       },
       orderBy: { dateTime: 'desc' },
     });
+  }
+
+  async getProfessionalAvailability(professionalId: string) {
+    const professional = await this.prisma.user.findUnique({
+      where: { id: professionalId },
+      include: { professionalProfile: true },
+    });
+
+    if (!professional || professional.role !== UserRoleEnum.PROFESSIONAL) {
+      throw new NotFoundException('Profissional não encontrado');
+    }
+
+    const availability = await this.prisma.availability.findMany({
+      where: {
+        professionalId,
+        validUntil: null,
+      },
+      orderBy: { dayOfWeek: 'asc' },
+    });
+
+    return {
+      professional: {
+        id: professional.id,
+        name: professional.name,
+        email: professional.email,
+        specialty: professional.professionalProfile?.specialty,
+      },
+      availability: availability.map((a) => ({
+        dayOfWeek: a.dayOfWeek,
+        startTime: a.startTime,
+        endTime: a.endTime,
+      })),
+    };
   }
 }
