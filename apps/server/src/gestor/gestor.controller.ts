@@ -40,6 +40,11 @@ export class GestorController {
     return this.gestorService.listPatients();
   }
 
+  @Get('patients/:patientId')
+  async getPatient(@Param('patientId') patientId: string) {
+    return this.gestorService.getPatient(patientId);
+  }
+
   @Post('appointments')
   async createAppointment(@Body() dto: CreateAppointmentDto) {
     return this.gestorService.createAppointment(dto);
@@ -48,5 +53,10 @@ export class GestorController {
   @Get('appointments')
   async listAppointments() {
     return this.gestorService.getAppointmentsByGestor();
+  }
+
+  @Get('professionals/:professionalId/availability')
+  async getProfessionalAvailability(@Param('professionalId') professionalId: string) {
+    return this.gestorService.getProfessionalAvailability(professionalId);
   }
 }
