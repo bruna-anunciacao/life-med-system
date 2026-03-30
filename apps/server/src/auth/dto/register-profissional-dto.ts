@@ -9,6 +9,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { AppointmentModalityEnum } from '../enums/appointment-modality-enum';
 import { AppointmentModality } from '@prisma/client';
 
 export class RegisterProfessionalDto {

@@ -9,6 +9,8 @@ import { MailModule } from 'services/mail.module';
 import { UsersModule } from './users/users.module';
 import { AdminSeederService } from './database/admin.seeder.service';
 import { ProfessionalModule } from './professional/professional.module';
+import { PatientsModule } from './patients/patients.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { ProfessionalModule } from './professional/professional.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    PatientsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, AdminSeederService],
