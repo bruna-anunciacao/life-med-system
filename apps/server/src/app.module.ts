@@ -11,6 +11,7 @@ import { AdminSeederService } from './database/admin.seeder.service';
 import { ProfessionalModule } from './professional/professional.module';
 import { PatientsModule } from './patients/patients.module';
 import { ReportsModule } from './reports/reports.module';
+import { GestorModule } from './gestor/gestor.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ReportsModule } from './reports/reports.module';
     }),
     PatientsModule,
     ReportsModule,
+    GestorModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, AdminSeederService],
