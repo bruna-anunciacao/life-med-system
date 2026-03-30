@@ -2,19 +2,22 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from 'services/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { UserRoleEnum } from '../auth/enums/user-role-enum';
-import { UserStatusEnum } from '../auth/enums/user-status-enum';
+
+import { UserRole, UserStatus } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
-  ) {}
+  ) { }
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
+      omit: {
+        password: true,
+      },
       include: {
         patientProfile: true,
         professionalProfile: true,
@@ -23,9 +26,7 @@ export class UsersService {
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = user;
-    return result;
+    return user;
   }
 
   async update(id: string, dto: UpdateUserDto) {
@@ -61,14 +62,18 @@ export class UsersService {
       const hasSpecialty = specialty || user.professionalProfile?.specialty;
 
       if (hasProfessionalLicense && hasSpecialty) {
-        newStatus = UserStatusEnum.COMPLETED;
+        newStatus = UserStatus.COMPLETED;
       }
     }
 
     const updatedUser = await this.prisma.user.update({
       where: { id },
+      omit: {
+        password: true,
+      },
       data: {
         ...userData,
+        cpf: cpf,
         status: newStatus,
       },
     });
@@ -116,15 +121,12 @@ export class UsersService {
             dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
             gender,
             address,
-            cpf,
           },
         });
       }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = updatedUser;
-    return result;
+    return updatedUser;
   }
 
   async verifyUser(id: string, emailVerified: boolean) {
@@ -134,6 +136,9 @@ export class UsersService {
 
     const updatedUser = await this.prisma.user.update({
       where: { id },
+      omit: {
+        password: true,
+      },
       data: { emailVerified },
     });
 
@@ -155,14 +160,12 @@ export class UsersService {
       });
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...result } = updatedUser;
-    return result;
+    return updatedUser;
   }
 
   async findAllProfessionals() {
     return this.prisma.user.findMany({
-      where: { role: UserRoleEnum.PROFESSIONAL },
+      where: { role: UserRole.PROFESSIONAL },
       select: {
         id: true,
         name: true,
@@ -182,7 +185,7 @@ export class UsersService {
 
   async findAllPatients() {
     return this.prisma.user.findMany({
-      where: { role: UserRoleEnum.PATIENT },
+      where: { role: UserRole.PATIENT },
       select: {
         id: true,
         name: true,

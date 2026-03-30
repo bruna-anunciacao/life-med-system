@@ -16,15 +16,16 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { RolesGuard } from '../auth/guards/roles-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRoleEnum } from '../auth/enums/user-role-enum';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 
+import { UserRole } from '@prisma/client';
+
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get('me')
   @UseGuards(EmailVerifiedGuard)
@@ -72,7 +73,7 @@ export class UsersController {
 
   @Patch(':id/verify')
   @UseGuards(RolesGuard)
-  @Roles(UserRoleEnum.ADMIN)
+  @Roles(UserRole.ADMIN)
   verifyUser(@Param('id') id: string, @Body() dto: VerifyUserDto) {
     return this.usersService.verifyUser(id, dto.emailVerified);
   }

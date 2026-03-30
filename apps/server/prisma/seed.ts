@@ -13,6 +13,7 @@ async function main() {
     update: {},
     create: {
       email: 'admin@lifemed.com',
+      cpf: '00000000000',
       password: hashedPassword,
       name: 'Administrador',
       role: UserRole.ADMIN,
@@ -26,6 +27,7 @@ async function main() {
     update: {},
     create: {
       email: 'medico@lifemed.com',
+      cpf: '11111111111',
       password: hashedPassword,
       name: 'Dr. Voluntário',
       role: UserRole.PROFESSIONAL,
@@ -47,13 +49,13 @@ async function main() {
     update: {},
     create: {
       email: 'paciente@lifemed.com',
+      cpf: '22222222222',
       password: hashedPassword,
       name: 'Paciente Exemplo',
       role: UserRole.PATIENT,
       status: UserStatus.VERIFIED,
       patientProfile: {
         create: {
-          cpf: '00000000191',
         },
       },
     },

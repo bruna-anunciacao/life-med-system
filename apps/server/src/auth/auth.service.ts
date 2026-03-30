@@ -5,21 +5,16 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UserRoleEnum } from './enums/user-role-enum';
-
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
 import { RegisterProfessionalDto } from './dto/register-profissional-dto';
 import { RegisterAdminDto } from './dto/register-admin-dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-
 import { MailService } from 'services/mail.service';
-
 import { randomUUID } from 'crypto';
-import { UserStatusEnum } from './enums/user-status-enum';
+import { UserRole, UserStatus } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +22,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -81,21 +76,29 @@ export class AuthService {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
+        cpf: dto.cpf,
         password: passwordHash,
         name: dto.name,
-        role: UserRoleEnum.PATIENT,
-        status: UserStatusEnum.COMPLETED,
+        role: UserRole.PATIENT,
+        status: UserStatus.COMPLETED,
         patientProfile: {
           create: {
             phone: dto.phone,
             dateOfBirth: dto.dateOfBirth,
             gender: dto.gender,
-            cpf: dto.cpf,
           },
         },
       },
@@ -141,15 +144,24 @@ export class AuthService {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
+        cpf: dto.cpf,
         password: passwordHash,
         name: dto.name,
-        role: UserRoleEnum.PROFESSIONAL,
-        status: UserStatusEnum.COMPLETED,
+        role: UserRole.PROFESSIONAL,
+        status: UserStatus.COMPLETED,
         professionalProfile: {
           create: {
             professionalLicense: dto.professionalLicense,
@@ -204,15 +216,24 @@ export class AuthService {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
+        cpf: dto.cpf,
         password: passwordHash,
         name: dto.name,
-        role: UserRoleEnum.ADMIN,
-        status: UserStatusEnum.VERIFIED,
+        role: UserRole.ADMIN,
+        status: UserStatus.VERIFIED,
       },
     });
 
@@ -290,7 +311,7 @@ export class AuthService {
     role: string;
   }) {
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRoleEnum.ADMIN },
+      where: { role: UserRole.ADMIN },
       select: { name: true, email: true },
     });
 
