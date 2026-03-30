@@ -25,7 +25,7 @@ export default function RegisterGestorPage() {
 
     register(formData, {
       onSuccess: () => {
-        router.push('/gestor/dashboard');
+        router.push('/dashboard/gestor');
       },
       onError: (error: Error) => {
         setError(error.message);
