@@ -41,16 +41,17 @@ enum AppointmentStatus {
 }
 
 model User {
-  id            String     @id @default(uuid())
-  email         String     @unique
-  password      String
-  name          String
-  role          UserRole   @default(PATIENT)
-  status        UserStatus @default(PENDING)
-  cpf           String     @default("00000000000")
-  emailVerified Boolean    @default(false) @map("email_verified")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  id       String     @id @default(uuid())
+  email    String     @unique
+  password String
+  name     String
+  role     UserRole   @default(PATIENT)
+  status   UserStatus @default(PENDING)
+  cpf           String  @default("00000000000")
+  emailVerified Boolean @default(false) @map("email_verified")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   professionalProfile ProfessionalProfile?
   patientProfile      PatientProfile?
@@ -58,10 +59,10 @@ model User {
   appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
   appointmentsAsPatient Appointment[] @relation("PatientAppointments")
 
-  availability Availability[]
-
-  passwordResets PasswordReset[]
-  sessions       Session[]
+  availability       Availability[]
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
+  sessions           Session[]
 
   @@map("users")
 }
@@ -151,4 +152,16 @@ model Session {
   data      String?  @db.Text
 
   @@map("sessions")
+}
+
+model EmailVerification {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("email_verifications")
 }
