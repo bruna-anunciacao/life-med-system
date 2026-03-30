@@ -16,7 +16,7 @@ export const createPasswordResetEmail = (
     <p>Para redefinir sua senha, clique no botão abaixo:</p>
     
     <div class="warning">
-      <strong>⚠️ Importante:</strong>
+      <strong>Importante:</strong>
       <ul>
         <li>Este link expira em 1 hora</li>
         <li>Só pode ser usado uma vez</li>

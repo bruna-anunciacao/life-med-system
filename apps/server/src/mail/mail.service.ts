@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
-import { createPasswordResetEmail } from 'templates/mail/password-reset.template';
-import { createNewUserNotificationEmail } from 'templates/mail/new-user-notification.template';
-import { createAccountPendingEmail } from 'templates/mail/account-pending.template';
-import { createAccountApprovedEmail } from 'templates/mail/account-approved.template';
-import { createAccountRejectedEmail } from 'templates/mail/account-rejected.template';
+import { createPasswordResetEmail } from './templates/password-reset.template';
+import { createNewUserNotificationEmail } from './templates/new-user-notification.template';
+import { createAccountPendingEmail } from './templates/account-pending.template';
+import { createAccountApprovedEmail } from './templates/account-approved.template';
+import { createAccountRejectedEmail } from './templates/account-rejected.template';
+import { createEmailVerificationEmail } from './templates/email-verification.template';
+
 export type EmailAttachment = {
   filename: string;
   content: string | Buffer;
@@ -77,11 +79,7 @@ export class MailService {
     user: { name: string; email: string },
     resetUrl: string,
   ) {
-    const htmlBody = createPasswordResetEmail({
-      nome: user.name,
-      resetUrl: resetUrl,
-    });
-
+    const htmlBody = createPasswordResetEmail({ nome: user.name, resetUrl });
     await this.sendEmail({
       to: user.email,
       subject: 'Recuperação de Senha - LifeMed',
@@ -91,7 +89,6 @@ export class MailService {
 
   async sendAccountPendingEmail(user: { name: string; email: string }) {
     const htmlBody = createAccountPendingEmail({ userName: user.name });
-
     await this.sendEmail({
       to: user.email,
       subject: 'Conta em Análise - LifeMed',
@@ -102,12 +99,10 @@ export class MailService {
   async sendAccountApprovedEmail(user: { name: string; email: string }) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const loginUrl = `${frontendUrl}/auth/login`;
-
     const htmlBody = createAccountApprovedEmail({
       userName: user.name,
       loginUrl,
     });
-
     await this.sendEmail({
       to: user.email,
       subject: 'Conta Aprovada - LifeMed',
@@ -117,7 +112,6 @@ export class MailService {
 
   async sendAccountRejectedEmail(user: { name: string; email: string }) {
     const htmlBody = createAccountRejectedEmail({ userName: user.name });
-
     await this.sendEmail({
       to: user.email,
       subject: 'Cadastro Não Aprovado - LifeMed',
@@ -127,20 +121,33 @@ export class MailService {
 
   async sendNewUserNotificationEmail(
     admin: { name: string; email: string },
-    user: { name: string; email: string; role: string },
+    user: { name: string; email: string },
     approveUrl: string,
   ) {
     const htmlBody = createNewUserNotificationEmail({
       adminName: admin.name,
       userName: user.name,
       userEmail: user.email,
-      userRole: user.role,
-      approveUrl: approveUrl,
+      approveUrl,
     });
-
     await this.sendEmail({
       to: admin.email,
       subject: 'Nova Solicitação de Cadastro - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendEmailVerificationEmail(
+    user: { name: string; email: string },
+    verificationUrl: string,
+  ) {
+    const htmlBody = createEmailVerificationEmail({
+      userName: user.name,
+      verificationUrl,
+    });
+    await this.sendEmail({
+      to: user.email,
+      subject: 'Confirme seu E-mail - LifeMed',
       html: htmlBody,
     });
   }
