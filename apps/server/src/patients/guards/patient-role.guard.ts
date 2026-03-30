@@ -9,11 +9,11 @@ export class PatientRoleGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || UserRole.PATIENT) {
-      new ForbiddenException('Only patients can export consults pdf');
+    if (!user || user.role !== UserRole.PATIENT) {
+      throw new ForbiddenException('Only patients can export consults pdf');
     }
 
     return true;
