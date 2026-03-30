@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SearchBar } from "./components/SearchBar";
 import { DoctorCard } from "./components/DoctorCard";
 import { EmptySearch } from "./components/EmptySearch";
+import { ProfessionalData, SeeProfileModal } from "./components/SeeProfileModal";
 
 type Professional = {
   id: string;
@@ -26,6 +27,8 @@ const SearchDoctorsPage = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
+  const [selectedProfessional, setSelectedProfessional] =
+    useState<Professional | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -62,9 +65,12 @@ const SearchDoctorsPage = () => {
     <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
       <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Buscar Médicos</h1>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            Buscar Médicos
+          </h1>
           <p className="mt-1 text-base text-gray-500">
-            Encontre profissionais de saúde voluntários e agende sua consulta gratuitamente.
+            Encontre profissionais de saúde voluntários e agende sua consulta
+            gratuitamente.
           </p>
         </div>
       </div>
@@ -79,16 +85,29 @@ const SearchDoctorsPage = () => {
       />
 
       {isLoading ? (
-        <div className="py-16 px-8 flex justify-center items-center"><Spinner size="lg" /></div>
+        <div className="py-16 px-8 flex justify-center items-center">
+          <Spinner size="lg" />
+        </div>
       ) : filtered.length === 0 ? (
         <EmptySearch />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filtered.map((prof) => (
-            <DoctorCard key={prof.id} professional={prof} />
+            <DoctorCard
+              key={prof.id}
+              professional={prof}
+              onViewProfile={() => setSelectedProfessional(prof)}
+            />
           ))}
         </div>
       )}
+      <SeeProfileModal
+        isOpen={!!selectedProfessional}
+        onOpenChange={(open) => {
+          if (!open) setSelectedProfessional(null);
+        }}
+        professional={selectedProfessional as ProfessionalData}
+      />
     </section>
   );
 };
