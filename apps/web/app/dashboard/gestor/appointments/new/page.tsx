@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { useCreateAppointmentMutation } from '@/queries/useCreateAppointmentMutation';
 import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
 import { useProfessionalsQuery } from '@/queries/useProfessionalsQuery';
+import { useProfessionalAvailabilityQuery } from '@/queries/useProfessionalAvailabilityQuery';
+import { Autocomplete } from '@/components/ui/autocomplete';
+import { ProfessionalAvailabilityDisplay } from '@/components/ui/professional-availability-display';
 import { useRouter } from 'next/navigation';
 
 export default function NewAppointmentPage() {
@@ -18,6 +21,11 @@ export default function NewAppointmentPage() {
     notes: '',
   });
 
+  const { data: professionalAvailability, isLoading: availabilityLoading } =
+    useProfessionalAvailabilityQuery(
+      formData.professionalId ? formData.professionalId : null
+    );
+
   const [error, setError] = useState<string | null>(null);
 
   const { mutate: createAppointment, isPending } =
@@ -29,7 +37,7 @@ export default function NewAppointmentPage() {
 
     createAppointment(formData, {
       onSuccess: () => {
-        router.push('/gestor/appointments');
+        router.push('/dashboard/gestor/appointments');
       },
       onError: (error: Error) => {
         setError(error.message);
@@ -56,43 +64,58 @@ export default function NewAppointmentPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Paciente *
               </label>
-              <select
+              <Autocomplete
+                items={patients.map((p: any) => ({
+                  id: p.id,
+                  email: p.email,
+                  label: p.name || p.email,
+                }))}
                 value={formData.patientId}
-                onChange={(e) =>
-                  setFormData({ ...formData, patientId: e.target.value })
+                onChange={(value) =>
+                  setFormData({ ...formData, patientId: value })
                 }
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Selecione um paciente</option>
-                {patients.map((p: any) => (
-                  <option key={p.id} value={p.id}>
-                    {p.email}
-                  </option>
-                ))}
-              </select>
+                placeholder="Buscar paciente..."
+                displayKey="email"
+              />
+              {!formData.patientId && (
+                <p className="text-xs text-red-500 mt-1">Paciente é obrigatório</p>
+              )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Profissional *
               </label>
-              <select
+              <Autocomplete
+                items={professionals.map((prof: any) => ({
+                  id: prof.id,
+                  email: prof.email,
+                  name: prof.name || prof.email,
+                  specialty: prof.professionalProfile?.specialty || 'Não informado',
+                  label: prof.name || prof.email,
+                }))}
                 value={formData.professionalId}
-                onChange={(e) =>
-                  setFormData({ ...formData, professionalId: e.target.value })
+                onChange={(value) =>
+                  setFormData({ ...formData, professionalId: value })
                 }
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Selecione um profissional</option>
-                {professionals.map((prof: any) => (
-                  <option key={prof.id} value={prof.id}>
-                    {prof.email}
-                  </option>
-                ))}
-              </select>
+                placeholder="Buscar profissional..."
+                displayKey="email"
+                searchKeys={['email', 'name', 'specialty']}
+              />
+              {!formData.professionalId && (
+                <p className="text-xs text-red-500 mt-1">Profissional é obrigatório</p>
+              )}
             </div>
+
+            {formData.professionalId && (
+              <div className="md:col-span-2">
+                <ProfessionalAvailabilityDisplay
+                  availability={professionalAvailability?.availability || []}
+                  isLoading={availabilityLoading}
+                  className="mb-0"
+                />
+              </div>
+            )}
 
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">

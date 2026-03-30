@@ -24,6 +24,12 @@ const DashboardHeader = ({ role }: { role: string }) => {
           { name: "Pacientes", href: "/dashboard/professional/patients" },
           { name: "Perfil", href: "/dashboard/professional/profile" },
         ];
+      case "GESTOR":
+        return [
+          { name: "Início", href: "/dashboard/gestor" },
+          { name: "Pacientes", href: "/dashboard/gestor/patients" },
+          { name: "Consultas", href: "/dashboard/gestor/appointments" },
+        ];
       default:
         return [
           { name: "Início", href: "/dashboard/patient" },

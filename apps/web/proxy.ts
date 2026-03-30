@@ -10,6 +10,7 @@ export function proxy(request: NextRequest) {
   const getDashboardUrl = (userRole: string | undefined) => {
     if (userRole === "ADMIN") return new URL("/dashboard/admin", request.url);
     if (userRole === "PROFESSIONAL") return new URL("/dashboard/professional", request.url);
+    if (userRole === "GESTOR") return new URL("/dashboard/gestor", request.url);
     return new URL("/dashboard/patient", request.url);
   };
 
@@ -26,6 +27,10 @@ export function proxy(request: NextRequest) {
     }
 
     if (pathname.startsWith("/dashboard/professional") && role !== "PROFESSIONAL") {
+      return NextResponse.redirect(getDashboardUrl(role));
+    }
+
+    if (pathname.startsWith("/dashboard/gestor") && role !== "GESTOR") {
       return NextResponse.redirect(getDashboardUrl(role));
     }
 

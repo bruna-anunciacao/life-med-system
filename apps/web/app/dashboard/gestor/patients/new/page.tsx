@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function NewPatientPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
     phone: '',
     cpf: '',
@@ -25,7 +26,7 @@ export default function NewPatientPage() {
 
     createPatient(formData, {
       onSuccess: () => {
-        router.push('/gestor/patients');
+        router.push('/dashboard/gestor/patients');
       },
       onError: (error: Error) => {
         setError(error.message);
@@ -48,6 +49,22 @@ export default function NewPatientPage() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nome Completo *
+              </label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email *

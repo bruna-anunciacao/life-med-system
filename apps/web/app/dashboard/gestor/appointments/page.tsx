@@ -1,15 +1,16 @@
 'use client';
 
-import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
+import { useListAppointmentsQuery } from '@/queries/useListAppointmentsQuery';
 import Link from 'next/link';
 
-export default function PatientsPage() {
-  const { data: patients = [], isLoading, error } = useListPatientsQuery();
+export default function AppointmentsPage() {
+  const { data: appointments = [], isLoading, error } =
+    useListAppointmentsQuery();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-gray-600">Carregando pacientes...</p>
+        <p className="text-gray-600">Carregando consultas...</p>
       </div>
     );
   }
@@ -18,7 +19,7 @@ export default function PatientsPage() {
     return (
       <div className="py-12">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-          Erro ao carregar pacientes
+          Erro ao carregar consultas
         </div>
       </div>
     );
@@ -28,23 +29,23 @@ export default function PatientsPage() {
     <div className="py-12">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Pacientes</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Consultas</h1>
           <Link
-            href="/gestor/patients/new"
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+            href="/dashboard/gestor/appointments/new"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
-            + Novo Paciente
+            + Nova Consulta
           </Link>
         </div>
 
-        {patients.length === 0 ? (
+        {appointments.length === 0 ? (
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
-            <p className="text-gray-600 mb-4">Nenhum paciente cadastrado</p>
+            <p className="text-gray-600 mb-4">Nenhuma consulta agendada</p>
             <Link
-              href="/gestor/patients/new"
+              href="/dashboard/gestor/appointments/new"
               className="text-blue-600 hover:underline"
             >
-              Cadastre o primeiro paciente
+              Agende a primeira consulta
             </Link>
           </div>
         ) : (
@@ -53,48 +54,35 @@ export default function PatientsPage() {
               <thead className="bg-gray-100 border-b">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Email
+                    Paciente
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Telefone
+                    Profissional
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Data de Nascimento
+                    Data/Hora
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Gênero
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Ações
+                    Status
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {patients.map((patient: any) => (
-                  <tr key={patient.id} className="border-b hover:bg-gray-50">
+                {appointments.map((appointment: any) => (
+                  <tr key={appointment.id} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {patient.email}
+                      {appointment.patient?.email || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {patient.patientProfile?.phone || '-'}
+                      {appointment.professional?.email || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {patient.patientProfile?.dateOfBirth
-                        ? new Date(
-                            patient.patientProfile.dateOfBirth
-                          ).toLocaleDateString('pt-BR')
-                        : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {patient.patientProfile?.gender || '-'}
+                      {new Date(appointment.dateTime).toLocaleString('pt-BR')}
                     </td>
                     <td className="px-6 py-4 text-sm">
-                      <Link
-                        href={`/gestor/patients/${patient.id}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Ver Detalhes
-                      </Link>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        {appointment.status || 'PENDING'}
+                      </span>
                     </td>
                   </tr>
                 ))}
