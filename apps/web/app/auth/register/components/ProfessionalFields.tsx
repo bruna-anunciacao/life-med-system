@@ -14,7 +14,7 @@ export function ProfessionalFields({
   register,
   errors,
 }: ProfessionalFieldsProps) {
-  const handleCpfChange = (e) => {
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length <= 11) {
       value = value.replace(/(\d{3})(\d)/, "$1.$2");
