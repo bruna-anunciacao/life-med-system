@@ -26,9 +26,10 @@ const MODALITY_LABEL: Record<string, string> = {
 
 type DoctorCardProps = {
   professional: Professional;
+  onViewProfile: () => void;
 };
 
-export function DoctorCard({ professional }: DoctorCardProps) {
+export function DoctorCard({ professional, onViewProfile }: DoctorCardProps) {
   const modality = professional.professionalProfile?.modality;
 
   return (
@@ -76,6 +77,7 @@ export function DoctorCard({ professional }: DoctorCardProps) {
           </Button>
           <Button
             size="sm"
+            onClick={onViewProfile}
             className="px-5 py-2 border border-gray-200 rounded-lg bg-white font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gray-50"
           >
             Ver Perfil

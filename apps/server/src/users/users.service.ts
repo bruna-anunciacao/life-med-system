@@ -10,7 +10,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
-  ) { }
+  ) {}
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -171,14 +171,7 @@ export class UsersService {
         name: true,
         email: true,
         status: true,
-        professionalProfile: {
-          select: {
-            id: true,
-            specialty: true,
-            professionalLicense: true,
-            photoUrl: true,
-          },
-        },
+        professionalProfile: true,
       },
     });
   }
