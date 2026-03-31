@@ -13,8 +13,16 @@ import { PasswordField } from "./components/PasswordField";
 import Logo from "../../life-med-logo.png";
 
 const RegisterPage = () => {
-  const { form, role, isLoading, handleRoleChange, onSubmit } = useRegisterForm();
-  const { register, handleSubmit, control, setValue, formState: { errors } } = form;
+  const { form, role, isLoading, handleRoleChange, onSubmit } =
+    useRegisterForm();
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState: { errors },
+  } = form;
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").slice(0, 11);
@@ -98,16 +106,44 @@ const RegisterPage = () => {
           <ProfessionalFields register={register} errors={errors} />
         )}
 
-        {/* Senha + Confirmar em grid */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-1">
-          <PasswordField name="password" label="Senha" register={register} errors={errors} />
-          <PasswordField name="confirmPassword" label="Confirmar senha" register={register} errors={errors} />
-        </div>
+          <PasswordField
+            name="password"
+            label="Senha"
+            register={register}
+            errors={errors}
+            showStrengthMeter={true}
+            currentValue={watch("password")}
+          />
+          <PasswordField
+            name="confirmPassword"
+            label="Confirmar a senha"
+            register={register}
+            errors={errors}
+          />
 
         <Button type="submit" size="lg" className="w-full mt-1" disabled={isLoading}>
           {isLoading ? <Spinner size="sm" /> : "Cadastrar"}
         </Button>
       </form>
+          <Button
+            type="submit"
+            className="w-full mt-2 py-3 rounded-full border-none font-semibold text-white bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] transition-transform hover:-translate-y-px hover:brightness-110 active:translate-y-0 cursor-pointer"
+            disabled={isLoading}
+          >
+            {isLoading ? <Spinner size="sm" /> : "Cadastrar"}
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center text-sm text-[#64748b]">
+          Já tem uma conta?
+          <Link
+            href="/auth/login"
+            className="ml-1 no-underline font-medium text-[#2563eb] hover:underline"
+          >
+            Faça login
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };
