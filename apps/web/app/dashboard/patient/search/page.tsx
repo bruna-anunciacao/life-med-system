@@ -20,6 +20,7 @@ type Professional = {
     professionalLicense: string;
     modality?: string;
     bio?: string;
+    photoUrl?: string;
   };
 };
 
