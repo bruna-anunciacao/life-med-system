@@ -22,58 +22,56 @@ export function ResetPasswordForm({ form, isLoading, onSubmit }: ResetPasswordFo
   const { register, handleSubmit, formState: { errors } } = form;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-      <div className="w-full flex flex-col gap-1">
-        <Label className="text-sm font-medium text-[#334155]">Senha</Label>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-sm font-semibold text-[#374151]">Nova senha</Label>
         <div className="relative">
           <Input
             placeholder="Insira a senha"
             type={isPasswordVisible ? "text" : "password"}
-            className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
+            className="pr-11"
             {...register("password")}
           />
-          <Button
+          <button
             type="button"
+            tabIndex={-1}
             aria-label={isPasswordVisible ? "Esconder senha" : "Mostrar senha"}
-            size="sm"
-            variant="ghost"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
             onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#374151] transition-colors"
           >
-            {isPasswordVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-          </Button>
+            {isPasswordVisible ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
+          </button>
         </div>
         {errors.password && (
-          <p className="text-sm text-destructive">{errors.password.message}</p>
+          <p className="text-xs font-medium text-[#dc2626]">{errors.password.message}</p>
         )}
       </div>
 
-      <div className="w-full flex flex-col gap-1">
-        <Label className="text-sm font-medium text-[#334155]">Confirmar a senha</Label>
+      <div className="flex flex-col gap-1.5">
+        <Label className="text-sm font-semibold text-[#374151]">Confirmar nova senha</Label>
         <div className="relative">
           <Input
             placeholder="Confirme a senha"
             type={isConfirmPasswordVisible ? "text" : "password"}
-            className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
+            className="pr-11"
             {...register("confirmPassword")}
           />
-          <Button
+          <button
             type="button"
+            tabIndex={-1}
             aria-label={isConfirmPasswordVisible ? "Esconder senha" : "Mostrar senha"}
-            size="sm"
-            variant="ghost"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
             onClick={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#374151] transition-colors"
           >
-            {isConfirmPasswordVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-          </Button>
+            {isConfirmPasswordVisible ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
+          </button>
         </div>
         {errors.confirmPassword && (
-          <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+          <p className="text-xs font-medium text-[#dc2626]">{errors.confirmPassword.message}</p>
         )}
       </div>
 
-      <Button type="submit" className="w-full mt-2 py-3 rounded-full border-none font-semibold text-white bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] transition-transform hover:-translate-y-px hover:brightness-110 active:translate-y-0 cursor-pointer" disabled={isLoading}>
+      <Button type="submit" size="lg" className="w-full mt-2" disabled={isLoading}>
         {isLoading ? <Spinner size="sm" /> : "Redefinir senha"}
       </Button>
     </form>
