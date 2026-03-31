@@ -1,16 +1,5 @@
 import * as z from "zod";
-
-const passwordValidation = z
-  .string()
-  .min(8, "A senha deve ter no mínimo 8 caracteres")
-  .max(64, "A senha deve ter no máximo 64 caracteres")
-  .regex(/[a-z]/, "A senha deve conter pelo menos uma letra minúscula")
-  .regex(/[A-Z]/, "A senha deve conter pelo menos uma letra maiúscula")
-  .regex(/\d/, "A senha deve conter pelo menos um número")
-  .regex(
-    /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/,
-    "A senha deve conter pelo menos um caractere especial",
-  );
+import zxcvbn from "zxcvbn";
 
 const nameValidation = z
   .string()
@@ -66,7 +55,13 @@ export const registerPatientValidation = z
     gender: z.enum(["MALE", "FEMALE", "OTHER", "UNDISCLOSED"], {
       error: () => ({ message: "Selecione um gênero válido" }),
     }),
-    password: passwordValidation,
+    password: z
+      .string()
+      .min(8, "A senha deve ter no mínimo 8 caracteres")
+      .refine((password) => {
+        const result = zxcvbn(password);
+        return result.score >= 4;
+      }, "Sua senha é fraca. Tente misturar letras, números e símbolos especiais."),
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
   })
@@ -79,7 +74,13 @@ export const registerProfessionalValidation = z
   .object({
     name: nameValidation,
     email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
-    password: passwordValidation,
+    password: z
+      .string()
+      .min(8, "A senha deve ter no mínimo 8 caracteres")
+      .refine((password) => {
+        const result = zxcvbn(password);
+        return result.score >= 3;
+      }, "Sua senha é muito fraca. Tente misturar letras, números e símbolos especiais."),
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
     professionalLicense: z
