@@ -11,8 +11,16 @@ import { ProfessionalFields } from "./components/ProfessionalFields";
 import { PasswordField } from "./components/PasswordField";
 
 const RegisterPage = () => {
-  const { form, role, isLoading, handleRoleChange, onSubmit } = useRegisterForm();
-  const { register, handleSubmit, control, setValue, formState: { errors } } = form;
+  const { form, role, isLoading, handleRoleChange, onSubmit } =
+    useRegisterForm();
+  const {
+    register,
+    handleSubmit,
+    control,
+    setValue,
+    watch,
+    formState: { errors },
+  } = form;
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "").slice(0, 11);
@@ -26,8 +34,12 @@ const RegisterPage = () => {
     <div className="w-full px-4 py-8 flex items-start justify-center bg-[#f8fafc]">
       <div className="w-full max-w-[600px] p-10 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] bg-white sm:p-6 sm:rounded-xl">
         <div className="mb-8 text-center">
-          <h1 className="mb-2 text-2xl font-bold text-[#0f172a]">Crie sua conta</h1>
-          <p className="text-sm text-[#64748b]">Preencha os dados abaixo para começar</p>
+          <h1 className="mb-2 text-2xl font-bold text-[#0f172a]">
+            Crie sua conta
+          </h1>
+          <p className="text-sm text-[#64748b]">
+            Preencha os dados abaixo para começar
+          </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -58,7 +70,12 @@ const RegisterPage = () => {
           </div>
 
           <div className="w-full flex flex-col gap-1">
-            <Label htmlFor="name" className="text-sm font-medium text-[#334155]">Nome completo</Label>
+            <Label
+              htmlFor="name"
+              className="text-sm font-medium text-[#334155]"
+            >
+              Nome completo
+            </Label>
             <Input
               id="name"
               placeholder="Ex: Maria Silva"
@@ -66,11 +83,18 @@ const RegisterPage = () => {
               className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
               {...register("name")}
             />
-            {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+            {errors.name && (
+              <p className="text-sm text-destructive">{errors.name.message}</p>
+            )}
           </div>
 
           <div className="w-full flex flex-col gap-1">
-            <Label htmlFor="email" className="text-sm font-medium text-[#334155]">E-mail</Label>
+            <Label
+              htmlFor="email"
+              className="text-sm font-medium text-[#334155]"
+            >
+              E-mail
+            </Label>
             <Input
               id="email"
               placeholder="jane@example.com"
@@ -78,7 +102,9 @@ const RegisterPage = () => {
               className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
               {...register("email")}
             />
-            {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
           </div>
 
           {role === "PATIENT" && (
@@ -95,17 +121,38 @@ const RegisterPage = () => {
             <ProfessionalFields register={register} errors={errors} />
           )}
 
-          <PasswordField name="password" label="Senha" register={register} errors={errors} />
-          <PasswordField name="confirmPassword" label="Confirmar a senha" register={register} errors={errors} />
+          <PasswordField
+            name="password"
+            label="Senha"
+            register={register}
+            errors={errors}
+            showStrengthMeter={true}
+            currentValue={watch("password")}
+          />
+          <PasswordField
+            name="confirmPassword"
+            label="Confirmar a senha"
+            register={register}
+            errors={errors}
+          />
 
-          <Button type="submit" className="w-full mt-2 py-3 rounded-full border-none font-semibold text-white bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] transition-transform hover:-translate-y-px hover:brightness-110 active:translate-y-0 cursor-pointer" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full mt-2 py-3 rounded-full border-none font-semibold text-white bg-gradient-to-br from-[#2563eb] to-[#0ea5e9] transition-transform hover:-translate-y-px hover:brightness-110 active:translate-y-0 cursor-pointer"
+            disabled={isLoading}
+          >
             {isLoading ? <Spinner size="sm" /> : "Cadastrar"}
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm text-[#64748b]">
           Já tem uma conta?
-          <Link href="/auth/login" className="ml-1 no-underline font-medium text-[#2563eb] hover:underline">Faça login</Link>
+          <Link
+            href="/auth/login"
+            className="ml-1 no-underline font-medium text-[#2563eb] hover:underline"
+          >
+            Faça login
+          </Link>
         </div>
       </div>
     </div>
