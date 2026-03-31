@@ -13,7 +13,7 @@ export class EmailVerifiedGuard implements CanActivate {
 
     if (!user?.emailVerified) {
       throw new ForbiddenException(
-        'Sua conta ainda não foi verificada pelo administrador.',
+        'Sua conta ainda não foi verificada. Verifique seu e-mail ou aguarde a aprovação do administrador.',
       );
     }
 

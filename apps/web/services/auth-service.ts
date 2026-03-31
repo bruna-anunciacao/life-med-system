@@ -15,6 +15,7 @@ export interface RegisterPatientDto {
 export interface RegisterProfessionalDto {
   name: string;
   email: string;
+  cpf: string;
   professionalLicense: string;
   specialty: string;
   subspecialty?: string;
@@ -171,6 +172,34 @@ export const authService = {
         throw new Error(message || "Erro ao realizar recuperar a senha.");
       }
 
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async verifyEmail(token: string) {
+    try {
+      const response = await api.get(`/auth/verify-email?token=${token}`);
+      return response.data as { message: string };
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(
+          error.response.data.message || "Token inválido ou expirado.",
+        );
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async resendVerification(email: string) {
+    try {
+      const response = await api.post("/auth/resend-verification", { email });
+      return response.data as { message: string };
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(
+          error.response.data.message || "Erro ao reenviar verificação.",
+        );
+      }
       throw new Error("Erro de conexão com o servidor.");
     }
   },

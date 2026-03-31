@@ -45,7 +45,7 @@ const PatientDashboard = () => {
   return (
     <section className="min-h-screen w-full bg-slate-50 p-8">
       {/* Header */}
-      <div className="mb-10 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
             {userName ? `Olá, ${userName}!` : "Painel do Paciente"}
@@ -59,10 +59,10 @@ const PatientDashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
         {stats.map((stat, index) => (
           <Card key={index} className="border border-gray-200 transition-transform hover:-translate-y-0.5">
-            <CardContent className="flex items-center justify-between p-4">
+            <CardContent className="flex items-center justify-between p-3">
               <div>
                 <p className="text-sm font-medium text-gray-500">{stat.title}</p>
                 <h3 className="mt-1 text-3xl font-bold text-gray-900">{stat.value}</h3>
@@ -76,9 +76,9 @@ const PatientDashboard = () => {
       </div>
 
       {/* Main content */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_1fr]">
         {/* Left column */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {/* Next appointment */}
           <div>
             <div className="mb-4 flex items-center justify-between">
@@ -88,7 +88,7 @@ const PatientDashboard = () => {
               </h2>
             </div>
             <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="flex flex-col justify-between gap-6 p-6 md:flex-row md:items-center">
+              <CardContent className="flex flex-col justify-between gap-4 p-4 md:flex-row md:items-center">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-700">{nextAppointment.doctorName}</h3>
                   <p className="text-sm text-gray-500">{nextAppointment.specialty}</p>
@@ -144,11 +144,11 @@ const PatientDashboard = () => {
         </div>
 
         {/* Right column */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold text-gray-700">Profissionais Disponíveis</h2>
           {suggestedDoctors.map((doc) => (
             <Card key={doc.id} className="border border-gray-200 transition-transform hover:-translate-y-0.5 cursor-pointer">
-              <CardContent className="flex items-center gap-4 p-4">
+              <CardContent className="flex items-center gap-4 p-3">
                 <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-blue-500 text-xl font-semibold text-white">
                   {doc.name.charAt(0).toUpperCase()}
                 </div>
@@ -164,7 +164,7 @@ const PatientDashboard = () => {
           ))}
 
           <Card className="border border-blue-100 bg-blue-50">
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <h4 className="text-base font-semibold text-gray-700">Dica de Saúde</h4>
               <p className="mt-1 text-sm text-gray-500">
                 Mantenha suas consultas em dia e não esqueça de verificar a disponibilidade dos profissionais regularmente.

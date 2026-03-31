@@ -32,7 +32,16 @@ const phoneValidation = z
 const cpfValidation = z
   .string()
   .min(1, "CPF é obrigatório")
-  .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "Formato de CPF inválido");
+  .refine(
+    (val) => {
+      // Aceita 11 dígitos (somente números) ou 14 caracteres (com máscara)
+      const onlyDigits = val.replace(/\D/g, "");
+      return (
+        onlyDigits.length === 11 || val.length === 14 // 000.000.000-00
+      );
+    },
+    { message: "CPF deve ter 11 dígitos ou estar no formato 000.000.000-00" },
+  );
 
 export const registerPatientValidation = z
   .object({
@@ -82,6 +91,7 @@ export const registerProfessionalValidation = z
     password: passwordValidation,
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
+    cpf: cpfValidation,
     professionalLicense: z
       .string()
       .min(4, "Registro profissional deve ter no mínimo 4 caracteres")

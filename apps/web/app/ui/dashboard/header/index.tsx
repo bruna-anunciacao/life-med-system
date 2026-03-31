@@ -44,7 +44,9 @@ const DashboardHeader = ({ role }: { role: string }) => {
   return (
     <header className="flex h-16 w-full items-center border-b border-gray-200 bg-white px-6">
       <div className="flex items-center">
-        <Image src={Logo} alt="Life Med Logo" height={100} />
+        <Link href={`/dashboard/${role.toLowerCase()}`}>
+          <Image src={Logo} alt="Life Med Logo" height={100} />
+        </Link>
       </div>
 
       <nav className="ml-8 hidden flex-1 gap-3 md:flex">
@@ -66,7 +68,9 @@ const DashboardHeader = ({ role }: { role: string }) => {
         })}
       </nav>
 
-      <div className={`ml-auto flex items-center gap-3 ${role !== "ADMIN" ? "hidden md:flex" : ""}`}>
+      <div
+        className={`ml-auto flex items-center gap-3 ${role !== "ADMIN" ? "hidden md:flex" : ""}`}
+      >
         <Button variant="destructive" onClick={handleLogout} className="px-4">
           <LogOut className="size-4" />
           Sair

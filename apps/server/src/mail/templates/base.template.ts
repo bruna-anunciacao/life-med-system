@@ -9,17 +9,16 @@ export interface BaseEmailProps {
 export const createBaseEmailTemplate = (props: BaseEmailProps): string => {
   const { title, content, buttonText, buttonUrl, variant = 'default' } = props;
 
-  // Using design system colors - converting HSL to hex for email compatibility
   const colors = {
-    primary: '#1a1a1a', // --primary: 24 9.8% 10%
-    primaryForeground: '#fafaf9', // --primary-foreground: 60 9.1% 97.8%
-    secondary: '#f4f4f5', // --secondary: 60 4.8% 95.9%
-    destructive: '#dc2626', // --destructive: 0 84.2% 60.2%
-    destructiveForeground: '#fafaf9', // --destructive-foreground: 60 9.1% 97.8%
-    muted: '#71717a', // --muted-foreground: 25 5.3% 44.7%
-    border: '#e4e4e7', // --border: 20 5.9% 90%
-    background: '#ffffff', // --background: 0 0% 100%
-    foreground: '#0a0a0a', // --foreground: 20 14.3% 4.1%
+    primary: '#1a1a1a',
+    primaryForeground: '#fafaf9',
+    secondary: '#f4f4f5',
+    destructive: '#dc2626',
+    destructiveForeground: '#fafaf9',
+    muted: '#71717a',
+    border: '#e4e4e7',
+    background: '#ffffff',
+    foreground: '#0a0a0a',
   };
 
   const headerColor =

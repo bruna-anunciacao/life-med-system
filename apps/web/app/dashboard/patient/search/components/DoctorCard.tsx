@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon } from "../../../../utils/icons";
+import { Check } from "@phosphor-icons/react";
 
 type Professional = {
   id: string;
@@ -18,7 +19,7 @@ type Professional = {
 };
 
 const MODALITY_LABEL: Record<string, string> = {
-  VIRTUAL: "Online",
+  VIRTUAL: "Remoto",
   HOME_VISIT: "Domiciliar",
   CLINIC: "Presencial",
 };
@@ -53,13 +54,13 @@ export function DoctorCard({ professional, onViewProfile }: DoctorCardProps) {
           )}
           <div className="mt-2 flex flex-wrap gap-2 items-center">
             <Badge className="px-2.5 py-0.5 rounded text-xs font-semibold">
-              {MODALITY_LABEL[modality ?? ""] ?? "Online"}
+              {MODALITY_LABEL[modality ?? ""] ?? "Remoto"}
             </Badge>
             {professional.status === "VERIFIED" && (
               <>
-                <span className="w-2 h-2 rounded-full bg-[#17c964] inline-block" />
-                <span className="text-xs text-[#17c964] font-medium">
+                <span className="text-xs font-medium">
                   Verificado
+                  <Check className="inline size-2 ml-1" />
                 </span>
               </>
             )}

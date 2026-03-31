@@ -4,16 +4,15 @@ export interface NewUserNotificationEmailProps {
   adminName: string;
   userName: string;
   userEmail: string;
-  userRole: string;
   approveUrl: string;
 }
 
 export const createNewUserNotificationEmail = (
   props: NewUserNotificationEmailProps,
 ): string => {
-  const { adminName, userName, userEmail, userRole, approveUrl } = props;
+  const { adminName, userName, userEmail, approveUrl } = props;
 
-  const roleLabel = userRole === 'PROFESSIONAL' ? 'Profissional' : 'Paciente';
+  const roleLabel = 'Profissional';
 
   const content = `
     <h2>Olá, ${adminName}!</h2>
