@@ -6,9 +6,9 @@ const AuthLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <div className="min-h-screen flex bg-white">
+    <div className="h-screen flex bg-white overflow-hidden">
       {/* Painel esquerdo — oculto em mobile */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#2563eb] flex-col justify-center p-14 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 shrink-0 bg-[#2563eb] flex-col justify-center p-14 relative overflow-hidden">
         {/* Círculo decorativo */}
         <div className="absolute w-90 h-90 rounded-full bg-white/5 -bottom-20 -right-20 pointer-events-none" />
         <div className="absolute w-48 h-48 rounded-full bg-white/5 -top-12 -left-12 pointer-events-none" />
@@ -35,8 +35,10 @@ const AuthLayout = ({
       </div>
 
       {/* Painel direito — formulário */}
-      <div className="flex-1 flex items-center justify-center py-8 px-6">
-        {children}
+      <div className="flex-1 flex justify-center py-8 px-6 overflow-y-auto">
+        <div className="my-auto w-full flex justify-center">
+          {children}
+        </div>
       </div>
     </div>
   );
