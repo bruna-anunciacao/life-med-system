@@ -21,6 +21,7 @@ type Professional = {
     modality?: string;
     bio?: string;
     photoUrl?: string;
+    address?: string;
   };
 };
 
@@ -28,8 +29,8 @@ const SearchDoctorsPage = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
-  const [selectedProfessional, setSelectedProfessional] =
-    useState<Professional | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState("Todas");
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -54,12 +55,20 @@ const SearchDoctorsPage = () => {
       const matchesSearch =
         p.name.toLowerCase().includes(term) ||
         (p.professionalProfile?.specialty || "").toLowerCase().includes(term);
+
       const matchesSpecialty =
         selectedSpecialty === "Todas" ||
         (p.professionalProfile?.specialty || "")
           .toLowerCase()
           .includes(selectedSpecialty.toLowerCase());
-      return matchesSearch && matchesSpecialty;
+
+      const matchesLocation =
+        selectedLocation === "Todas" ||
+        (p.professionalProfile?.address || "")
+          .toLowerCase()
+          .includes(selectedLocation.toLowerCase());
+
+      return matchesSearch && matchesSpecialty && matchesLocation;
     });
 
   return (
@@ -79,10 +88,12 @@ const SearchDoctorsPage = () => {
       <SearchBar
         search={search}
         selectedSpecialty={selectedSpecialty}
+        selectedLocation={selectedLocation}
         resultsCount={filtered.length}
         isLoading={isLoading}
         onSearchChange={setSearch}
         onSpecialtyChange={setSelectedSpecialty}
+        onLocationChange={setSelectedLocation}
       />
 
       {isLoading ? (
