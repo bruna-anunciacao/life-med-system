@@ -211,59 +211,6 @@ export class AuthService {
     };
   }
 
-  async registerGestor(dto: RegisterGestorDto) {
-    const emailExists = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-
-    if (emailExists) {
-      throw new BadRequestException('E-mail já cadastrado');
-    }
-
-    const passwordHash = await bcrypt.hash(dto.password, 10);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: passwordHash,
-        name: dto.email.split('@')[0],
-        role: UserRole.GESTOR,
-        status: UserStatus.COMPLETED,
-        emailVerified: true,
-        gestorProfile: {
-          create: {
-            address: dto.address,
-            bio: dto.bio,
-          },
-        },
-      },
-      include: {
-        gestorProfile: true,
-      },
-    });
-
-    const payload = {
-      sub: user.id,
-      role: user.role,
-      email: user.email,
-      status: user.status,
-    };
-
-    const accessToken = String(this.jwtService.sign(payload));
-
-    return {
-      accessToken,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-        emailVerified: user.emailVerified,
-      },
-    };
-  }
-
   async forgotPassword(dto: ForgotPasswordDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
