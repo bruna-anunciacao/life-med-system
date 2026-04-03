@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useResetPasswordForm } from "./useResetPasswordForm";
 import { InvalidTokenCard } from "./components/InvalidTokenCard";
 import { ResetPasswordForm } from "./components/ResetPasswordForm";
-import Logo from "../../life-med-logo.png";
+import { LifeMedLogo } from "../../ui/life-med-logo";
 
 const ResetPasswordPage = () => {
   const { form, isLoading, token, onSubmit } = useResetPasswordForm();
@@ -17,7 +16,7 @@ const ResetPasswordPage = () => {
       {/* Header do form: logo + subtítulo */}
       <div className="flex flex-col">
         <Link href="/" className="w-fit mb-3">
-          <Image src={Logo} alt="Life Med" width={160} className="h-auto" />
+          <LifeMedLogo width={160} className="h-auto" />
         </Link>
         <p className="text-sm text-[#6b7280]">
           Crie uma nova senha para sua conta

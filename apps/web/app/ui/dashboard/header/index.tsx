@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { authService } from "../../../../services/auth-service";
 import { useRouter } from "next/navigation";
-import Logo from "../../../life-med-logo.png";
+import { LifeMedLogo } from "../../life-med-logo";
 
 const DashboardHeader = ({ role }: { role: string }) => {
   const pathname = usePathname();
@@ -45,7 +44,7 @@ const DashboardHeader = ({ role }: { role: string }) => {
     <header className="flex h-16 w-full items-center border-b border-gray-200 bg-white px-6">
       <div className="flex items-center">
         <Link href={`/dashboard/${role.toLowerCase()}`}>
-          <Image src={Logo} alt="Life Med Logo" height={100} />
+          <LifeMedLogo height={40} />
         </Link>
       </div>
 

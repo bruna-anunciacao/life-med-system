@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { useForgotPasswordForm } from "./useForgotPasswordForm";
-import Logo from "../../life-med-logo.png";
+import { LifeMedLogo } from "../../ui/life-med-logo";
 
 const ForgotPasswordPage = () => {
   const { form, isLoading, submitted, onSubmit } = useForgotPasswordForm();
@@ -18,7 +17,7 @@ const ForgotPasswordPage = () => {
       {/* Header do form: logo + subtítulo */}
       <div className="flex flex-col">
         <Link href="/" className="w-fit mb-3">
-          <Image src={Logo} alt="Life Med" width={160} className="h-auto" />
+          <LifeMedLogo width={160} className="h-auto" />
         </Link>
         <p className="text-sm text-[#6b7280]">
           {submitted ? "Verifique seu e-mail" : (
