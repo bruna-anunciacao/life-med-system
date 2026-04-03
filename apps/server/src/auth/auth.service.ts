@@ -227,8 +227,8 @@ export class AuthService {
         email: dto.email,
         password: passwordHash,
         name: dto.email.split('@')[0],
-        role: UserRoleEnum.GESTOR,
-        status: UserStatusEnum.COMPLETED,
+        role: UserRole.GESTOR,
+        status: UserStatus.COMPLETED,
         emailVerified: true,
         gestorProfile: {
           create: {
@@ -342,17 +342,24 @@ export class AuthService {
       email: user.email,
       role: user.role,
     }).catch((err) =>
-      console.error(`Falha ao notificar admins sobre ${user.email}:`, err.message),
+      console.error(
+        `Falha ao notificar admins sobre ${user.email}:`,
+        err.message,
+      ),
     );
 
     this.mailService
       .sendAccountPendingEmail({ name: user.name, email: user.email })
       .catch((err) =>
-        console.error(`Falha ao enviar email pendente para ${user.email}:`, err.message),
+        console.error(
+          `Falha ao enviar email pendente para ${user.email}:`,
+          err.message,
+        ),
       );
 
     return {
-      message: 'E-mail verificado. Sua conta será analisada pelo administrador.',
+      message:
+        'E-mail verificado. Sua conta será analisada pelo administrador.',
     };
   }
 

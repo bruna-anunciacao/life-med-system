@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { UserRoleEnum } from '../enums/user-role-enum';
+import { UserRole} from '@prisma/client';
 
 @Injectable()
 export class GestorRoleGuard implements CanActivate {
@@ -12,8 +12,8 @@ export class GestorRoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || user.role !== UserRoleEnum.GESTOR) {
-      throw new ForbiddenException('Acesso permitido apenas para GESTOREs');
+    if (!user || user.role !== UserRole.GESTOR) {
+      throw new ForbiddenException('Acesso permitido apenas para Gestores');
     }
 
     return true;

@@ -12,8 +12,8 @@ import { RolesGuard } from '../auth/guards/roles-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRoleEnum } from '../auth/enums/user-role-enum';
 import { GestorService } from './gestor.service';
-import { CreatePatientDto } from './dtos/create-patient.dto';
-import { UpdatePatientDto } from './dtos/update-patient.dto';
+import { CreatePatientDto } from '../patients/dto/create-patient.dto';
+import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 
 @Controller('gestor')
@@ -56,7 +56,9 @@ export class GestorController {
   }
 
   @Get('professionals/:professionalId/availability')
-  async getProfessionalAvailability(@Param('professionalId') professionalId: string) {
+  async getProfessionalAvailability(
+    @Param('professionalId') professionalId: string,
+  ) {
     return this.gestorService.getProfessionalAvailability(professionalId);
   }
 }
