@@ -130,8 +130,7 @@ export function SeeProfileModal({
                       alt={`Foto de perfil de ${professional.name}`}
                       fill
                       className="object-cover"
-                      priority
-                      unoptimized={process.env.NODE_ENV === "development"}
+                      unoptimized
                       onError={() => setImageError(true)}
                     />
                   ) : (

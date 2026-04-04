@@ -55,9 +55,7 @@ export function DoctorCard({ professional, onViewProfile }: DoctorCardProps) {
               fill
               className="object-cover"
               sizes="64px"
-              priority
-              unoptimized={process.env.NODE_ENV === "development"}
-              // Gatilho que ativa caso o backend retorne 404
+              unoptimized
               onError={() => setImageError(true)} 
             />
           ) : (
