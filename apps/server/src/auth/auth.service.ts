@@ -225,6 +225,9 @@ export class AuthService {
     if (!reset) throw new BadRequestException('Token inválido');
     if (reset.expiresAt < new Date()) throw new BadRequestException('Token expirado');
 
+    const isSamePassword = await bcrypt.compare(dto.newPassword, reset.user.password);
+    if (isSamePassword) throw new BadRequestException('A nova senha não pode ser igual à senha atual');
+
     const passwordHash = await this.hashPassword(dto.newPassword);
 
     await this.prisma.$transaction([
