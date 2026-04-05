@@ -111,7 +111,10 @@ export class MailService {
   }
 
   async sendAccountRejectedEmail(user: { name: string; email: string }) {
-    const htmlBody = createAccountRejectedEmail({ userName: user.name });
+    const htmlBody = createAccountRejectedEmail({
+      userName: user.name,
+      contactEmail: process.env.MAIL_CONTACT,
+    });
     await this.sendEmail({
       to: user.email,
       subject: 'Cadastro Não Aprovado - LifeMed',
