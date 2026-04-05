@@ -54,8 +54,34 @@ async function main() {
       name: 'Paciente Exemplo',
       role: UserRole.PATIENT,
       status: UserStatus.VERIFIED,
+      emailVerified: true,
       patientProfile: {
         create: {
+          phone: '+5571999990001',
+          gender: 'M',
+          address: 'Rua das Flores, 100, Salvador - BA',
+        },
+      },
+    },
+  });
+
+  // Gestor (Manager)
+  await prisma.user.upsert({
+    where: { email: 'gestor@lifemed.com' },
+    update: {},
+    create: {
+      email: 'gestor@lifemed.com',
+      cpf: '33333333333',
+      password: hashedPassword,
+      name: 'Gestor Exemplo',
+      role: UserRole.MANAGER,
+      status: UserStatus.VERIFIED,
+      emailVerified: true,
+      managerProfile: {
+        create: {
+          phone: '+5571999990002',
+          bio: 'Gestor responsável pelo agendamento de consultas.',
+          address: 'Av. Sete de Setembro, 200, Salvador - BA',
         },
       },
     },

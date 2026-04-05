@@ -1,16 +1,17 @@
 "use client";
 
-import { User } from "../../../services/auth-service";
 import { usersService } from "../../../services/users-service";
-import { useEffect, useState } from "react";
-import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { UsersTable } from "./components/UsersTable";
+import { LoadingPage } from "@/components/shared/LoadingPage";
+import { usePatientsQuery } from "@/queries/usePatientsQuery";
+import { useAllProfessionalsQuery } from "@/queries/useAllProfessionalsQuery";
+import { useQueryClient } from "@tanstack/react-query";
 
 const AdminDashboard = () => {
-  const [patients, setPatients] = useState<User[]>([]);
-  const [professionals, setProfessionals] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const { data: patients = [], isLoading: loadingPatients } = usePatientsQuery();
+  const { data: professionals = [], isLoading: loadingProfessionals } = useAllProfessionalsQuery();
 
   const handleStatusChange = async (
     userId: string,
@@ -20,47 +21,15 @@ const AdminDashboard = () => {
     try {
       await usersService.updateUserStatus(userId, newStatus);
       toast.success(`Status atualizado`);
-
-      const updateList = (list: User[]) =>
-        list.map((u) => (u.id === userId ? { ...u, status: newStatus } : u));
-
-      if (listType === "professional") {
-        setProfessionals((prev) => updateList(prev));
-      } else {
-        setPatients((prev) => updateList(prev));
-      }
+      queryClient.invalidateQueries({ queryKey: [listType === "patient" ? "patients" : "admin-professionals"] });
     } catch (error) {
       console.error(error);
       toast.error("Erro ao atualizar status");
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [patientsData, professionalsData] = await Promise.all([
-          usersService.getAllPatients(),
-          usersService.getAllProfessionals(),
-        ]);
-        setPatients(patientsData);
-        setProfessionals(professionalsData);
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Erro ao carregar dados do sistema.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
+  if (loadingPatients || loadingProfessionals) {
+    return <LoadingPage />;
   }
 
   return (

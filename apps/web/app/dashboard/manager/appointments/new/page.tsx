@@ -1,46 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreateAppointmentMutation } from '@/queries/useCreateAppointmentMutation';
 import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
 import { useProfessionalsQuery } from '@/queries/useProfessionalsQuery';
 import { useProfessionalAvailabilityQuery } from '@/queries/useProfessionalAvailabilityQuery';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { ProfessionalAvailabilityDisplay } from '@/components/ui/professional-availability-display';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { newAppointmentSchema, type NewAppointmentSchema } from './new-appointment.validation';
 
 export default function NewAppointmentPage() {
   const router = useRouter();
   const { data: patients = [] } = useListPatientsQuery();
   const { data: professionals = [] } = useProfessionalsQuery();
 
-  const [formData, setFormData] = useState({
-    patientId: '',
-    professionalId: '',
-    dateTime: '',
-    notes: '',
+  const {
+    control,
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<NewAppointmentSchema>({
+    resolver: zodResolver(newAppointmentSchema),
+    defaultValues: { patientId: '', professionalId: '', dateTime: '', notes: '' },
   });
 
+  const selectedProfessionalId = watch('professionalId');
+
   const { data: professionalAvailability, isLoading: availabilityLoading } =
-    useProfessionalAvailabilityQuery(
-      formData.professionalId ? formData.professionalId : null
-    );
+    useProfessionalAvailabilityQuery(selectedProfessionalId || null);
 
-  const [error, setError] = useState<string | null>(null);
+  const { mutate: createAppointment, isPending } = useCreateAppointmentMutation();
 
-  const { mutate: createAppointment, isPending } =
-    useCreateAppointmentMutation();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    createAppointment(formData, {
+  const onSubmit = (data: NewAppointmentSchema) => {
+    createAppointment(data, {
       onSuccess: () => {
+        toast.success('Consulta agendada com sucesso!');
         router.push('/dashboard/manager/appointments');
       },
-      onError: (error: Error) => {
-        setError(error.message);
+      onError: (error: any) => {
+        toast.error(error?.message || 'Erro ao agendar consulta');
       },
     });
   };
@@ -52,62 +57,60 @@ export default function NewAppointmentPage() {
           Agendar Nova Consulta
         </h1>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Paciente *
-              </label>
-              <Autocomplete
-                items={patients.map((p: any) => ({
-                  id: p.id,
-                  email: p.email,
-                  label: p.name || p.email,
-                }))}
-                value={formData.patientId}
-                onChange={(value) =>
-                  setFormData({ ...formData, patientId: value })
-                }
-                placeholder="Buscar paciente..."
-                displayKey="email"
+            <div className="space-y-1">
+              <Label htmlFor="patientId">Paciente *</Label>
+              <Controller
+                name="patientId"
+                control={control}
+                render={({ field }) => (
+                  <Autocomplete
+                    items={patients.map((p: any) => ({
+                      id: p.id,
+                      email: p.email,
+                      label: p.name || p.email,
+                    }))}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Buscar paciente..."
+                    displayKey="email"
+                  />
+                )}
               />
-              {!formData.patientId && (
-                <p className="text-xs text-red-500 mt-1">Paciente é obrigatório</p>
+              {errors.patientId && (
+                <p className="text-xs text-red-500">{errors.patientId.message}</p>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Profissional *
-              </label>
-              <Autocomplete
-                items={professionals.map((prof: any) => ({
-                  id: prof.id,
-                  email: prof.email,
-                  name: prof.name || prof.email,
-                  specialty: prof.professionalProfile?.specialty || 'Não informado',
-                  label: prof.name || prof.email,
-                }))}
-                value={formData.professionalId}
-                onChange={(value) =>
-                  setFormData({ ...formData, professionalId: value })
-                }
-                placeholder="Buscar profissional..."
-                displayKey="email"
-                searchKeys={['email', 'name', 'specialty']}
+            <div className="space-y-1">
+              <Label htmlFor="professionalId">Profissional *</Label>
+              <Controller
+                name="professionalId"
+                control={control}
+                render={({ field }) => (
+                  <Autocomplete
+                    items={professionals.map((prof: any) => ({
+                      id: prof.id,
+                      email: prof.email,
+                      name: prof.name || prof.email,
+                      specialty: prof.professionalProfile?.specialty || 'Não informado',
+                      label: prof.name || prof.email,
+                    }))}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Buscar profissional..."
+                    displayKey="email"
+                    searchKeys={['email', 'name', 'specialty']}
+                  />
+                )}
               />
-              {!formData.professionalId && (
-                <p className="text-xs text-red-500 mt-1">Profissional é obrigatório</p>
+              {errors.professionalId && (
+                <p className="text-xs text-red-500">{errors.professionalId.message}</p>
               )}
             </div>
 
-            {formData.professionalId && (
+            {selectedProfessionalId && (
               <div className="md:col-span-2">
                 <ProfessionalAvailabilityDisplay
                   availability={professionalAvailability?.availability || []}
@@ -117,52 +120,49 @@ export default function NewAppointmentPage() {
               </div>
             )}
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data e Hora *
-              </label>
-              <input
+            <div className="md:col-span-2 space-y-1">
+              <Label htmlFor="dateTime">Data e Hora *</Label>
+              <Input
+                id="dateTime"
                 type="datetime-local"
-                value={formData.dateTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, dateTime: e.target.value })
-                }
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register('dateTime')}
               />
+              {errors.dateTime && (
+                <p className="text-xs text-red-500">{errors.dateTime.message}</p>
+              )}
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notas (opcional)
-            </label>
+          <div className="space-y-1">
+            <Label htmlFor="notes">Notas (opcional)</Label>
             <textarea
+              id="notes"
               placeholder="Informações relevantes sobre a consulta..."
-              value={formData.notes}
-              onChange={(e) =>
-                setFormData({ ...formData, notes: e.target.value })
-              }
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              {...register('notes')}
             />
+            {errors.notes && (
+              <p className="text-xs text-red-500">{errors.notes.message}</p>
+            )}
           </div>
 
           <div className="flex gap-4">
-            <button
+            <Button
               type="submit"
               disabled={isPending}
-              className="flex-1 bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isPending ? 'Agendando...' : 'Agendar Consulta'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => router.back()}
-              className="flex-1 bg-gray-300 text-gray-800 py-2 rounded-md font-medium hover:bg-gray-400"
+              className="flex-1"
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       </div>

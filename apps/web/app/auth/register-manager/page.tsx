@@ -1,34 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useRegisterManagerMutation } from '@/queries/useRegisterManagerMutation';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { registerManagerSchema, type RegisterManagerSchema } from './register-manager.validation';
 
 export default function RegisterManagerPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    phone: '',
-    address: '',
-    bio: '',
-  });
-
-  const [error, setError] = useState<string | null>(null);
-
   const { mutate: register, isPending } = useRegisterManagerMutation();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const {
+    register: field,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterManagerSchema>({
+    resolver: zodResolver(registerManagerSchema),
+  });
 
-    register(formData, {
+  const onSubmit = (data: RegisterManagerSchema) => {
+    register(data, {
       onSuccess: () => {
         router.push('/dashboard/manager');
-      },
-      onError: (error: Error) => {
-        setError(error.message);
       },
     });
   };
@@ -40,13 +34,7 @@ export default function RegisterManagerPage() {
           Registrar como MANAGER
         </h1>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -54,13 +42,12 @@ export default function RegisterManagerPage() {
             <input
               type="email"
               placeholder="seu@email.com"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...field('email')}
             />
+            {errors.email && (
+              <p className="text-xs text-red-600 mt-1">{errors.email.message}</p>
+            )}
           </div>
 
           <div>
@@ -70,13 +57,12 @@ export default function RegisterManagerPage() {
             <input
               type="password"
               placeholder="Senha segura"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
-              required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...field('password')}
             />
+            {errors.password && (
+              <p className="text-xs text-red-600 mt-1">{errors.password.message}</p>
+            )}
           </div>
 
           <div>
@@ -86,13 +72,12 @@ export default function RegisterManagerPage() {
             <input
               type="tel"
               placeholder="+5571999999999"
-              value={formData.phone}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
-              required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...field('phone')}
             />
+            {errors.phone && (
+              <p className="text-xs text-red-600 mt-1">{errors.phone.message}</p>
+            )}
           </div>
 
           <div>
@@ -102,12 +87,12 @@ export default function RegisterManagerPage() {
             <input
               type="text"
               placeholder="Rua..., Número..."
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...field('address')}
             />
+            {errors.address && (
+              <p className="text-xs text-red-600 mt-1">{errors.address.message}</p>
+            )}
           </div>
 
           <div>
@@ -116,22 +101,22 @@ export default function RegisterManagerPage() {
             </label>
             <textarea
               placeholder="Descreva-se brevemente"
-              value={formData.bio}
-              onChange={(e) =>
-                setFormData({ ...formData, bio: e.target.value })
-              }
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              {...field('bio')}
             />
+            {errors.bio && (
+              <p className="text-xs text-red-600 mt-1">{errors.bio.message}</p>
+            )}
           </div>
 
-          <button
+          <Button
             type="submit"
             disabled={isPending}
             className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isPending ? 'Registrando...' : 'Registrar como MANAGER'}
-          </button>
+          </Button>
         </form>
 
         <div className="mt-4 text-center text-sm text-gray-600">

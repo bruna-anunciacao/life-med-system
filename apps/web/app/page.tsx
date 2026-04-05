@@ -1,14 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import Logo from "./life-med-logo.png";
-
+import { LifeMedLogo } from "./ui/life-med-logo";
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] flex flex-col">
       <header className="flex justify-between items-center px-8 py-0 max-w-[1280px] mx-auto w-full md:px-4">
         <div className="flex items-center">
-          <Image src={Logo} alt="Life Med Logo" width={200} />
+          <LifeMedLogo width={200} />
         </div>
         <nav>
           <Link href="/auth/login">

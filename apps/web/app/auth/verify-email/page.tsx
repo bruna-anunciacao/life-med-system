@@ -21,16 +21,14 @@ export default function VerifyEmailPage() {
   }, [isSuccess, router]);
 
   return (
-    <div className="w-full px-4 py-8 flex items-start justify-center bg-[#f8fafc]">
-      <div className="w-full max-w-120 p-10 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] bg-white text-center">
-        {isLoading && <VerifyEmailLoading />}
-        {isSuccess && <VerifyEmailSuccess message={data.message} />}
-        {isError && (
-          <VerifyEmailError
-            message={error instanceof Error ? error.message : "Token inválido ou expirado."}
-          />
-        )}
-      </div>
+    <div className="w-full max-w-96 sm:max-w-105 flex flex-col gap-5 text-center">
+      {isLoading && <VerifyEmailLoading />}
+      {isSuccess && <VerifyEmailSuccess message={data.message} />}
+      {isError && (
+        <VerifyEmailError
+          message={error instanceof Error ? error.message : "Token inválido ou expirado."}
+        />
+      )}
     </div>
   );
 }

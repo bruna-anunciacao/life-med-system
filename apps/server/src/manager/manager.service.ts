@@ -18,19 +18,19 @@ export class ManagerService {
   ) {}
 
   async createPatient(dto: CreatePatientDto) {
-    await this.patientService.createPatient(dto);
+    return this.patientService.createPatient(dto);
   }
 
   async updatePatient(patientId: string, dto: UpdatePatientDto) {
-    await this.patientService.updatePatient(patientId, dto);
+    return this.patientService.updatePatient(patientId, dto);
   }
 
   async listPatients() {
-    await this.patientService.listPatients();
+    return this.patientService.listPatients();
   }
 
   async getPatient(patientId: string) {
-    await this.patientService.getPatient(patientId);
+    return this.patientService.getPatient(patientId);
   }
 
   async createAppointment(dto: CreateAppointmentDto) {
@@ -82,16 +82,6 @@ export class ManagerService {
     });
 
     return appointment;
-  }
-
-  async listAppointments() {
-    return this.prisma.appointment.findMany({
-      include: {
-        patient: { include: { patientProfile: true } },
-        professional: { include: { professionalProfile: true } },
-      },
-      orderBy: { dateTime: 'desc' },
-    });
   }
 
   async getAppointmentsByManager() {

@@ -1,5 +1,5 @@
 import * as z from "zod";
-import zxcvbn from "zxcvbn";
+import { passwordValidation } from "@/lib/password";
 
 const nameValidation = z
   .string()
@@ -64,13 +64,7 @@ export const registerPatientValidation = z
     gender: z.enum(["MALE", "FEMALE", "OTHER", "UNDISCLOSED"], {
       error: () => ({ message: "Selecione um gênero válido" }),
     }),
-    password: z
-      .string()
-      .min(8, "A senha deve ter no mínimo 8 caracteres")
-      .refine((password) => {
-        const result = zxcvbn(password);
-        return result.score >= 4;
-      }, "Sua senha é fraca. Tente misturar letras, números e símbolos especiais."),
+    password: passwordValidation,
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
   })
@@ -83,13 +77,7 @@ export const registerProfessionalValidation = z
   .object({
     name: nameValidation,
     email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
-    password: z
-      .string()
-      .min(8, "A senha deve ter no mínimo 8 caracteres")
-      .refine((password) => {
-        const result = zxcvbn(password);
-        return result.score >= 3;
-      }, "Sua senha é muito fraca. Tente misturar letras, números e símbolos especiais."),
+    password: passwordValidation,
     confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
     role: z.string(),
     cpf: cpfValidation,

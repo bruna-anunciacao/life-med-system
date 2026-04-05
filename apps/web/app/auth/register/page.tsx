@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +9,7 @@ import { useRegisterForm } from "./useRegisterForm";
 import { PatientFields } from "./components/PatientFields";
 import { ProfessionalFields } from "./components/ProfessionalFields";
 import { PasswordField } from "./components/PasswordField";
-import Logo from "../../life-med-logo.png";
+import { LifeMedLogo } from "../../ui/life-med-logo";
 
 const RegisterPage = () => {
   const { form, role, isLoading, handleRoleChange, onSubmit } =
@@ -37,7 +36,7 @@ const RegisterPage = () => {
       {/* Header do form: logo + subtítulo */}
       <div className="flex flex-col">
         <Link href="/" className="w-fit mb-3">
-          <Image src={Logo} alt="Life Med" width={160} className="h-auto" />
+          <LifeMedLogo width={160} className="h-auto" />
         </Link>
         <p className="text-sm text-[#6b7280]">
           Já tem uma conta?{" "}

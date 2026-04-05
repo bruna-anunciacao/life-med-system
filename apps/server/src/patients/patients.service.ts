@@ -1,25 +1,29 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, Prisma } from '@prisma/client';
+import { AppointmentStatus, Prisma, UserRole, UserStatus } from '@prisma/client';
 import type PDFKit from 'pdfkit';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReportsService } from '../reports/reports.service';
+import { MailService } from '../mail/mail.service';
 import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
-import * as bcrypt from 'bcryptjs';
-import { UserRole, UserStatus } from '@prisma/client';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { UserRoleEnum } from '../auth/enums/user-role-enum';
 
 @Injectable()
 export class PatientsService {
+  private readonly logger = new Logger(PatientsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly reportsService: ReportsService,
+    private readonly mailService: MailService,
   ) {}
 
   async exportDoneAppointmentsReport(
@@ -137,6 +141,7 @@ export class PatientsService {
 
     return where;
   }
+
   async createPatient(dto: CreatePatientDto) {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -146,18 +151,18 @@ export class PatientsService {
       throw new BadRequestException('Email já cadastrado');
     }
 
-    const tempPassword = Math.random().toString(36).slice(-8);
+    const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
         password: hashedPassword,
-        name: dto.email.split('@')[0],
+        name: dto.name,
         role: UserRole.PATIENT,
         status: UserStatus.COMPLETED,
         emailVerified: true,
-        cpf: dto.cpf || '00000000000',
+        cpf: dto.cpf,
         patientProfile: {
           create: {
             phone: dto.phone,
@@ -171,6 +176,10 @@ export class PatientsService {
         patientProfile: true,
       },
     });
+
+    this.mailService
+      .sendTempPasswordEmail({ name: user.name, email: user.email }, tempPassword)
+      .catch((err) => this.logger.error('Falha ao enviar senha temporária:', err));
 
     return {
       id: user.id,

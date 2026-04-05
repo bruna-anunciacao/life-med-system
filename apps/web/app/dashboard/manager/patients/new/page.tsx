@@ -1,35 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreatePatientMutation } from '@/queries/useCreatePatientMutation';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { newPatientSchema, type NewPatientSchema } from './new-patient.validation';
 
 export default function NewPatientPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    cpf: '',
-    dateOfBirth: '',
-    gender: '',
-    address: '',
-  });
-
-  const [error, setError] = useState<string | null>(null);
-
   const { mutate: createPatient, isPending } = useCreatePatientMutation();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<NewPatientSchema>({
+    resolver: zodResolver(newPatientSchema),
+  });
 
-    createPatient(formData, {
+  const onSubmit = (data: NewPatientSchema) => {
+    createPatient(data, {
       onSuccess: () => {
+        toast.success('Paciente cadastrado com sucesso!');
         router.push('/dashboard/manager/patients');
       },
-      onError: (error: Error) => {
-        setError(error.message);
+      onError: (error: any) => {
+        toast.error(error?.message || 'Erro ao cadastrar paciente');
       },
     });
   };
@@ -41,140 +41,120 @@ export default function NewPatientPage() {
           Cadastrar Novo Paciente
         </h1>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-800 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome Completo *
-              </label>
-              <input
+            <div className="space-y-1">
+              <Label htmlFor="name">Nome Completo *</Label>
+              <Input
+                id="name"
                 type="text"
-                placeholder="John Doe"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="João Silva"
+                {...register('name')}
               />
+              {errors.name && (
+                <p className="text-xs text-red-600">{errors.name.message}</p>
+              )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
-              </label>
-              <input
+
+            <div className="space-y-1">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
                 type="email"
                 placeholder="paciente@email.com"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register('email')}
               />
+              {errors.email && (
+                <p className="text-xs text-red-600">{errors.email.message}</p>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Telefone *
-              </label>
-              <input
+            <div className="space-y-1">
+              <Label htmlFor="phone">Telefone *</Label>
+              <Input
+                id="phone"
                 type="tel"
                 placeholder="+5571999999999"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register('phone')}
               />
+              {errors.phone && (
+                <p className="text-xs text-red-600">{errors.phone.message}</p>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                CPF (opcional)
-              </label>
-              <input
+            <div className="space-y-1">
+              <Label htmlFor="cpf">CPF (opcional)</Label>
+              <Input
+                id="cpf"
                 type="text"
                 placeholder="000.000.000-00"
-                value={formData.cpf}
-                onChange={(e) =>
-                  setFormData({ ...formData, cpf: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register('cpf')}
               />
+              {errors.cpf && (
+                <p className="text-xs text-red-600">{errors.cpf.message}</p>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data de Nascimento (opcional)
-              </label>
-              <input
+            <div className="space-y-1">
+              <Label htmlFor="dateOfBirth">Data de Nascimento (opcional)</Label>
+              <Input
+                id="dateOfBirth"
                 type="date"
-                value={formData.dateOfBirth}
-                onChange={(e) =>
-                  setFormData({ ...formData, dateOfBirth: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register('dateOfBirth')}
               />
+              {errors.dateOfBirth && (
+                <p className="text-xs text-red-600">{errors.dateOfBirth.message}</p>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Gênero (opcional)
-              </label>
+            <div className="space-y-1">
+              <Label htmlFor="gender">Gênero (opcional)</Label>
               <select
-                value={formData.gender}
-                onChange={(e) =>
-                  setFormData({ ...formData, gender: e.target.value })
-                }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                id="gender"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {...register('gender')}
               >
                 <option value="">Selecione...</option>
                 <option value="M">Masculino</option>
                 <option value="F">Feminino</option>
                 <option value="O">Outro</option>
               </select>
+              {errors.gender && (
+                <p className="text-xs text-red-600">{errors.gender.message}</p>
+              )}
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Endereço (opcional)
-            </label>
+          <div className="space-y-1">
+            <Label htmlFor="address">Endereço (opcional)</Label>
             <textarea
+              id="address"
               placeholder="Rua, número, complemento, cidade..."
-              value={formData.address}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              {...register('address')}
             />
+            {errors.address && (
+              <p className="text-xs text-red-600">{errors.address.message}</p>
+            )}
           </div>
 
           <div className="flex gap-4">
-            <button
+            <Button
               type="submit"
               disabled={isPending}
-              className="flex-1 bg-green-600 text-white py-2 rounded-md font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             >
               {isPending ? 'Cadastrando...' : 'Cadastrar Paciente'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => router.back()}
-              className="flex-1 bg-gray-300 text-gray-800 py-2 rounded-md font-medium hover:bg-gray-400"
+              className="flex-1"
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       </div>

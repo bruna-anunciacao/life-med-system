@@ -2,6 +2,7 @@ import { api } from "../lib/api";
 import { AxiosError } from "axios";
 
 export interface CreatePatientDto {
+  name: string;
   email: string;
   phone: string;
   cpf?: string;
