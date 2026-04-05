@@ -17,7 +17,7 @@ enum UserRole {
   PROFESSIONAL
   PATIENT
   ADMIN
-  GESTOR
+  MANAGER
 }
 
 enum UserStatus {
@@ -56,7 +56,7 @@ model User {
 
   professionalProfile ProfessionalProfile?
   patientProfile      PatientProfile?
-  gestorProfile       GestorProfile?
+  managerProfile      ManagerProfile?
 
   appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
   appointmentsAsPatient Appointment[] @relation("PatientAppointments")
@@ -101,11 +101,12 @@ model PatientProfile {
   @@map("patient_profiles")
 }
 
-model GestorProfile {
+model ManagerProfile {
   id        String   @id @default(uuid())
   userId    String   @unique @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  phone     String?
   bio       String?  @db.Text
   photoUrl  String?  @map("photo_url")
   address   String?
@@ -113,7 +114,7 @@ model GestorProfile {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("gestor_profiles")
+  @@map("manager_profiles")
 }
 
 model Availability {

@@ -8,7 +8,7 @@ import { usersService } from "../../../services/users-service";
 import { Users, Calendar, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 
-const GestorDashboard = () => {
+const ManagerDashboard = () => {
   const router = useRouter();
   const [userName, setUserName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -45,19 +45,19 @@ const GestorDashboard = () => {
   const quickActions = [
     {
       label: "Cadastrar Paciente",
-      href: "/dashboard/gestor/patients/new",
+      href: "/dashboard/manager/patients/new",
       icon: <Plus size={20} />,
       color: "bg-green-600 hover:bg-green-700",
     },
     {
       label: "Agendar Consulta",
-      href: "/dashboard/gestor/appointments/new",
+      href: "/dashboard/manager/appointments/new",
       icon: <Calendar size={20} />,
       color: "bg-blue-600 hover:bg-blue-700",
     },
     {
       label: "Ver Pacientes",
-      href: "/dashboard/gestor/patients",
+      href: "/dashboard/manager/patients",
       icon: <Users size={20} />,
       color: "bg-purple-600 hover:bg-purple-700",
     },
@@ -81,7 +81,7 @@ const GestorDashboard = () => {
           Bem-vindo, {userName}!
         </h1>
         <p className="mt-2 text-slate-600">
-          Você está no painel de gestor. Gerencie pacientes e consultas.
+          Você está no painel do manager. Gerencie pacientes e consultas.
         </p>
       </div>
 
@@ -159,4 +159,4 @@ const GestorDashboard = () => {
   );
 };
 
-export default GestorDashboard;
+export default ManagerDashboard;

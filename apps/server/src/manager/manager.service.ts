@@ -11,7 +11,7 @@ import { PatientsService } from '../patients/patients.service';
 import { UserRole } from '@prisma/client';
 
 @Injectable()
-export class GestorService {
+export class ManagerService {
   constructor(
     private prisma: PrismaService,
     private patientService: PatientsService,
@@ -94,7 +94,7 @@ export class GestorService {
     });
   }
 
-  async getAppointmentsByGestor() {
+  async getAppointmentsByManager() {
     return this.prisma.appointment.findMany({
       include: {
         patient: { include: { patientProfile: true } },

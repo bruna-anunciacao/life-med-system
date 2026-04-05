@@ -30,7 +30,7 @@ export interface RegisterProfessionalDto {
   password: string;
 }
 
-export interface RegisterGestorDto {
+export interface RegisterManagerDto {
   email: string;
   password: string;
   phone: string;
@@ -56,7 +56,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "PROFESSIONAL" | "PATIENT" | "ADMIN" | "GESTOR";
+  role: "PROFESSIONAL" | "PATIENT" | "ADMIN" | "MANAGER";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
   emailVerified: boolean;
 }
@@ -109,9 +109,9 @@ export const authService = {
     }
   },
 
-  async registerGestor(data: RegisterGestorDto) {
+  async registerManager(data: RegisterManagerDto) {
     try {
-      const response = await api.post("/auth/register/gestor", data);
+      const response = await api.post("/auth/register/manager", data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

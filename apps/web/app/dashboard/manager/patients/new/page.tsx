@@ -26,7 +26,7 @@ export default function NewPatientPage() {
 
     createPatient(formData, {
       onSuccess: () => {
-        router.push('/dashboard/gestor/patients');
+        router.push('/dashboard/manager/patients');
       },
       onError: (error: Error) => {
         setError(error.message);

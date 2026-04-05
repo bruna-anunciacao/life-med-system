@@ -8,7 +8,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class RegisterGestorDto {
+export class RegisterManagerDto {
   @IsEmail({}, { message: 'Email inválido' })
   @IsNotEmpty({ message: 'Email é obrigatório' })
   email!: string;
@@ -30,6 +30,16 @@ export class RegisterGestorDto {
     message: 'A senha deve conter pelo menos um caractere especial',
   })
   password!: string;
+
+  @IsString({ message: 'Nome deve ser texto' })
+  @IsNotEmpty({ message: 'Nome é obrigatório' })
+  @MinLength(2, { message: 'Nome deve ter no mínimo 2 caracteres' })
+  @MaxLength(100, { message: 'Nome deve ter no máximo 100 caracteres' })
+  name!: string;
+
+  @IsString({ message: 'CPF deve ser texto' })
+  @IsNotEmpty({ message: 'CPF é obrigatório' })
+  cpf!: string;
 
   @IsString({ message: 'Telefone deve ser texto' })
   @IsNotEmpty({ message: 'Telefone é obrigatório' })

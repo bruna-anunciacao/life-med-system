@@ -30,7 +30,7 @@ export default function PatientsPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Pacientes</h1>
           <Link
-            href="/dashboard/gestor/patients/new"
+            href="/dashboard/manager/patients/new"
             className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
           >
             + Novo Paciente
@@ -41,7 +41,7 @@ export default function PatientsPage() {
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
             <p className="text-gray-600 mb-4">Nenhum paciente cadastrado</p>
             <Link
-              href="/dashboard/gestor/patients/new"
+              href="/dashboard/manager/patients/new"
               className="text-blue-600 hover:underline"
             >
               Cadastre o paciente
@@ -98,7 +98,7 @@ export default function PatientsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <Link
-                        href={`/dashboard/gestor/patients/${patient.id}`}
+                        href={`/dashboard/manager/patients/${patient.id}`}
                         className="text-blue-600 hover:underline"
                       >
                         Ver Detalhes

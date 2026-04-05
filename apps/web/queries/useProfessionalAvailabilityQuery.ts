@@ -23,7 +23,7 @@ export function useProfessionalAvailabilityQuery(professionalId: string | null) 
         throw new Error('Professional ID is required');
       }
       const response = await api.get(
-        `/gestor/professionals/${professionalId}/availability`
+        `/manager/professionals/${professionalId}/availability`
       );
       return response.data;
     },

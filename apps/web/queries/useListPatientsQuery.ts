@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { gestorService } from "../services/gestor-service";
+import { managerService } from "../services/manager-service";
 
 export function useListPatientsQuery() {
   return useQuery({
     queryKey: ["patients"],
-    queryFn: () => gestorService.listPatients(),
+    queryFn: () => managerService.listPatients(),
   });
 }
