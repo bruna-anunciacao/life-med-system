@@ -1,36 +1,32 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
-import { usersService } from "../../../services/users-service";
+import { useUserQuery } from "@/queries/useUserQuery";
+import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
+import { useListAppointmentsQuery } from "@/queries/useListAppointmentsQuery";
+import { LoadingPage } from "@/components/shared/LoadingPage";
 import { Users, Calendar, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 
 const ManagerDashboard = () => {
   const router = useRouter();
-  const [userName, setUserName] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    usersService
-      .getUser()
-      .then((data) => setUserName(data.name?.split(" ")[0] || ""))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: user, isLoading: loadingUser } = useUserQuery();
+  const { data: patients = [], isLoading: loadingPatients } = useListPatientsQuery();
+  const { data: appointments = [], isLoading: loadingAppointments } = useListAppointmentsQuery();
 
   const stats = [
     {
       title: "Pacientes",
-      value: "0",
+      value: loadingPatients ? "..." : String(patients.length),
       icon: <Users size={24} />,
       colorClass: "bg-blue-50 text-blue-500",
     },
     {
       title: "Consultas",
-      value: "0",
+      value: loadingAppointments ? "..." : String(appointments.length),
       icon: <Calendar size={24} />,
       colorClass: "bg-green-50 text-green-500",
     },
@@ -63,15 +59,11 @@ const ManagerDashboard = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <section className="min-h-screen w-full bg-slate-50 p-8">
-        <div className="flex items-center justify-center">
-          <p className="text-slate-600">Carregando...</p>
-        </div>
-      </section>
-    );
+  if (loadingUser) {
+    return <LoadingPage />;
   }
+
+  const userName = user?.name?.split(" ")[0] || "";
 
   return (
     <section className="min-h-screen w-full bg-slate-50 p-8">
@@ -81,7 +73,7 @@ const ManagerDashboard = () => {
           Bem-vindo, {userName}!
         </h1>
         <p className="mt-2 text-slate-600">
-          Você está no painel do manager. Gerencie pacientes e consultas.
+          Você está no painel do gestor. Gerencie pacientes e consultas.
         </p>
       </div>
 

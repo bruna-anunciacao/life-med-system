@@ -8,7 +8,11 @@ import { useProfessionalsQuery } from '@/queries/useProfessionalsQuery';
 import { useProfessionalAvailabilityQuery } from '@/queries/useProfessionalAvailabilityQuery';
 import { Autocomplete } from '@/components/ui/autocomplete';
 import { ProfessionalAvailabilityDisplay } from '@/components/ui/professional-availability-display';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { newAppointmentSchema, type NewAppointmentSchema } from './new-appointment.validation';
 
 export default function NewAppointmentPage() {
@@ -37,7 +41,11 @@ export default function NewAppointmentPage() {
   const onSubmit = (data: NewAppointmentSchema) => {
     createAppointment(data, {
       onSuccess: () => {
+        toast.success('Consulta agendada com sucesso!');
         router.push('/dashboard/manager/appointments');
+      },
+      onError: (error: any) => {
+        toast.error(error?.message || 'Erro ao agendar consulta');
       },
     });
   };
@@ -51,10 +59,8 @@ export default function NewAppointmentPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Paciente *
-              </label>
+            <div className="space-y-1">
+              <Label htmlFor="patientId">Paciente *</Label>
               <Controller
                 name="patientId"
                 control={control}
@@ -73,14 +79,12 @@ export default function NewAppointmentPage() {
                 )}
               />
               {errors.patientId && (
-                <p className="text-xs text-red-500 mt-1">{errors.patientId.message}</p>
+                <p className="text-xs text-red-500">{errors.patientId.message}</p>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Profissional *
-              </label>
+            <div className="space-y-1">
+              <Label htmlFor="professionalId">Profissional *</Label>
               <Controller
                 name="professionalId"
                 control={control}
@@ -102,7 +106,7 @@ export default function NewAppointmentPage() {
                 )}
               />
               {errors.professionalId && (
-                <p className="text-xs text-red-500 mt-1">{errors.professionalId.message}</p>
+                <p className="text-xs text-red-500">{errors.professionalId.message}</p>
               )}
             </div>
 
@@ -116,51 +120,49 @@ export default function NewAppointmentPage() {
               </div>
             )}
 
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data e Hora *
-              </label>
-              <input
+            <div className="md:col-span-2 space-y-1">
+              <Label htmlFor="dateTime">Data e Hora *</Label>
+              <Input
+                id="dateTime"
                 type="datetime-local"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 {...register('dateTime')}
               />
               {errors.dateTime && (
-                <p className="text-xs text-red-500 mt-1">{errors.dateTime.message}</p>
+                <p className="text-xs text-red-500">{errors.dateTime.message}</p>
               )}
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notas (opcional)
-            </label>
+          <div className="space-y-1">
+            <Label htmlFor="notes">Notas (opcional)</Label>
             <textarea
+              id="notes"
               placeholder="Informações relevantes sobre a consulta..."
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               {...register('notes')}
             />
             {errors.notes && (
-              <p className="text-xs text-red-500 mt-1">{errors.notes.message}</p>
+              <p className="text-xs text-red-500">{errors.notes.message}</p>
             )}
           </div>
 
           <div className="flex gap-4">
-            <button
+            <Button
               type="submit"
               disabled={isPending}
-              className="flex-1 bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isPending ? 'Agendando...' : 'Agendar Consulta'}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => router.back()}
-              className="flex-1 bg-gray-300 text-gray-800 py-2 rounded-md font-medium hover:bg-gray-400"
+              className="flex-1"
             >
               Cancelar
-            </button>
+            </Button>
           </div>
         </form>
       </div>

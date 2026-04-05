@@ -1,24 +1,10 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { EyeIcon, CheckIcon, BanIcon, EditIcon } from "../../../utils/icons";
 import { User } from "../../../../services/auth-service";
-
-const statusVariantMap: Record<string, string> = {
-  VERIFIED: "bg-green-100 text-green-700",
-  BLOCKED: "bg-red-100 text-red-700",
-  PENDING: "bg-yellow-100 text-yellow-700",
-  COMPLETE: "bg-gray-100 text-gray-700",
-};
-
-const statusTextMap: Record<string, string> = {
-  VERIFIED: "Verificado",
-  BLOCKED: "Bloqueado",
-  PENDING: "Pendente",
-  COMPLETED: "Completo",
-};
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
 type UsersTableProps = {
   users: User[];
@@ -70,11 +56,7 @@ export function UsersTable({ users, listType, title, emptyMessage, onStatusChang
 
                   <td className="p-3 border-b border-gray-200 flex items-center justify-center">
                     <div className="w-full flex justify-center">
-                      <Badge
-                        className={`px-4 ${statusVariantMap[user.status] ?? "bg-gray-100 text-gray-700"}`}
-                      >
-                        {statusTextMap[user.status] ?? user.status}
-                      </Badge>
+                      <StatusBadge status={user.status} type="user" />
                     </div>
                   </td>
 
