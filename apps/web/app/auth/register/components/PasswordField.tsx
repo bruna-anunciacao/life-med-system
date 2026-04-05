@@ -37,7 +37,7 @@ export function PasswordField<T extends FieldValues>({
 
   const error = errors[name];
   const score = currentValue ? zxcvbn(currentValue).score : 0;
-  const strength = STRENGTH_CONFIG[score];
+  const strength = STRENGTH_CONFIG[score] ?? STRENGTH_CONFIG[0];
 
   return (
     <div className="w-full flex flex-col gap-1">
