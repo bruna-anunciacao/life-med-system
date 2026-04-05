@@ -7,13 +7,13 @@ import {
 import { UserRole} from '@prisma/client';
 
 @Injectable()
-export class GestorRoleGuard implements CanActivate {
+export class ManagerRoleGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || user.role !== UserRole.GESTOR) {
-      throw new ForbiddenException('Acesso permitido apenas para Gestores');
+    if (!user || user.role !== UserRole.MANAGER) {
+      throw new ForbiddenException('Acesso permitido apenas para Managers');
     }
 
     return true;

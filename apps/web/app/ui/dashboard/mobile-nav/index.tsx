@@ -56,23 +56,23 @@ const MobileNav = ({ role }: { role: string }) => {
             activeIcon: <UserCircle size={22} weight="fill" />,
           },
         ];
-      case "GESTOR":
+      case "MANAGER":
         return [
           {
             name: "Início",
-            href: "/dashboard/gestor",
+            href: "/dashboard/manager",
             icon: <House size={22} />,
             activeIcon: <House size={22} weight="fill" />,
           },
           {
             name: "Pacientes",
-            href: "/dashboard/gestor/patients",
+            href: "/dashboard/manager/patients",
             icon: <Users size={22} />,
             activeIcon: <Users size={22} weight="fill" />,
           },
           {
             name: "Consultas",
-            href: "/dashboard/gestor/appointments",
+            href: "/dashboard/manager/appointments",
             icon: <CalendarBlank size={22} />,
             activeIcon: <CalendarBlank size={22} weight="fill" />,
           },

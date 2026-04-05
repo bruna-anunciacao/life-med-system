@@ -24,10 +24,10 @@ export interface CreateAppointmentDto {
   notes?: string;
 }
 
-export const gestorService = {
+export const managerService = {
   async createPatient(data: CreatePatientDto) {
     try {
-      const response = await api.post("/gestor/patients", data);
+      const response = await api.post("/manager/patients", data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
@@ -46,7 +46,7 @@ export const gestorService = {
 
   async updatePatient(patientId: string, data: UpdatePatientDto) {
     try {
-      const response = await api.patch(`/gestor/patients/${patientId}`, data);
+      const response = await api.patch(`/manager/patients/${patientId}`, data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
@@ -65,7 +65,7 @@ export const gestorService = {
 
   async listPatients() {
     try {
-      const response = await api.get("/gestor/patients");
+      const response = await api.get("/manager/patients");
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
@@ -84,7 +84,7 @@ export const gestorService = {
 
   async createAppointment(data: CreateAppointmentDto) {
     try {
-      const response = await api.post("/gestor/appointments", data);
+      const response = await api.post("/manager/appointments", data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
@@ -103,7 +103,7 @@ export const gestorService = {
 
   async listAppointments() {
     try {
-      const response = await api.get("/gestor/appointments");
+      const response = await api.get("/manager/appointments");
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
@@ -141,7 +141,7 @@ export const gestorService = {
 
   async getPatient(patientId: string) {
     try {
-      const response = await api.get(`/gestor/patients/${patientId}`);
+      const response = await api.get(`/manager/patients/${patientId}`);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

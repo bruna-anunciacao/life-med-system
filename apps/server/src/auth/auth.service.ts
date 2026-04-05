@@ -10,7 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
 import { RegisterProfessionalDto } from './dto/register-profissional-dto';
 import { RegisterAdminDto } from './dto/register-admin-dto';
-import { RegisterGestorDto } from './dto/register-gestor.dto';
+import { RegisterManagerDto } from './dto/register-manager.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from 'src/mail/mail.service';
@@ -208,6 +208,53 @@ export class AuthService {
       email: user.email,
       name: user.name,
       role: user.role,
+    };
+  }
+
+  async registerManager(dto: RegisterManagerDto) {
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (emailExists) {
+      throw new BadRequestException('E-mail já cadastrado');
+    }
+
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        cpf: dto.cpf,
+        password: passwordHash,
+        name: dto.name,
+        role: UserRole.MANAGER,
+        status: UserStatus.VERIFIED,
+        managerProfile: {
+          create: {
+            phone: dto.phone,
+            address: dto.address,
+            bio: dto.bio,
+          },
+        },
+      },
+      include: { managerProfile: true },
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      status: user.status,
     };
   }
 

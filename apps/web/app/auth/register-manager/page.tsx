@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useRegisterGestorMutation } from '@/queries/useRegisterGestorMutation';
+import { useRegisterManagerMutation } from '@/queries/useRegisterManagerMutation';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
-export default function RegisterGestorPage() {
+export default function RegisterManagerPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
@@ -17,7 +17,7 @@ export default function RegisterGestorPage() {
 
   const [error, setError] = useState<string | null>(null);
 
-  const { mutate: register, isPending } = useRegisterGestorMutation();
+  const { mutate: register, isPending } = useRegisterManagerMutation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +25,7 @@ export default function RegisterGestorPage() {
 
     register(formData, {
       onSuccess: () => {
-        router.push('/dashboard/gestor');
+        router.push('/dashboard/manager');
       },
       onError: (error: Error) => {
         setError(error.message);
@@ -37,7 +37,7 @@ export default function RegisterGestorPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
         <h1 className="text-2xl font-bold mb-6 text-center text-gray-900">
-          Registrar como GESTOR
+          Registrar como MANAGER
         </h1>
 
         {error && (
@@ -130,7 +130,7 @@ export default function RegisterGestorPage() {
             disabled={isPending}
             className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPending ? 'Registrando...' : 'Registrar como GESTOR'}
+            {isPending ? 'Registrando...' : 'Registrar como MANAGER'}
           </button>
         </form>
 

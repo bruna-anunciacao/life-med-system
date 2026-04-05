@@ -3,12 +3,12 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function GestorDashboard() {
+export default function ManagerDashboardRedirect() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirecionar para a página principal do gestor
-    router.replace('/dashboard/gestor');
+    // Redirect to the manager dashboard main page
+    router.replace('/dashboard/manager');
   }, [router]);
 
   return null;

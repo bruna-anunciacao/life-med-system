@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
-import { gestorService } from "@/services/gestor-service";
+import { managerService } from "@/services/manager-service";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
@@ -37,7 +37,7 @@ export default function PatientDetailsPage() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      await gestorService.updatePatient(patientId, formData);
+      await managerService.updatePatient(patientId, formData);
       toast.success("Paciente atualizado com sucesso!");
       setIsEditing(false);
     } catch (error) {

@@ -37,7 +37,7 @@ export default function NewAppointmentPage() {
 
     createAppointment(formData, {
       onSuccess: () => {
-        router.push('/dashboard/gestor/appointments');
+        router.push('/dashboard/manager/appointments');
       },
       onError: (error: Error) => {
         setError(error.message);

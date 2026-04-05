@@ -31,7 +31,7 @@ export default function AppointmentsPage() {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Consultas</h1>
           <Link
-            href="/dashboard/gestor/appointments/new"
+            href="/dashboard/manager/appointments/new"
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
             + Nova Consulta
@@ -42,7 +42,7 @@ export default function AppointmentsPage() {
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
             <p className="text-gray-600 mb-4">Nenhuma consulta agendada</p>
             <Link
-              href="/dashboard/gestor/appointments/new"
+              href="/dashboard/manager/appointments/new"
               className="text-blue-600 hover:underline"
             >
               Agende a primeira consulta
