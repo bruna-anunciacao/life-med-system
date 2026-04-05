@@ -71,6 +71,11 @@ export class AuthController {
 
   @Post('register/manager')
   @Throttle({ short: { ttl: 60000, limit: 5 } })
+  @ApiOperation({ summary: 'Cadastrar gestor', description: 'Cria uma conta com perfil de gestor do sistema.' })
+  @ApiBody({ type: RegisterManagerDto })
+  @ApiResponse({ status: 201, description: 'Gestor cadastrado com sucesso.' })
+  @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   async registerManager(@Body() dto: RegisterManagerDto) {
     return this.authService.registerManager(dto);
   }

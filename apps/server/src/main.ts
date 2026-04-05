@@ -44,6 +44,7 @@ async function bootstrap() {
     .addTag('Users', 'Gestão de usuários')
     .addTag('Professional', 'Configurações e agenda do profissional de saúde')
     .addTag('Patients', 'Exportação de relatórios do paciente')
+    .addTag('Manager', 'Gestão de pacientes e consultas pelo gestor')
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
