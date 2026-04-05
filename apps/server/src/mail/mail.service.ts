@@ -7,6 +7,7 @@ import { createAccountPendingEmail } from './templates/account-pending.template'
 import { createAccountApprovedEmail } from './templates/account-approved.template';
 import { createAccountRejectedEmail } from './templates/account-rejected.template';
 import { createEmailVerificationEmail } from './templates/email-verification.template';
+import { createTempPasswordEmail } from './templates/temp-password.template';
 
 export type EmailAttachment = {
   filename: string;
@@ -130,6 +131,25 @@ export class MailService implements OnModuleInit {
     await this.sendEmail({
       to: admin.email,
       subject: 'Nova Solicitação de Cadastro - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendTempPasswordEmail(
+    user: { name: string; email: string },
+    tempPassword: string,
+  ) {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const loginUrl = `${frontendUrl}/auth/login`;
+    const htmlBody = createTempPasswordEmail({
+      userName: user.name,
+      email: user.email,
+      tempPassword,
+      loginUrl,
+    });
+    await this.sendEmail({
+      to: user.email,
+      subject: 'Bem-vindo ao LifeMed - Suas Credenciais de Acesso',
       html: htmlBody,
     });
   }

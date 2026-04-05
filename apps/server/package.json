@@ -33,6 +33,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^6.19.1",
     "@scalar/nestjs-api-reference": "^1.1.5",
     "bcryptjs": "^3.0.3",
