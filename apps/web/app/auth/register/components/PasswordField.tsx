@@ -17,7 +17,9 @@ type PasswordFieldProps<T extends FieldValues> = {
   currentValue?: string;
 };
 
-const STRENGTH_CONFIG = [
+type StrengthConfig = { label: string; color: string; textColor: string };
+
+const STRENGTH_CONFIG: StrengthConfig[] = [
   { label: "Fraca", color: "bg-red-500", textColor: "text-red-500" },
   { label: "Fraca", color: "bg-red-500", textColor: "text-red-500" },
   { label: "Razoável", color: "bg-yellow-500", textColor: "text-yellow-600" },
@@ -37,7 +39,7 @@ export function PasswordField<T extends FieldValues>({
 
   const error = errors[name];
   const score = currentValue ? zxcvbn(currentValue).score : 0;
-  const strength = STRENGTH_CONFIG[score] ?? STRENGTH_CONFIG[0];
+  const strength: StrengthConfig = (STRENGTH_CONFIG[score] ?? STRENGTH_CONFIG[0]) as StrengthConfig;
 
   return (
     <div className="w-full flex flex-col gap-1">
