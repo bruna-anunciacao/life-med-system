@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -11,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
 import { RegisterProfessionalDto } from './dto/register-profissional-dto';
 import { RegisterAdminDto } from './dto/register-admin-dto';
+import { RegisterManagerDto } from './dto/register-manager.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { MailService } from 'src/mail/mail.service';
@@ -18,13 +18,8 @@ import { EmailVerificationService } from 'src/mail/email-verification.service';
 import { randomUUID } from 'crypto';
 import { UserRole, UserStatus } from '@prisma/client';
 
-const PASSWORD_RESET_TTL_HOURS = 2;
-const getFrontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3000';
-
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -32,44 +27,35 @@ export class AuthService {
     private readonly emailVerification: EmailVerificationService,
   ) {}
 
-  // ─── Helpers privados ──────────────────────────────────────────────────────
-
-  private async validateUniqueUserFields(email: string, cpf: string) {
-    const emailExists = await this.prisma.user.findUnique({ where: { email } });
-    if (emailExists) throw new BadRequestException('E-mail já cadastrado');
-
-    const cpfExists = await this.prisma.user.findFirst({ where: { cpf } });
-    if (cpfExists) throw new BadRequestException('CPF já cadastrado');
-  }
-
-  private async hashPassword(password: string) {
-    return bcrypt.hash(password, 10);
-  }
-
-  // ─── Autenticação ──────────────────────────────────────────────────────────
-
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-    if (!user) throw new UnauthorizedException('Credenciais inválidas');
+    if (!user) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
 
     const passwordValid = await bcrypt.compare(dto.password, user.password);
-    if (!passwordValid) throw new UnauthorizedException('Credenciais inválidas');
+
+    if (!passwordValid) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
 
     if (!user.emailVerified) {
-      if (user.role === UserRole.PATIENT) {
-        throw new UnauthorizedException(
-          'Seu e-mail ainda não foi verificado. Verifique sua caixa de entrada.',
-        );
-      }
       throw new UnauthorizedException(
         'Sua conta ainda não foi aprovada. Aguarde a verificação do administrador.',
       );
     }
 
-    const accessToken = String(
-      this.jwtService.sign({ sub: user.id, role: user.role, email: user.email, status: user.status }),
-    );
+    const payload = {
+      sub: user.id,
+      role: user.role,
+      email: user.email,
+      status: user.status,
+    };
+
+    const accessToken = String(this.jwtService.sign(payload));
 
     return {
       accessToken,
@@ -84,12 +70,24 @@ export class AuthService {
     };
   }
 
-  // ─── Registro ──────────────────────────────────────────────────────────────
-
   async register(dto: RegisterDto) {
-    await this.validateUniqueUserFields(dto.email, dto.cpf);
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-    const passwordHash = await this.hashPassword(dto.password);
+    if (emailExists) {
+      throw new BadRequestException('E-mail já cadastrado');
+    }
+
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -112,13 +110,33 @@ export class AuthService {
 
     await this.emailVerification.sendVerification(user);
 
-    return { id: user.id, email: user.email, name: user.name, role: user.role, status: user.status };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      status: user.status,
+    };
   }
 
   async registerProfessional(dto: RegisterProfessionalDto) {
-    await this.validateUniqueUserFields(dto.email, dto.cpf);
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-    const passwordHash = await this.hashPassword(dto.password);
+    if (emailExists) {
+      throw new BadRequestException('E-mail já cadastrado');
+    }
+
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -139,9 +157,10 @@ export class AuthService {
           },
         },
       },
-      include: { professionalProfile: true },
+      include: {
+        professionalProfile: true,
+      },
     });
-
     await this.emailVerification.sendVerification(user);
 
     return {
@@ -155,9 +174,23 @@ export class AuthService {
   }
 
   async registerAdmin(dto: RegisterAdminDto) {
-    await this.validateUniqueUserFields(dto.email, dto.cpf);
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-    const passwordHash = await this.hashPassword(dto.password);
+    if (emailExists) {
+      throw new BadRequestException('E-mail já cadastrado');
+    }
+
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
 
     const user = await this.prisma.user.create({
       data: {
@@ -170,48 +203,89 @@ export class AuthService {
       },
     });
 
-    return { id: user.id, email: user.email, name: user.name, role: user.role };
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
   }
 
-  // ─── Verificação de e-mail ─────────────────────────────────────────────────
+  async registerManager(dto: RegisterManagerDto) {
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-  async verifyEmail(token: string) {
-    const user = await this.emailVerification.validateToken(token);
-
-    if (user.role === UserRole.PATIENT) {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: true },
-      });
-      return { message: 'E-mail verificado com sucesso. Você já pode fazer login.' };
+    if (emailExists) {
+      throw new BadRequestException('E-mail já cadastrado');
     }
 
-    // Profissional verificou o e-mail — notifica admins e aguarda aprovação manual
-    await this.notifyAdminsOfNewProfessional({ name: user.name, email: user.email });
-    await this.mailService.sendAccountPendingEmail({ name: user.name, email: user.email });
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
 
-    return { message: 'E-mail verificado. Sua conta será analisada pelo administrador.' };
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        cpf: dto.cpf,
+        password: passwordHash,
+        name: dto.name,
+        role: UserRole.MANAGER,
+        status: UserStatus.VERIFIED,
+        managerProfile: {
+          create: {
+            phone: dto.phone,
+            address: dto.address,
+            bio: dto.bio,
+          },
+        },
+      },
+      include: { managerProfile: true },
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      status: user.status,
+    };
   }
-
-  async resendVerificationEmail(email: string) {
-    return this.emailVerification.resend(email);
-  }
-
-  // ─── Recuperação de senha ──────────────────────────────────────────────────
 
   async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-    if (!user) return { message: 'Se o e-mail existir, enviaremos instruções' };
+    if (!user) {
+      return { message: 'Se o e-mail existir, enviaremos instruções' };
+    }
 
     const token = randomUUID();
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + PASSWORD_RESET_TTL_HOURS);
+    expiresAt.setHours(expiresAt.getHours() + 2);
 
-    await this.prisma.passwordReset.create({ data: { userId: user.id, token, expiresAt } });
+    await this.prisma.passwordReset.create({
+      data: {
+        userId: user.id,
+        token,
+        expiresAt,
+      },
+    });
 
-    const resetUrl = `${getFrontendUrl()}/auth/reset-password?token=${token}`;
-    await this.mailService.sendPasswordResetEmail({ name: user.name, email: user.email }, resetUrl);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
+
+    await this.mailService.sendPasswordResetEmail(
+      { name: user.name, email: user.email },
+      resetUrl,
+    );
 
     return { message: 'Se o e-mail existir, enviaremos instruções' };
   }
@@ -222,40 +296,93 @@ export class AuthService {
       include: { user: true },
     });
 
-    if (!reset) throw new BadRequestException('Token inválido');
-    if (reset.expiresAt < new Date()) throw new BadRequestException('Token expirado');
+    if (!reset) {
+      throw new BadRequestException('Token inválido');
+    }
 
-    const isSamePassword = await bcrypt.compare(dto.newPassword, reset.user.password);
-    if (isSamePassword) throw new BadRequestException('A nova senha não pode ser igual à senha atual');
+    if (reset.expiresAt < new Date()) {
+      throw new BadRequestException('Token expirado');
+    }
 
-    const passwordHash = await this.hashPassword(dto.newPassword);
+    const passwordHash = await bcrypt.hash(dto.newPassword, 10);
 
     await this.prisma.$transaction([
-      this.prisma.user.update({ where: { id: reset.userId }, data: { password: passwordHash } }),
-      this.prisma.passwordReset.delete({ where: { id: reset.id } }),
+      this.prisma.user.update({
+        where: { id: reset.userId },
+        data: { password: passwordHash },
+      }),
+      this.prisma.passwordReset.delete({
+        where: { id: reset.id },
+      }),
     ]);
 
     return { message: 'Senha atualizada com sucesso' };
   }
+  async verifyEmail(token: string) {
+    const user = await this.emailVerification.validateToken(token);
 
-  // ─── Notificações internas ─────────────────────────────────────────────────
+    if (user.role === UserRole.PATIENT) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
+      });
+      return {
+        message: 'E-mail verificado com sucesso. Você já pode fazer login.',
+      };
+    }
 
-  private async notifyAdminsOfNewProfessional(professional: { name: string; email: string }) {
+    this.notifyAdminsOfNewUser({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }).catch((err) =>
+      console.error(
+        `Falha ao notificar admins sobre ${user.email}:`,
+        err.message,
+      ),
+    );
+
+    this.mailService
+      .sendAccountPendingEmail({ name: user.name, email: user.email })
+      .catch((err) =>
+        console.error(
+          `Falha ao enviar email pendente para ${user.email}:`,
+          err.message,
+        ),
+      );
+
+    return {
+      message:
+        'E-mail verificado. Sua conta será analisada pelo administrador.',
+    };
+  }
+
+  async resendVerificationEmail(email: string) {
+    return this.emailVerification.resend(email);
+  }
+
+  async notifyAdminsOfNewUser(newUser: {
+    name: string;
+    email: string;
+    role: string;
+  }) {
     const admins = await this.prisma.user.findMany({
       where: { role: UserRole.ADMIN },
       select: { name: true, email: true },
     });
 
-    const approveUrl = `${getFrontendUrl()}/dashboard/admin`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const approveUrl = `${frontendUrl}/dashboard/admin`;
 
-    await Promise.allSettled(
-      admins.map((admin) =>
-        this.mailService
-          .sendNewUserNotificationEmail(admin, professional, approveUrl)
-          .catch((err: Error) =>
-            this.logger.error(`Falha ao notificar admin ${admin.email}: ${err.message}`),
-          ),
-      ),
-    );
+    for (const admin of admins) {
+      this.mailService
+        .sendNewUserNotificationEmail(admin, newUser, approveUrl)
+        .catch((err) => {
+          console.error(
+            `Falha ao notificar admin ${admin.email}:`,
+            err.message,
+          );
+        });
+    }
   }
 }
