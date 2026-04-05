@@ -8,5 +8,6 @@ import { ReportsModule } from '../reports/reports.module';
   imports: [PrismaModule, ReportsModule],
   controllers: [PatientsController],
   providers: [PatientsService],
+  exports: [PatientsService],
 })
 export class PatientsModule {}
