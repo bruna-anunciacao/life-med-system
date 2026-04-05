@@ -3,6 +3,9 @@ import { randomUUID } from 'crypto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from './mail.service';
 
+const VERIFICATION_TOKEN_TTL_HOURS = 24;
+const getFrontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3000';
+
 @Injectable()
 export class EmailVerificationService {
   constructor(
@@ -10,29 +13,21 @@ export class EmailVerificationService {
     private readonly mailService: MailService,
   ) {}
 
-  async sendVerification(user: { id: string; name: string; email: string }) {
+  async sendVerification(user: { id: string; name: string; email: string }): Promise<void> {
     const token = randomUUID();
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 24);
+    expiresAt.setHours(expiresAt.getHours() + VERIFICATION_TOKEN_TTL_HOURS);
 
     await this.prisma.emailVerification.create({
       data: { userId: user.id, token, expiresAt },
     });
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    const verificationUrl = `${frontendUrl}/auth/verify-email?token=${token}`;
+    const verificationUrl = `${getFrontendUrl()}/auth/verify-email?token=${token}`;
 
-    this.mailService
-      .sendEmailVerificationEmail(
-        { name: user.name, email: user.email },
-        verificationUrl,
-      )
-      .catch((err) => {
-        console.error(
-          `Falha ao enviar email de verificação para ${user.email}:`,
-          err.message,
-        );
-      });
+    await this.mailService.sendEmailVerificationEmail(
+      { name: user.name, email: user.email },
+      verificationUrl,
+    );
   }
 
   async validateToken(token: string) {
@@ -42,12 +37,9 @@ export class EmailVerificationService {
     });
 
     if (!verification) throw new BadRequestException('Token inválido');
-    if (verification.expiresAt < new Date())
-      throw new BadRequestException('Token expirado');
+    if (verification.expiresAt < new Date()) throw new BadRequestException('Token expirado');
 
-    await this.prisma.emailVerification.delete({
-      where: { id: verification.id },
-    });
+    await this.prisma.emailVerification.delete({ where: { id: verification.id } });
 
     return verification.user;
   }
@@ -56,20 +48,12 @@ export class EmailVerificationService {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || user.emailVerified) {
-      return {
-        message:
-          'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.',
-      };
+      return { message: 'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.' };
     }
 
-    await this.prisma.emailVerification.deleteMany({
-      where: { userId: user.id },
-    });
+    await this.prisma.emailVerification.deleteMany({ where: { userId: user.id } });
     await this.sendVerification(user);
 
-    return {
-      message:
-        'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.',
-    };
+    return { message: 'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.' };
   }
 }

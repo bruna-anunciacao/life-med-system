@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
 import { createPasswordResetEmail } from './templates/password-reset.template';
@@ -24,24 +24,23 @@ interface SendEmailInput {
 }
 
 @Injectable()
-export class MailService {
+export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
+  private transporter: nodemailer.Transporter;
+  private isDevelopment = process.env.NODE_ENV === 'development';
 
-  async sendEmail(input: SendEmailInput): Promise<void> {
-    const nodeEnv = process.env.NODE_ENV;
-
-    let transporter: nodemailer.Transporter;
-
-    if (nodeEnv === 'development') {
+  async onModuleInit() {
+    if (this.isDevelopment) {
       const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
+      this.transporter = nodemailer.createTransport({
         host: 'smtp.ethereal.email',
         port: 587,
         secure: false,
         auth: { user: testAccount.user, pass: testAccount.pass },
       });
+      this.logger.log('Transporter de email configurado (modo desenvolvimento)');
     } else {
-      transporter = nodemailer.createTransport({
+      this.transporter = nodemailer.createTransport({
         host: process.env.MAIL_HOST,
         port: Number(process.env.MAIL_PORT),
         secure: process.env.MAIL_SECURE === 'true',
@@ -50,10 +49,13 @@ export class MailService {
           pass: process.env.MAIL_PASS,
         },
       });
+      this.logger.log('Transporter de email configurado (modo produção)');
     }
+  }
 
+  async sendEmail(input: SendEmailInput): Promise<void> {
     try {
-      const info = await transporter.sendMail({
+      const info = await this.transporter.sendMail({
         from: input.from || '"Life Med" <noreply@lifemed.com>',
         to: input.to,
         cc: input.cc,
@@ -62,23 +64,18 @@ export class MailService {
         attachments: input.attachments,
       });
 
-      if (nodeEnv === 'development') {
-        this.logger.log(
-          `📧 Email de teste: ${nodemailer.getTestMessageUrl(info)}`,
-        );
+      if (this.isDevelopment) {
+        this.logger.log(`Email de teste enviado: ${nodemailer.getTestMessageUrl(info)}`);
       } else {
-        this.logger.log(`✅ Email enviado: ${info.messageId}`);
+        this.logger.log(`Email enviado: ${info.messageId}`);
       }
     } catch (error) {
-      this.logger.error('❌ Falha ao enviar email:', error);
-      throw new Error('Erro no serviço de email');
+      this.logger.error(`Falha ao enviar email para ${input.to}: ${(error as Error).message}`);
+      throw error;
     }
   }
 
-  async sendPasswordResetEmail(
-    user: { name: string; email: string },
-    resetUrl: string,
-  ) {
+  async sendPasswordResetEmail(user: { name: string; email: string }, resetUrl: string) {
     const htmlBody = createPasswordResetEmail({ nome: user.name, resetUrl });
     await this.sendEmail({
       to: user.email,
@@ -99,10 +96,7 @@ export class MailService {
   async sendAccountApprovedEmail(user: { name: string; email: string }) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const loginUrl = `${frontendUrl}/auth/login`;
-    const htmlBody = createAccountApprovedEmail({
-      userName: user.name,
-      loginUrl,
-    });
+    const htmlBody = createAccountApprovedEmail({ userName: user.name, loginUrl });
     await this.sendEmail({
       to: user.email,
       subject: 'Conta Aprovada - LifeMed',
