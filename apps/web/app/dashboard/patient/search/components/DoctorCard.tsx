@@ -68,18 +68,11 @@ export function DoctorCard({ professional, onViewProfile }: DoctorCardProps) {
         </div>
 
         <div className="flex flex-row justify-start gap-2 flex-shrink-0">
-          <Button
-            size="sm"
-            className="px-5 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
-          >
+          <Button size="sm">
             <CalendarIcon />
             Agendar
           </Button>
-          <Button
-            size="sm"
-            onClick={onViewProfile}
-            className="px-5 py-2 border border-gray-200 rounded-lg bg-white font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gray-50"
-          >
+          <Button size="sm" variant="outline" onClick={onViewProfile}>
             Ver Perfil
           </Button>
         </div>

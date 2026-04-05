@@ -269,16 +269,16 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
           <DialogFooter className="flex justify-end gap-3 mt-4">
             <Button
               variant="destructive"
+              size="lg"
               onClick={closeModal}
               disabled={isSaving || isLoadingData}
-              className="px-4 py-2 flex items-center gap-2 rounded-lg font-semibold text-base text-white cursor-pointer transition-all duration-200"
             >
               Cancelar
             </Button>
             <Button
+              size="lg"
               onClick={() => handleSubmit(onSubmit)()}
               disabled={isSaving || isLoadingData}
-              className="px-4 py-2 flex items-center gap-2 rounded-lg font-semibold text-base text-white cursor-pointer transition-all duration-200"
             >
               {isSaving ? "Salvando..." : "Salvar Configurações"}
             </Button>

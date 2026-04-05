@@ -41,10 +41,7 @@ export default function PerfilPage() {
           <p className="mt-1 text-base text-gray-500">Gerencie suas informações profissionais.</p>
         </div>
         <Button
-          className={isEditing
-            ? "px-4 py-2 rounded-lg bg-white text-[#006fee] border border-[#006fee] font-semibold text-base cursor-pointer transition-all duration-200 hover:bg-gray-100"
-            : "px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
-          }
+          size="lg"
           onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
           variant={isEditing ? "secondary" : "default"}
         >
@@ -89,12 +86,7 @@ export default function PerfilPage() {
 
           {isEditing && (
             <div className="flex justify-end">
-              <Button
-                className="px-6 py-[0.6rem] rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
-                type="submit"
-                form="profile-form"
-                disabled={isSaving}
-              >
+              <Button size="xl" type="submit" form="profile-form" disabled={isSaving}>
                 {isSaving ? "Salvando..." : "Salvar Alterações"}
               </Button>
             </div>

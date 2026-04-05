@@ -26,10 +26,7 @@ const PatientProfilePage = () => {
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Meu Perfil</h1>
           <p className="mt-1 text-base text-gray-500">Gerencie suas informações pessoais.</p>
         </div>
-        <Button
-          className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
-          onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
-        >
+        <Button size="lg" onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}>
           {isEditing ? "Cancelar" : "Editar Perfil"}
         </Button>
       </div>
@@ -64,12 +61,7 @@ const PatientProfilePage = () => {
             <>
               <Separator />
               <div className="flex justify-end">
-                <Button
-                  className="px-6 py-2.5 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
-                  type="submit"
-                  form="patient-profile-form"
-                  disabled={isSaving}
-                >
+                <Button size="xl" type="submit" form="patient-profile-form" disabled={isSaving}>
                   {isSaving ? "Salvando..." : "Salvar Alterações"}
                 </Button>
               </div>
