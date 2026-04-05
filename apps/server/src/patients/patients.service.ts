@@ -1,10 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AppointmentStatus, Prisma } from '@prisma/client';
 import type PDFKit from 'pdfkit';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReportsService } from '../reports/reports.service';
 import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
+import { CreatePatientDto } from './dto/create-patient.dto';
+import * as bcrypt from 'bcryptjs';
+import { UserRole, UserStatus } from '@prisma/client';
+import { UpdatePatientDto } from './dto/update-patient.dto';
+import { UserRoleEnum } from '../auth/enums/user-role-enum';
 
 @Injectable()
 export class PatientsService {
@@ -127,5 +136,120 @@ export class PatientsService {
     }
 
     return where;
+  }
+  async createPatient(dto: CreatePatientDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (existing) {
+      throw new BadRequestException('Email já cadastrado');
+    }
+
+    const tempPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        password: hashedPassword,
+        name: dto.email.split('@')[0],
+        role: UserRole.PATIENT,
+        status: UserStatus.COMPLETED,
+        emailVerified: true,
+        cpf: dto.cpf || '00000000000',
+        patientProfile: {
+          create: {
+            phone: dto.phone,
+            dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
+            gender: dto.gender,
+            address: dto.address,
+          },
+        },
+      },
+      include: {
+        patientProfile: true,
+      },
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      patientProfile: user.patientProfile,
+    };
+  }
+
+  async updatePatient(patientId: string, dto: UpdatePatientDto) {
+    const patient = await this.prisma.user.findUnique({
+      where: { id: patientId },
+      include: { patientProfile: true },
+    });
+
+    if (!patient || patient.role !== UserRole.PATIENT) {
+      throw new NotFoundException('Paciente não encontrado');
+    }
+
+    if (!patient.patientProfile) {
+      throw new NotFoundException('Perfil do paciente não encontrado');
+    }
+
+    const updated = await this.prisma.patientProfile.update({
+      where: { userId: patientId },
+      data: {
+        phone: dto.phone ?? patient.patientProfile.phone,
+        dateOfBirth: dto.dateOfBirth
+          ? new Date(dto.dateOfBirth)
+          : patient.patientProfile.dateOfBirth,
+        gender: dto.gender ?? patient.patientProfile.gender,
+        address: dto.address ?? patient.patientProfile.address,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    return {
+      id: updated.userId,
+      email: updated.user.email,
+      name: updated.user.name,
+      patientProfile: updated,
+    };
+  }
+  async listPatients() {
+    return this.prisma.user.findMany({
+      where: { role: UserRoleEnum.PATIENT },
+      include: { patientProfile: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getPatient(patientId: string) {
+    const patient = await this.prisma.user.findUnique({
+      where: { id: patientId },
+      include: { patientProfile: true },
+    });
+
+    if (!patient || patient.role !== UserRole.PATIENT) {
+      throw new NotFoundException('Paciente não encontrado');
+    }
+
+    return {
+      id: patient.id,
+      email: patient.email,
+      name: patient.name,
+      cpf: patient.cpf,
+      role: patient.role,
+      status: patient.status,
+      emailVerified: patient.emailVerified,
+      createdAt: patient.createdAt,
+      updatedAt: patient.updatedAt,
+      phone: patient.patientProfile?.phone,
+      dateOfBirth: patient.patientProfile?.dateOfBirth,
+      gender: patient.patientProfile?.gender,
+      address: patient.patientProfile?.address,
+      patientProfile: patient.patientProfile,
+    };
   }
 }

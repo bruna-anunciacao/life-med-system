@@ -6,6 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
 import { RegisterProfessionalDto } from './dto/register-profissional-dto';
 import { RegisterAdminDto } from './dto/register-admin-dto';
+import { RegisterManagerDto } from './dto/register-manager.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
@@ -33,6 +34,11 @@ export class AuthController {
   @Post('register/admin')
   async registerAdmin(@Body() dto: RegisterAdminDto) {
     return this.authService.registerAdmin(dto);
+  }
+
+  @Post('register/manager')
+  async registerManager(@Body() dto: RegisterManagerDto) {
+    return this.authService.registerManager(dto);
   }
 
   @Post('forgot-password')
