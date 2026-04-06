@@ -125,7 +125,7 @@ export function BookingDialog({ open, onOpenChange, professional }: BookingDialo
 
   const formatDate = (dateStr: string) => {
     const [y, m, d] = dateStr.split("-");
-    return `${d} de ${MONTHS[parseInt(m, 10) - 1]}`;
+    return `${d} de ${MONTHS[parseInt(m!, 10) - 1]}`;
   };
 
   return (
