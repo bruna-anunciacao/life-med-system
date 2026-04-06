@@ -4,9 +4,12 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { usersService } from "../../../services/users-service";
 import { CalendarIcon, ClockIcon, CheckIcon, SearchIcon } from "../../utils/icons";
+import { useMyAppointmentsQuery } from "@/queries/useMyAppointmentsQuery";
+import { formatDate, formatTime, getStatusClass, getStatusLabel, getModalityLabel } from "./appointments/appointments.utils";
 
 const PatientDashboard = () => {
   const router = useRouter();
@@ -16,24 +19,23 @@ const PatientDashboard = () => {
     usersService.getUser().then((data) => setUserName(data.name?.split(" ")[0] || "")).catch(() => {});
   }, []);
 
+  const { data: rawAppointments, isLoading: isLoadingAppointments } = useMyAppointmentsQuery();
+
+  const upcomingAppointments = (rawAppointments ?? [])
+    .filter((a) => a.status === "CONFIRMED" || a.status === "PENDING")
+    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
+
+  const nextAppointment = upcomingAppointments[0] ?? null;
+  const remainingAppointments = upcomingAppointments.slice(1, 3);
+
+  const confirmedCount = upcomingAppointments.filter((a) => a.status === "CONFIRMED").length;
+  const pendingCount = upcomingAppointments.filter((a) => a.status === "PENDING").length;
+  const completedCount = (rawAppointments ?? []).filter((a) => a.status === "COMPLETED").length;
+
   const stats = [
-    { title: "Próximas Consultas", value: "2", icon: <CalendarIcon size={24} weight="duotone" />, colorClass: "bg-blue-50 text-blue-500" },
-    { title: "Aguardando Confirmação", value: "1", icon: <ClockIcon size={24} weight="duotone" />, colorClass: "bg-yellow-50 text-yellow-500" },
-    { title: "Consultas Realizadas", value: "5", icon: <CheckIcon size={24} weight="duotone" />, colorClass: "bg-green-50 text-green-500" },
-  ];
-
-  const nextAppointment = {
-    doctorName: "Dra. Ana Paula",
-    specialty: "Cardiologista",
-    time: "14:00 - 15:00",
-    date: "24 de Fevereiro",
-    type: "VIRTUAL",
-    status: "CONFIRMED",
-  };
-
-  const upcomingAppointments = [
-    { id: 1, doctor: "Dr. Carlos Lima", specialty: "Dermatologista", day: "26", month: "Fev", time: "09:00", status: "CONFIRMED" },
-    { id: 2, doctor: "Dra. Fernanda Souza", specialty: "Nutricionista", day: "02", month: "Mar", time: "10:30", status: "PENDING" },
+    { title: "Próximas Consultas", value: String(confirmedCount), icon: <CalendarIcon size={24} weight="duotone" />, colorClass: "bg-blue-50 text-blue-500" },
+    { title: "Aguardando Confirmação", value: String(pendingCount), icon: <ClockIcon size={24} weight="duotone" />, colorClass: "bg-yellow-50 text-yellow-500" },
+    { title: "Consultas Realizadas", value: String(completedCount), icon: <CheckIcon size={24} weight="duotone" />, colorClass: "bg-green-50 text-green-500" },
   ];
 
   const suggestedDoctors = [
@@ -87,24 +89,36 @@ const PatientDashboard = () => {
                 Próxima Consulta
               </h2>
             </div>
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="flex flex-col justify-between gap-6 p-6 md:flex-row md:items-center">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-700">{nextAppointment.doctorName}</h3>
-                  <p className="text-sm text-gray-500">{nextAppointment.specialty}</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <Badge>{nextAppointment.type === "VIRTUAL" ? "Consulta Online" : "Presencial"}</Badge>
-                    <span className="flex items-center gap-1 text-sm font-medium text-gray-500">
-                      <ClockIcon /> {nextAppointment.date} • {nextAppointment.time}
-                    </span>
+            {isLoadingAppointments ? (
+              <div className="flex justify-center py-8"><Spinner /></div>
+            ) : nextAppointment ? (
+              <Card className={nextAppointment.status === "CONFIRMED" ? "border-l-4 border-l-blue-500" : "border-l-4 border-l-yellow-400"}>
+                <CardContent className="flex flex-col justify-between gap-6 p-6 md:flex-row md:items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-700">{nextAppointment.doctorName}</h3>
+                    <p className="text-sm text-gray-500">{nextAppointment.specialty}</p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Badge>{getModalityLabel(nextAppointment.modality)}</Badge>
+                      <span className="flex items-center gap-1 text-sm font-medium text-gray-500">
+                        <ClockIcon />
+                        {(() => { const d = formatDate(nextAppointment.dateTime); return `${d.day} de ${d.month}`; })()}
+                        {" • "}
+                        {formatTime(nextAppointment.dateTime)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex gap-3">
-                  <Button>Ver Detalhes</Button>
-                  <Button variant="outline" className="text-red-500 hover:bg-red-50 hover:border-red-300">Cancelar</Button>
-                </div>
-              </CardContent>
-            </Card>
+                  <div className="flex gap-3">
+                    <Button onClick={() => router.push("/dashboard/patient/appointments")}>Ver Detalhes</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border border-gray-200">
+                <CardContent className="p-6 text-center text-gray-500">
+                  Nenhuma consulta agendada.
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Upcoming appointments */}
@@ -117,27 +131,36 @@ const PatientDashboard = () => {
             </div>
             <Card className="border border-gray-200">
               <CardContent className="p-0">
-                {upcomingAppointments.map((appt, i) => (
-                  <div
-                    key={appt.id}
-                    className={`flex items-center gap-4 p-4 transition-colors hover:bg-slate-50 ${i < upcomingAppointments.length - 1 ? "border-b border-gray-100" : ""}`}
-                  >
-                    <div className="w-16 text-center">
-                      <p className="text-xl font-bold text-blue-500">{appt.day}</p>
-                      <p className="text-xs uppercase text-gray-500">{appt.month}</p>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-800">{appt.doctor}</p>
-                      <p className="text-xs text-gray-500">{appt.specialty}</p>
-                      <span className="mt-0.5 flex items-center gap-1 text-xs text-gray-400">
-                        <ClockIcon /> {appt.time}
-                      </span>
-                    </div>
-                    <Badge className={appt.status === "CONFIRMED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}>
-                      {appt.status === "CONFIRMED" ? "Confirmada" : "Pendente"}
-                    </Badge>
-                  </div>
-                ))}
+                {isLoadingAppointments ? (
+                  <div className="flex justify-center py-8"><Spinner /></div>
+                ) : remainingAppointments.length === 0 ? (
+                  <p className="p-4 text-center text-sm text-gray-500">Sem outras consultas agendadas.</p>
+                ) : (
+                  remainingAppointments.map((appt, i) => {
+                    const { day, month } = formatDate(appt.dateTime);
+                    return (
+                      <div
+                        key={appt.id}
+                        className={`flex items-center gap-4 p-4 transition-colors hover:bg-slate-50 ${i < remainingAppointments.length - 1 ? "border-b border-gray-100" : ""}`}
+                      >
+                        <div className="w-16 text-center">
+                          <p className="text-xl font-bold text-blue-500">{day}</p>
+                          <p className="text-xs uppercase text-gray-500">{month}</p>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-800">{appt.doctorName}</p>
+                          <p className="text-xs text-gray-500">{appt.specialty}</p>
+                          <span className="mt-0.5 flex items-center gap-1 text-xs text-gray-400">
+                            <ClockIcon /> {formatTime(appt.dateTime)}
+                          </span>
+                        </div>
+                        <Badge className={getStatusClass(appt.status)}>
+                          {getStatusLabel(appt.status)}
+                        </Badge>
+                      </div>
+                    );
+                  })
+                )}
               </CardContent>
             </Card>
           </div>
