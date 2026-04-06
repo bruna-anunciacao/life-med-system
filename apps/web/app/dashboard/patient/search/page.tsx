@@ -59,11 +59,11 @@ const SearchDoctorsPage = () => {
     });
 
   return (
-    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
-      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
+    <section className="w-full min-h-screen mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-8 bg-[#f8fafc]">
+      <div className="mb-6 sm:mb-8 flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Buscar Médicos</h1>
-          <p className="mt-1 text-base text-gray-500">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">Buscar Médicos</h1>
+          <p className="mt-1 text-sm sm:text-base text-gray-500">
             Encontre profissionais de saúde voluntários e agende sua consulta gratuitamente.
           </p>
         </div>

@@ -22,8 +22,8 @@ export function AppointmentTabs({ activeTab, appointments, onTabChange }: Appoin
           key={tab.key}
           className={
             activeTab === tab.key
-              ? "px-6 py-3 border-none border-b-2 border-[#006fee] bg-none text-[0.95rem] font-semibold text-[#006fee] cursor-pointer -mb-0.5"
-              : "px-6 py-3 border-none border-b-2 border-transparent bg-none text-[0.95rem] font-medium text-gray-500 cursor-pointer transition-all duration-200 hover:text-gray-700 -mb-0.5"
+              ? "px-3 sm:px-6 py-3 border-none border-b-2 border-[#006fee] bg-none text-sm sm:text-[0.95rem] font-semibold text-[#006fee] cursor-pointer -mb-0.5 whitespace-nowrap"
+              : "px-3 sm:px-6 py-3 border-none border-b-2 border-transparent bg-none text-sm sm:text-[0.95rem] font-medium text-gray-500 cursor-pointer transition-all duration-200 hover:text-gray-700 -mb-0.5 whitespace-nowrap"
           }
           onClick={() => onTabChange(tab.key)}
         >

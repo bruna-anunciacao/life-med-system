@@ -130,7 +130,7 @@ export function BookingDialog({ open, onOpenChange, professional }: BookingDialo
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Agendar Consulta</DialogTitle>
           <DialogDescription>
@@ -139,7 +139,7 @@ export function BookingDialog({ open, onOpenChange, professional }: BookingDialo
         </DialogHeader>
 
         {/* Calendar + Sidebar */}
-        <div className="flex gap-0 -mx-4 border-t border-gray-100">
+        <div className="flex flex-col sm:flex-row gap-0 -mx-4 border-t border-gray-100">
 
           {/* Calendar */}
           <div className="flex-1 p-5">
@@ -205,7 +205,7 @@ export function BookingDialog({ open, onOpenChange, professional }: BookingDialo
           </div>
 
           {/* Slots sidebar */}
-          <div className="w-48 border-l border-gray-100 p-5 flex flex-col gap-3">
+          <div className="w-full sm:w-48 border-t sm:border-t-0 sm:border-l border-gray-100 p-5 flex flex-col gap-3">
             {!selectedDate ? (
               <div className="flex h-full items-center justify-center">
                 <p className="text-xs text-gray-400 text-center leading-relaxed">
