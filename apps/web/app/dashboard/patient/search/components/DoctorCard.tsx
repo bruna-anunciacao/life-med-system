@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon } from "../../../../utils/icons";
+import { Check } from "@phosphor-icons/react";
 import { BookingDialog } from "./BookingDialog";
 
 type Professional = {
@@ -22,16 +23,17 @@ type Professional = {
 };
 
 const MODALITY_LABEL: Record<string, string> = {
-  VIRTUAL: "Online",
+  VIRTUAL: "Remoto",
   HOME_VISIT: "Domiciliar",
   CLINIC: "Presencial",
 };
 
 type DoctorCardProps = {
   professional: Professional;
+  onViewProfile: () => void;
 };
 
-export function DoctorCard({ professional }: DoctorCardProps) {
+export function DoctorCard({ professional, onViewProfile }: DoctorCardProps) {
   const modality = professional.professionalProfile?.modality;
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -56,13 +58,13 @@ export function DoctorCard({ professional }: DoctorCardProps) {
               )}
               <div className="mt-1 flex flex-wrap gap-2 items-center">
                 <Badge className="px-2.5 py-0.5 rounded text-xs font-semibold">
-                  {MODALITY_LABEL[modality ?? ""] ?? "Online"}
+                  {MODALITY_LABEL[modality ?? ""] ?? "Remoto"}
                 </Badge>
                 {professional.status === "VERIFIED" && (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-[#17c964] inline-block" />
-                    <span className="text-xs text-[#17c964] font-medium">Verificado</span>
-                  </>
+                  <span className="text-xs font-medium text-[#17c964]">
+                    Verificado
+                    <Check className="inline size-3 ml-1" />
+                  </span>
                 )}
               </div>
             </div>
@@ -71,13 +73,20 @@ export function DoctorCard({ professional }: DoctorCardProps) {
           <div className="flex flex-row gap-2 sm:flex-col flex-shrink-0">
             <Button
               size="sm"
-              className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
+              className="flex-1 sm:flex-none"
               onClick={() => setDialogOpen(true)}
             >
               <CalendarIcon />
               Agendar
             </Button>
-            <Button size="sm" className="flex-1 sm:flex-none px-4 py-2 border border-gray-200 rounded-lg bg-white font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gray-50">Ver Perfil</Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 sm:flex-none"
+              onClick={onViewProfile}
+            >
+              Ver Perfil
+            </Button>
           </div>
         </CardContent>
       </Card>

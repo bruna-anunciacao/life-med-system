@@ -1,25 +1,45 @@
 "use client";
 
 import { useState } from "react";
-import { type UseFormRegister, type FieldErrors } from "react-hook-form";
+import { type UseFormRegister, type FieldErrors, type FieldValues, type Path } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
-import type { RegisterFormData } from "../register-validation";
+import zxcvbn from "zxcvbn";
 
-type PasswordFieldName = "password" | "confirmPassword";
-
-type PasswordFieldProps = {
-  name: PasswordFieldName;
+type PasswordFieldProps<T extends FieldValues> = {
+  name: Path<T>;
   label: string;
-  register: UseFormRegister<RegisterFormData>;
-  errors: FieldErrors<RegisterFormData>;
+  register: UseFormRegister<T>;
+  errors: FieldErrors<T>;
+  showStrengthMeter?: boolean;
+  currentValue?: string;
 };
 
-export function PasswordField({ name, label, register, errors }: PasswordFieldProps) {
+type StrengthConfig = { label: string; color: string; textColor: string };
+
+const STRENGTH_CONFIG: StrengthConfig[] = [
+  { label: "Fraca", color: "bg-red-500", textColor: "text-red-500" },
+  { label: "Fraca", color: "bg-red-500", textColor: "text-red-500" },
+  { label: "Razoável", color: "bg-yellow-500", textColor: "text-yellow-600" },
+  { label: "Forte", color: "bg-blue-500", textColor: "text-blue-500" },
+  { label: "Muito forte", color: "bg-green-500", textColor: "text-green-500" },
+];
+
+export function PasswordField<T extends FieldValues>({
+  name,
+  label,
+  register,
+  errors,
+  showStrengthMeter,
+  currentValue,
+}: PasswordFieldProps<T>) {
   const [isVisible, setIsVisible] = useState(false);
+
   const error = errors[name];
+  const score = currentValue ? zxcvbn(currentValue).score : 0;
+  const strength: StrengthConfig = (STRENGTH_CONFIG[score] ?? STRENGTH_CONFIG[0]) as StrengthConfig;
 
   return (
     <div className="w-full flex flex-col gap-1">
@@ -42,7 +62,28 @@ export function PasswordField({ name, label, register, errors }: PasswordFieldPr
           {isVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
         </Button>
       </div>
-      {error && <p className="text-sm text-destructive">{error.message as string}</p>}
+
+      {showStrengthMeter && currentValue && (
+        <div className="mt-1 flex flex-col gap-1.5">
+          <div className="flex gap-1.5 w-full">
+            {[...Array(4)].map((_, index) => (
+              <div
+                key={index}
+                className={`h-1.5 w-full rounded-full transition-colors duration-300 ${
+                  index < (score === 0 ? 1 : score) ? strength.color : "bg-gray-200"
+                }`}
+              />
+            ))}
+          </div>
+          <p className={`text-xs font-medium ${strength.textColor}`}>
+            {strength.label}
+          </p>
+        </div>
+      )}
+
+      {error && (
+        <p className="text-sm text-destructive">{error.message as string}</p>
+      )}
     </div>
   );
 }

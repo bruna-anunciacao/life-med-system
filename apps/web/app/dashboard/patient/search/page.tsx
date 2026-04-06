@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { SearchBar } from "./components/SearchBar";
 import { DoctorCard } from "./components/DoctorCard";
 import { EmptySearch } from "./components/EmptySearch";
+import { ProfessionalData, SeeProfileModal } from "./components/SeeProfileModal";
 
 type Professional = {
   id: string;
@@ -26,6 +27,7 @@ const SearchDoctorsPage = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -85,10 +87,22 @@ const SearchDoctorsPage = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {filtered.map((prof) => (
-            <DoctorCard key={prof.id} professional={prof} />
+            <DoctorCard
+              key={prof.id}
+              professional={prof}
+              onViewProfile={() => setSelectedProfessional(prof)}
+            />
           ))}
         </div>
       )}
+
+      <SeeProfileModal
+        isOpen={!!selectedProfessional}
+        onOpenChange={(open) => {
+          if (!open) setSelectedProfessional(null);
+        }}
+        professional={selectedProfessional as ProfessionalData}
+      />
     </section>
   );
 };

@@ -15,6 +15,7 @@ export interface RegisterPatientDto {
 export interface RegisterProfessionalDto {
   name: string;
   email: string;
+  cpf: string;
   professionalLicense: string;
   specialty: string;
   subspecialty?: string;
@@ -27,6 +28,14 @@ export interface RegisterProfessionalDto {
     other?: string;
   };
   password: string;
+}
+
+export interface RegisterManagerDto {
+  email: string;
+  password: string;
+  phone: string;
+  address?: string;
+  bio?: string;
 }
 
 export interface LoginDto {
@@ -47,7 +56,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "PROFESSIONAL" | "PATIENT" | "ADMIN";
+  role: "PROFESSIONAL" | "PATIENT" | "ADMIN" | "MANAGER";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
   emailVerified: boolean;
 }
@@ -84,6 +93,25 @@ export const authService = {
   async registerProfessional(data: RegisterProfessionalDto) {
     try {
       const response = await api.post("/auth/register/professional", data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao realizar cadastro.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async registerManager(data: RegisterManagerDto) {
+    try {
+      const response = await api.post("/auth/register/manager", data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
@@ -171,6 +199,34 @@ export const authService = {
         throw new Error(message || "Erro ao realizar recuperar a senha.");
       }
 
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async verifyEmail(token: string) {
+    try {
+      const response = await api.get(`/auth/verify-email?token=${token}`);
+      return response.data as { message: string };
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(
+          error.response.data.message || "Token inválido ou expirado.",
+        );
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async resendVerification(email: string) {
+    try {
+      const response = await api.post("/auth/resend-verification", { email });
+      return response.data as { message: string };
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(
+          error.response.data.message || "Erro ao reenviar verificação.",
+        );
+      }
       throw new Error("Erro de conexão com o servidor.");
     }
   },

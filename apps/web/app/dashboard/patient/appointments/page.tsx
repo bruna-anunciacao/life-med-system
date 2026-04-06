@@ -128,10 +128,7 @@ const AppointmentsPage = () => {
             Acompanhe e gerencie suas consultas agendadas.
           </p>
         </div>
-        <Button
-          className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
-          onClick={() => router.push("/dashboard/patient/search")}
-        >
+        <Button size="lg" onClick={() => router.push("/dashboard/patient/search")}>
           <SearchIcon />
           Nova Consulta
         </Button>
@@ -144,11 +141,7 @@ const AppointmentsPage = () => {
       />
 
       <div className="mb-6 flex justify-end">
-        <Button
-          className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3] disabled:opacity-60"
-          onClick={handleDownloadReport}
-          disabled={isDownloadingReport}
-        >
+        <Button size="lg" onClick={handleDownloadReport} disabled={isDownloadingReport}>
           {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
         </Button>
       </div>

@@ -26,7 +26,7 @@ export function EmptyAppointments({ activeTab, onSearch }: EmptyAppointmentsProp
       <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
       <p className="text-sm text-gray-500">{text}</p>
       {activeTab === "upcoming" && (
-        <Button className="mt-2 px-5 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]" onClick={onSearch}>
+        <Button size="lg" className="mt-2" onClick={onSearch}>
           Buscar Médicos
         </Button>
       )}

@@ -6,42 +6,34 @@ import { toast } from "sonner";
 import { loginSchema, LoginSchema } from "./login.validation";
 import { useLoginMutation } from "../../../queries/useLoginMutation";
 
+const DASHBOARD_ROUTES: Record<string, string> = {
+  PROFESSIONAL: "/dashboard/professional",
+  PATIENT: "/dashboard/patient",
+  ADMIN: "/dashboard/admin",
+};
+
 export function useLoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
-
   const loginMutation = useLoginMutation();
 
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
-  const onSubmit = async (data: LoginSchema) => {
-    setIsLoading(true);
+  const onSubmit = (data: LoginSchema) => {
     loginMutation.mutate(
       { email: data.email, password: data.password },
       {
         onSuccess: (response) => {
           toast.success(`Bem-vindo(a), ${response.user.name}!`);
           form.reset();
-          switch (response.user.role) {
-            case "PROFESSIONAL":
-              router.push("/dashboard/professional");
-              break;
-            case "PATIENT":
-              router.push("/dashboard/patient");
-              break;
-            default:
-              router.push("/dashboard/admin");
-              break;
-          }
+          const route =
+            DASHBOARD_ROUTES[response.user.role] ?? "/dashboard/admin";
+          router.push(route);
         },
-        onError: (error: any) => {
+        onError: (error) => {
           const message =
             error instanceof Error ? error.message : "Erro desconhecido.";
 
@@ -51,18 +43,20 @@ export function useLoginForm() {
             return;
           }
 
+          if (message.includes("e-mail ainda não foi verificado")) {
+            toast.info(message);
+            return;
+          }
+
           toast.error(message);
         },
-        onSettled: () => {
-          setIsLoading(false);
-        },
-      }
+      },
     );
   };
 
   return {
     form,
-    isLoading,
+    isLoading: loginMutation.isPending,
     isPasswordVisible,
     setIsPasswordVisible,
     onSubmit,

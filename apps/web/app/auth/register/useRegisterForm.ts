@@ -65,6 +65,7 @@ export function useRegisterForm() {
           name: professional.name,
           email: professional.email,
           password: professional.password,
+          cpf: professional.cpf.replace(/\D/g, ""),
           professionalLicense: professional.professionalLicense,
           specialty: professional.specialty,
           subspecialty: professional.subspecialty,
@@ -75,6 +76,9 @@ export function useRegisterForm() {
             | "CLINIC",
           socialLinks: professional.socialLinks,
         });
+        toast.success(
+          "Sua solicitação foi enviada para a administração, aguarde. Sua resposta virá via email.",
+        );
       } else {
         const patient = data as z.infer<typeof registerPatientValidation>;
         await authService.registerPatient({
@@ -86,10 +90,11 @@ export function useRegisterForm() {
           dateOfBirth: patient.dateOfBirth,
           gender: patient.gender,
         });
+        toast.success(
+          "Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta.",
+        );
       }
-      toast.success(
-        "Sua solicitação foi enviada para a administração, aguarde. Sua resposta virá via email.",
-      );
+
       form.reset(INITIAL_FORM);
       setTimeout(() => router.push("/auth/login"), 1000);
     } catch (error) {

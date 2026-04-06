@@ -10,9 +10,11 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
 import { RegisterProfessionalDto } from './dto/register-profissional-dto';
 import { RegisterAdminDto } from './dto/register-admin-dto';
+import { RegisterManagerDto } from './dto/register-manager.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { MailService } from 'services/mail.service';
+import { MailService } from 'src/mail/mail.service';
+import { EmailVerificationService } from 'src/mail/email-verification.service';
 import { randomUUID } from 'crypto';
 import { UserRole, UserStatus } from '@prisma/client';
 
@@ -22,7 +24,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-  ) { }
+    private readonly emailVerification: EmailVerificationService,
+  ) {}
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -102,29 +105,10 @@ export class AuthService {
           },
         },
       },
-      include: {
-        patientProfile: true,
-      },
-    });
-    this.notifyAdminsOfNewUser({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    }).catch((err) => {
-      console.error(
-        `Falha ao notificar admins sobre novo usuário ${user.email}:`,
-        err.message,
-      );
+      include: { patientProfile: true },
     });
 
-    this.mailService
-      .sendAccountPendingEmail({ name: user.name, email: user.email })
-      .catch((err) => {
-        console.error(
-          `Falha ao enviar email de conta pendente para ${user.email}:`,
-          err.message,
-        );
-      });
+    await this.emailVerification.sendVerification(user);
 
     return {
       id: user.id,
@@ -177,25 +161,7 @@ export class AuthService {
         professionalProfile: true,
       },
     });
-    this.notifyAdminsOfNewUser({
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    }).catch((err) => {
-      console.error(
-        `Falha ao notificar admins sobre novo usuário ${user.email}:`,
-        err.message,
-      );
-    });
-
-    this.mailService
-      .sendAccountPendingEmail({ name: user.name, email: user.email })
-      .catch((err) => {
-        console.error(
-          `Falha ao enviar email de conta pendente para ${user.email}:`,
-          err.message,
-        );
-      });
+    await this.emailVerification.sendVerification(user);
 
     return {
       id: user.id,
@@ -242,6 +208,53 @@ export class AuthService {
       email: user.email,
       name: user.name,
       role: user.role,
+    };
+  }
+
+  async registerManager(dto: RegisterManagerDto) {
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (emailExists) {
+      throw new BadRequestException('E-mail já cadastrado');
+    }
+
+    const cpfExists = await this.prisma.user.findFirst({
+      where: { cpf: dto.cpf },
+    });
+
+    if (cpfExists) {
+      throw new BadRequestException('CPF já cadastrado');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        cpf: dto.cpf,
+        password: passwordHash,
+        name: dto.name,
+        role: UserRole.MANAGER,
+        status: UserStatus.VERIFIED,
+        managerProfile: {
+          create: {
+            phone: dto.phone,
+            address: dto.address,
+            bio: dto.bio,
+          },
+        },
+      },
+      include: { managerProfile: true },
+    });
+
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      status: user.status,
     };
   }
 
@@ -305,6 +318,49 @@ export class AuthService {
 
     return { message: 'Senha atualizada com sucesso' };
   }
+  async verifyEmail(token: string) {
+    const user = await this.emailVerification.validateToken(token);
+
+    if (user.role === UserRole.PATIENT) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { emailVerified: true },
+      });
+      return {
+        message: 'E-mail verificado com sucesso. Você já pode fazer login.',
+      };
+    }
+
+    this.notifyAdminsOfNewUser({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }).catch((err) =>
+      console.error(
+        `Falha ao notificar admins sobre ${user.email}:`,
+        err.message,
+      ),
+    );
+
+    this.mailService
+      .sendAccountPendingEmail({ name: user.name, email: user.email })
+      .catch((err) =>
+        console.error(
+          `Falha ao enviar email pendente para ${user.email}:`,
+          err.message,
+        ),
+      );
+
+    return {
+      message:
+        'E-mail verificado. Sua conta será analisada pelo administrador.',
+    };
+  }
+
+  async resendVerificationEmail(email: string) {
+    return this.emailVerification.resend(email);
+  }
+
   async notifyAdminsOfNewUser(newUser: {
     name: string;
     email: string;

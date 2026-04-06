@@ -60,10 +60,7 @@ const ProfessionalDashboard = () => {
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Painel Profissional</h1>
           <p className="mt-1 text-base text-gray-500">Gerencie suas consultas e acompanhe seu dia.</p>
         </div>
-        <Button
-          className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200"
-          onClick={handleCalendarClick}
-        >
+        <Button size="lg" onClick={handleCalendarClick}>
           <CalendarIcon />
           Minha Agenda
         </Button>
@@ -106,8 +103,8 @@ const ProfessionalDashboard = () => {
                 </div>
               </div>
               <div className="flex gap-3 md:w-auto w-full">
-                <Button className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]">Ver Prontuário</Button>
-                <Button className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]">
+                <Button size="lg">Ver Prontuário</Button>
+                <Button size="lg">
                   <VideoIcon />
                   Iniciar Vídeo
                 </Button>
@@ -158,13 +155,13 @@ const ProfessionalDashboard = () => {
                   <div className="w-full flex gap-2 items-center justify-end">
                     <Button
                       size="sm"
-                      className="px-4 py-2 rounded-lg bg-emerald-500 font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-emerald-600"
+                      className="bg-emerald-500 hover:bg-emerald-600"
                       onClick={() => toast.success("Agendamento aprovado")}
                     >
                       <CheckIcon />
                       Aceitar
                     </Button>
-                    <Button size="sm" className="px-4 py-2 rounded-lg bg-red-500 font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-red-700">
+                    <Button size="sm" className="bg-red-500 hover:bg-red-700">
                       <XIcon />
                       Recusar
                     </Button>

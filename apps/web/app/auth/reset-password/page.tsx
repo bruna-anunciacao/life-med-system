@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useResetPasswordForm } from "./useResetPasswordForm";
 import { InvalidTokenCard } from "./components/InvalidTokenCard";
 import { ResetPasswordForm } from "./components/ResetPasswordForm";
+import { LifeMedLogo } from "../../ui/life-med-logo";
 
 const ResetPasswordPage = () => {
   const { form, isLoading, token, onSubmit } = useResetPasswordForm();
@@ -11,20 +12,26 @@ const ResetPasswordPage = () => {
   if (!token) return <InvalidTokenCard />;
 
   return (
-    <div className="w-full px-4 py-8 flex items-start justify-center bg-[#f8fafc]">
-      <div className="w-full max-w-[600px] p-10 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] bg-white sm:p-6 sm:rounded-xl">
-        <div className="mb-8 text-center">
-          <h1 className="mb-2 text-2xl font-bold text-[#0f172a]">Redefinir Senha</h1>
-          <p className="text-sm text-[#64748b]">Crie uma nova senha para sua conta</p>
-        </div>
-
-        <ResetPasswordForm form={form} isLoading={isLoading} onSubmit={onSubmit} />
-
-        <div className="mt-6 text-center text-sm text-[#64748b]">
-          Lembrou sua senha?
-          <Link href="/auth/login" className="ml-1 no-underline font-medium text-[#2563eb] hover:underline">Voltar</Link>
-        </div>
+    <div className="w-full max-w-96 sm:max-w-105 flex flex-col gap-5">
+      {/* Header do form: logo + subtítulo */}
+      <div className="flex flex-col">
+        <Link href="/" className="w-fit mb-3">
+          <LifeMedLogo width={160} className="h-auto" />
+        </Link>
+        <p className="text-sm text-[#6b7280]">
+          Crie uma nova senha para sua conta
+        </p>
       </div>
+
+      {/* Formulário */}
+      <ResetPasswordForm form={form} isLoading={isLoading} onSubmit={onSubmit} />
+
+      <p className="text-sm text-[#6b7280]">
+        Lembrou sua senha?{" "}
+        <Link href="/auth/login" className="text-[#2563eb] font-semibold hover:underline">
+          Voltar ao login
+        </Link>
+      </p>
     </div>
   );
 };

@@ -60,19 +60,19 @@ export function AppointmentCard({ appointment: appt, onCancel, onRebook }: Appoi
         <div className="flex flex-row gap-2 justify-end sm:flex-col sm:justify-start sm:flex-shrink-0">
           {(appt.status === "CONFIRMED" || appt.status === "PENDING") && (
             <>
-              <Button size="sm" className="px-3 sm:px-4 py-1.5 rounded-lg bg-[#006fee] font-semibold text-xs text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]">Detalhes</Button>
+              <Button size="sm">Detalhes</Button>
               {canCancel ? (
-                <Button size="sm" className="px-3 sm:px-4 py-1.5 border border-red-200 rounded-lg bg-white font-semibold text-xs text-red-500 cursor-pointer transition-all duration-200 hover:bg-red-50" onClick={() => onCancel(appt.id)}>Cancelar</Button>
+                <Button size="sm" variant="destructive" onClick={() => onCancel(appt.id)}>Cancelar</Button>
               ) : (
                 <span className="px-2 py-1.5 text-xs text-gray-400 text-center leading-tight">Cancelamento indisponível<br/>(menos de 24h)</span>
               )}
             </>
           )}
           {appt.status === "COMPLETED" && (
-            <Button size="sm" className="px-3 sm:px-4 py-1.5 rounded-lg bg-[#006fee] font-semibold text-xs text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]">Ver Detalhes</Button>
+            <Button size="sm">Ver Detalhes</Button>
           )}
           {appt.status === "CANCELLED" && (
-            <Button size="sm" className="px-3 sm:px-4 py-1.5 border border-gray-200 rounded-lg bg-white font-semibold text-xs text-gray-700 cursor-pointer transition-all duration-200 hover:bg-gray-50" onClick={onRebook}>
+            <Button size="sm" variant="outline" onClick={onRebook}>
               Reagendar
             </Button>
           )}

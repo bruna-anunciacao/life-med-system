@@ -17,6 +17,7 @@ enum UserRole {
   PROFESSIONAL
   PATIENT
   ADMIN
+  MANAGER
 }
 
 enum UserStatus {
@@ -41,27 +42,29 @@ enum AppointmentStatus {
 }
 
 model User {
-  id            String     @id @default(uuid())
-  email         String     @unique
-  password      String
-  name          String
-  role          UserRole   @default(PATIENT)
-  status        UserStatus @default(PENDING)
-  cpf           String     @default("00000000000")
-  emailVerified Boolean    @default(false) @map("email_verified")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  id       String     @id @default(uuid())
+  email    String     @unique
+  password String
+  name     String
+  role     UserRole   @default(PATIENT)
+  status   UserStatus @default(PENDING)
+  cpf           String  @default("00000000000")
+  emailVerified Boolean @default(false) @map("email_verified")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   professionalProfile ProfessionalProfile?
   patientProfile      PatientProfile?
+  managerProfile      ManagerProfile?
 
   appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
   appointmentsAsPatient Appointment[] @relation("PatientAppointments")
 
-  availability Availability[]
-
-  passwordResets PasswordReset[]
-  sessions       Session[]
+  availability       Availability[]
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
+  sessions           Session[]
 
   @@map("users")
 }
@@ -96,6 +99,20 @@ model PatientProfile {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("patient_profiles")
+}
+
+model ManagerProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String?
+  bio       String?  @db.Text
+  photoUrl  String?  @map("photo_url")
+  address   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("manager_profiles")
 }
 
 model Availability {
@@ -152,4 +169,16 @@ model Session {
   data      String?  @db.Text
 
   @@map("sessions")
+}
+
+model EmailVerification {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("email_verifications")
 }
