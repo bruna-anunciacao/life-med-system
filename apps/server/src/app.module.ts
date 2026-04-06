@@ -12,6 +12,7 @@ import { AdminSeederService } from './database/admin.seeder.service';
 import { ProfessionalModule } from './professional/professional.module';
 import { PatientsModule } from './patients/patients.module';
 import { ReportsModule } from './reports/reports.module';
+import { AppointmentsModule } from './appointments/appointments.module';
 import { ManagerModule } from './manager/manager.module';
 
 @Module({
@@ -33,6 +34,7 @@ import { ManagerModule } from './manager/manager.module';
     }),
     PatientsModule,
     ReportsModule,
+    AppointmentsModule,
     ManagerModule,
   ],
   controllers: [AppController],

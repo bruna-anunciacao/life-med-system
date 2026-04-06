@@ -99,7 +99,6 @@ export class ReportsService {
       specialty: 70,
       modality: 60,
       price: 50,
-      notes: 95,
     };
 
     const drawHeader = () => {

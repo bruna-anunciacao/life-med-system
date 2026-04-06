@@ -24,4 +24,10 @@ export const API_ROUTES = {
     SETTINGS: "/professional/settings",
     SCHEDULE: "/professional/schedule",
   },
+  APPOINTMENTS: {
+    MY: "/appointments/my",
+    CREATE: "/appointments",
+    CANCEL: (id: string) => `/appointments/${id}`,
+    SLOTS: "/appointments/slots",
+  },
 };

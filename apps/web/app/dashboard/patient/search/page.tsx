@@ -27,8 +27,7 @@ const SearchDoctorsPage = () => {
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
-  const [selectedProfessional, setSelectedProfessional] =
-    useState<Professional | null>(null);
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -62,15 +61,12 @@ const SearchDoctorsPage = () => {
     });
 
   return (
-    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
-      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
+    <section className="w-full min-h-screen mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-8 bg-[#f8fafc]">
+      <div className="mb-6 sm:mb-8 flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
-            Buscar Médicos
-          </h1>
-          <p className="mt-1 text-base text-gray-500">
-            Encontre profissionais de saúde voluntários e agende sua consulta
-            gratuitamente.
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">Buscar Médicos</h1>
+          <p className="mt-1 text-sm sm:text-base text-gray-500">
+            Encontre profissionais de saúde voluntários e agende sua consulta gratuitamente.
           </p>
         </div>
       </div>
@@ -85,9 +81,7 @@ const SearchDoctorsPage = () => {
       />
 
       {isLoading ? (
-        <div className="py-16 px-8 flex justify-center items-center">
-          <Spinner size="lg" />
-        </div>
+        <div className="py-16 px-8 flex justify-center items-center"><Spinner size="lg" /></div>
       ) : filtered.length === 0 ? (
         <EmptySearch />
       ) : (
@@ -101,6 +95,7 @@ const SearchDoctorsPage = () => {
           ))}
         </div>
       )}
+
       <SeeProfileModal
         isOpen={!!selectedProfessional}
         onOpenChange={(open) => {
