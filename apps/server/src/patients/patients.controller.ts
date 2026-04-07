@@ -24,13 +24,30 @@ export class PatientsController {
   @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
   @ApiOperation({
     summary: 'Exportar relatório de consultas concluídas (PDF)',
-    description: 'Gera e retorna um arquivo PDF com o histórico de consultas concluídas do paciente autenticado.',
+    description:
+      'Gera e retorna um arquivo PDF com o histórico de consultas concluídas do paciente autenticado.',
   })
-  @ApiQuery({ name: 'professionalId', required: false, description: 'Filtrar por ID do profissional (UUID)' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Data inicial do filtro (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'Data final do filtro (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'professionalId',
+    required: false,
+    description: 'Filtrar por ID do profissional (UUID)',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Data inicial do filtro (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Data final do filtro (YYYY-MM-DD)',
+  })
   @ApiProduces('application/pdf')
-  @ApiResponse({ status: 200, description: 'Arquivo PDF com relatório de consultas concluídas.', content: { 'application/pdf': {} } })
+  @ApiResponse({
+    status: 200,
+    description: 'Arquivo PDF com relatório de consultas concluídas.',
+    content: { 'application/pdf': {} },
+  })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente PATIENT.' })
   async exportDoneAppointments(
@@ -57,13 +74,30 @@ export class PatientsController {
   @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
   @ApiOperation({
     summary: 'Exportar relatório de consultas pendentes (PDF)',
-    description: 'Gera e retorna um arquivo PDF com as consultas ainda pendentes do paciente autenticado.',
+    description:
+      'Gera e retorna um arquivo PDF com as consultas ainda pendentes do paciente autenticado.',
   })
-  @ApiQuery({ name: 'professionalId', required: false, description: 'Filtrar por ID do profissional (UUID)' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Data inicial do filtro (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'Data final do filtro (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'professionalId',
+    required: false,
+    description: 'Filtrar por ID do profissional (UUID)',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Data inicial do filtro (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Data final do filtro (YYYY-MM-DD)',
+  })
   @ApiProduces('application/pdf')
-  @ApiResponse({ status: 200, description: 'Arquivo PDF com relatório de consultas pendentes.', content: { 'application/pdf': {} } })
+  @ApiResponse({
+    status: 200,
+    description: 'Arquivo PDF com relatório de consultas pendentes.',
+    content: { 'application/pdf': {} },
+  })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente PATIENT.' })
   async exportPendingAppointments(
@@ -90,13 +124,30 @@ export class PatientsController {
   @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
   @ApiOperation({
     summary: 'Exportar relatório de consultas canceladas (PDF)',
-    description: 'Gera e retorna um arquivo PDF com as consultas canceladas do paciente autenticado.',
+    description:
+      'Gera e retorna um arquivo PDF com as consultas canceladas do paciente autenticado.',
   })
-  @ApiQuery({ name: 'professionalId', required: false, description: 'Filtrar por ID do profissional (UUID)' })
-  @ApiQuery({ name: 'startDate', required: false, description: 'Data inicial do filtro (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'endDate', required: false, description: 'Data final do filtro (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'professionalId',
+    required: false,
+    description: 'Filtrar por ID do profissional (UUID)',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Data inicial do filtro (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Data final do filtro (YYYY-MM-DD)',
+  })
   @ApiProduces('application/pdf')
-  @ApiResponse({ status: 200, description: 'Arquivo PDF com relatório de consultas canceladas.', content: { 'application/pdf': {} } })
+  @ApiResponse({
+    status: 200,
+    description: 'Arquivo PDF com relatório de consultas canceladas.',
+    content: { 'application/pdf': {} },
+  })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente PATIENT.' })
   async exportCancelledAppointments(
