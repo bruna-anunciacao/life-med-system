@@ -432,21 +432,33 @@ async function main() {
 
   // Doctor shortcuts by specialty order (same as doctorsData array)
   const [
-    docCardio,    // ana.oliveira
-    docClinico,   // carlos.santos
-    docDerma,     // mariana.costa
-    docOrtho,     // roberto.lima
-    docPedi,      // fernanda.alves
-    docPsiq,      // paulo.mendes
-    docGineco,    // lucia.ferreira
-    docNeuro,     // thiago.rocha
+    docCardio, // ana.oliveira
+    docClinico, // carlos.santos
+    docDerma, // mariana.costa
+    docOrtho, // roberto.lima
+    docPedi, // fernanda.alves
+    docPsiq, // paulo.mendes
+    docGineco, // lucia.ferreira
+    docNeuro, // thiago.rocha
   ] = doctorList;
 
   // Patient shortcuts
   const [
-    patJoao, patMaria, patPedro, patAna, patLucas,
-    patJulia, patRafael, patCamila, patMarcos, patBeatriz,
-    patGabriel, patLarissa, patDiego, patIsabela, patThiago,
+    patJoao,
+    patMaria,
+    patPedro,
+    patAna,
+    patLucas,
+    patJulia,
+    patRafael,
+    patCamila,
+    patMarcos,
+    patBeatriz,
+    patGabriel,
+    patLarissa,
+    patDiego,
+    patIsabela,
+    patThiago,
   ] = patientList;
 
   type AppointmentInput = {
@@ -466,7 +478,8 @@ async function main() {
       dateTime: daysFromNow(-60, 9, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.CLINIC,
-      notes: 'Consulta de rotina. Paciente hipertenso controlado. Solicitar ECG e exames laboratoriais.',
+      notes:
+        'Consulta de rotina. Paciente hipertenso controlado. Solicitar ECG e exames laboratoriais.',
     },
     {
       professionalId: docCardio,
@@ -474,7 +487,8 @@ async function main() {
       dateTime: daysFromNow(-45, 10, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.CLINIC,
-      notes: 'Retorno pós-cateterismo. Evolução satisfatória. Manter medicação atual.',
+      notes:
+        'Retorno pós-cateterismo. Evolução satisfatória. Manter medicação atual.',
     },
     {
       professionalId: docClinico,
@@ -482,7 +496,8 @@ async function main() {
       dateTime: daysFromNow(-30, 14, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.VIRTUAL,
-      notes: 'Consulta virtual. Queixa de gripe. Prescrito antiviral e repouso por 5 dias.',
+      notes:
+        'Consulta virtual. Queixa de gripe. Prescrito antiviral e repouso por 5 dias.',
     },
     {
       professionalId: docClinico,
@@ -490,7 +505,8 @@ async function main() {
       dateTime: daysFromNow(-20, 15, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.VIRTUAL,
-      notes: 'Renovação de receita para anti-hipertensivo. Pressão bem controlada.',
+      notes:
+        'Renovação de receita para anti-hipertensivo. Pressão bem controlada.',
     },
     {
       professionalId: docDerma,
@@ -498,7 +514,8 @@ async function main() {
       dateTime: daysFromNow(-15, 9, 30),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.CLINIC,
-      notes: 'Tratamento de acne moderada. Prescrito isotretinoína 20mg. Retorno em 30 dias.',
+      notes:
+        'Tratamento de acne moderada. Prescrito isotretinoína 20mg. Retorno em 30 dias.',
     },
     {
       professionalId: docDerma,
@@ -506,7 +523,8 @@ async function main() {
       dateTime: daysFromNow(-10, 11, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.CLINIC,
-      notes: 'Avaliação de mancha suspeita. Biópsia realizada. Aguardando resultado.',
+      notes:
+        'Avaliação de mancha suspeita. Biópsia realizada. Aguardando resultado.',
     },
     {
       professionalId: docOrtho,
@@ -514,7 +532,8 @@ async function main() {
       dateTime: daysFromNow(-25, 8, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.HOME_VISIT,
-      notes: 'Paciente com lombalgia crônica. Indicado fisioterapia 2x/semana por 6 semanas.',
+      notes:
+        'Paciente com lombalgia crônica. Indicado fisioterapia 2x/semana por 6 semanas.',
     },
     {
       professionalId: docOrtho,
@@ -522,7 +541,8 @@ async function main() {
       dateTime: daysFromNow(-8, 9, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.HOME_VISIT,
-      notes: 'Pós-operatório de hérnia de disco L4-L5. Cicatrização boa. Iniciar reabilitação.',
+      notes:
+        'Pós-operatório de hérnia de disco L4-L5. Cicatrização boa. Iniciar reabilitação.',
     },
     {
       professionalId: docPedi,
@@ -530,7 +550,8 @@ async function main() {
       dateTime: daysFromNow(-35, 10, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.VIRTUAL,
-      notes: 'Consulta sobre amamentação. Orientações sobre pega correta e frequência.',
+      notes:
+        'Consulta sobre amamentação. Orientações sobre pega correta e frequência.',
     },
     {
       professionalId: docPsiq,
@@ -538,7 +559,8 @@ async function main() {
       dateTime: daysFromNow(-50, 16, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.VIRTUAL,
-      notes: 'Sessão de acompanhamento. Paciente relatou melhora do humor. Manter escitalopram 20mg.',
+      notes:
+        'Sessão de acompanhamento. Paciente relatou melhora do humor. Manter escitalopram 20mg.',
     },
     {
       professionalId: docPsiq,
@@ -546,7 +568,8 @@ async function main() {
       dateTime: daysFromNow(-40, 17, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.VIRTUAL,
-      notes: 'Avaliação inicial. Diagnóstico de transtorno de ansiedade generalizada. Iniciar sertralina 50mg.',
+      notes:
+        'Avaliação inicial. Diagnóstico de transtorno de ansiedade generalizada. Iniciar sertralina 50mg.',
     },
     {
       professionalId: docGineco,
@@ -562,7 +585,8 @@ async function main() {
       dateTime: daysFromNow(-18, 10, 30),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.CLINIC,
-      notes: 'Consulta de rotina. Preventivo coletado. Orientações sobre anticoncepção.',
+      notes:
+        'Consulta de rotina. Preventivo coletado. Orientações sobre anticoncepção.',
     },
     {
       professionalId: docNeuro,
@@ -570,7 +594,8 @@ async function main() {
       dateTime: daysFromNow(-70, 14, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.CLINIC,
-      notes: 'Investigação de cefaleia crônica. Solicitado ressonância magnética.',
+      notes:
+        'Investigação de cefaleia crônica. Solicitado ressonância magnética.',
     },
     {
       professionalId: docNeuro,
@@ -578,7 +603,8 @@ async function main() {
       dateTime: daysFromNow(-12, 15, 0),
       status: AppointmentStatus.COMPLETED,
       modality: AppointmentModality.CLINIC,
-      notes: 'Retorno com resultado de ressonância. Enxaqueca sem lesão estrutural. Prescrito topiramato profilático.',
+      notes:
+        'Retorno com resultado de ressonância. Enxaqueca sem lesão estrutural. Prescrito topiramato profilático.',
     },
     // Additional completed
     {

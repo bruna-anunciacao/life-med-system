@@ -1,57 +1,193 @@
 import {
   Controller,
-  Get,
   Post,
-  Delete,
+  Get,
+  Patch,
   Body,
-  Param,
   Query,
+  Param,
   Request,
   UseGuards,
-  HttpCode,
-  HttpStatus,
+  Logger,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiParam,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { AppointmentsService } from './appointments.service';
-import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import { ListAppointmentsQueryDto } from './dto/list-appointments-query.dto';
-import { AvailableSlotsQueryDto } from './dto/available-slots-query.dto';
-import { PatientRoleGuard } from './guards/patient-role.guard';
-import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+import {
+  CreateAppointmentPatientDto,
+  ListAppointmentsQueryDto,
+  CancelAppointmentDto,
+  AppointmentResponseDto,
+  AppointmentListResponseDto,
+  AvailableSlotsQueryDto,
+  AvailableSlotsResponseDto,
+} from './dto';
+import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
+import { AppointmentOwnerGuard } from './guards/appointment-owner.guard';
 
+@ApiTags('Appointments')
+@ApiBearerAuth('access-token')
 @Controller('appointments')
-@UseGuards(AuthGuard('jwt'), PatientRoleGuard, EmailVerifiedGuard)
 export class AppointmentsController {
+  private readonly logger = new Logger(AppointmentsController.name);
+
   constructor(private readonly appointmentsService: AppointmentsService) {}
 
-  @Get('slots')
-  getAvailableSlots(@Query() query: AvailableSlotsQueryDto) {
-    return this.appointmentsService.getAvailableSlots(query);
-  }
-
-  @Get('my')
-  listMyAppointments(@Request() req, @Query() query: ListAppointmentsQueryDto) {
-    return this.appointmentsService.listMyAppointments(
-      req.user.id as string,
-      query,
-    );
-  }
-
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  createAppointment(@Request() req, @Body() dto: CreateAppointmentDto) {
+  @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
+  @ApiOperation({
+    summary: 'Agendar consulta',
+    description:
+      'Cria um novo agendamento de consulta. Requer autenticação e role PATIENT.',
+  })
+  @ApiBody({ type: CreateAppointmentPatientDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Consulta agendada com sucesso.',
+    type: AppointmentResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Dados inválidos ou horário indisponível.',
+  })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente PATIENT.' })
+  @ApiResponse({ status: 404, description: 'Profissional não encontrado.' })
+  async createAppointment(
+    @Request() req,
+    @Body() dto: CreateAppointmentPatientDto,
+  ): Promise<AppointmentResponseDto> {
+    this.logger.log(
+      `Paciente ${req.user.id} tentando agendar com profissional ${dto.professionalId}`,
+    );
     return this.appointmentsService.createAppointment(
       req.user.id as string,
       dto,
     );
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.OK)
-  cancelAppointment(@Request() req, @Param('id') id: string) {
-    return this.appointmentsService.cancelAppointment(
-      req.user.id as string,
-      id,
+  @Get('my-appointments')
+  @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
+  @ApiOperation({
+    summary: 'Listar meus agendamentos',
+    description:
+      'Retorna todos os agendamentos do paciente autenticado com opções de filtro.',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filtrar por status',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Data inicial (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Data final (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Página (padrão: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Registros por página (padrão: 10)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de agendamentos.',
+    type: AppointmentListResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente PATIENT.' })
+  async listMyAppointments(
+    @Request() req,
+    @Query() query: ListAppointmentsQueryDto,
+  ): Promise<AppointmentListResponseDto> {
+    this.logger.log(
+      `Paciente ${req.user.id} listando agendamentos - página ${query.page}`,
     );
+    return this.appointmentsService.listPatientAppointments(
+      req.user.id as string,
+      query,
+    );
+  }
+
+  @Get('professionals/:professionalId/available-slots')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary: 'Buscar horários disponíveis',
+    description:
+      'Retorna os horários disponíveis de um profissional para uma data específica, filtrando slots já ocupados.',
+  })
+  @ApiParam({
+    name: 'professionalId',
+    description: 'ID do profissional (UUID)',
+  })
+  @ApiQuery({
+    name: 'date',
+    description: 'Data para consulta (YYYY-MM-DD)',
+    example: '2026-04-10',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Horários disponíveis.',
+    type: AvailableSlotsResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 404, description: 'Profissional não encontrado.' })
+  async getAvailableSlots(
+    @Param('professionalId') professionalId: string,
+    @Query() query: AvailableSlotsQueryDto,
+  ): Promise<AvailableSlotsResponseDto> {
+    this.logger.log(
+      `Buscando slots disponíveis do profissional ${professionalId} para ${query.date}`,
+    );
+    return this.appointmentsService.getAvailableSlots(professionalId, query);
+  }
+
+  @Patch(':appointmentId/cancel')
+  @UseGuards(AuthGuard('jwt'), AppointmentOwnerGuard)
+  @ApiOperation({
+    summary: 'Cancelar agendamento',
+    description:
+      'Cancela um agendamento existente. Apenas o paciente ou profissional podem cancelar.',
+  })
+  @ApiParam({ name: 'appointmentId', description: 'ID do agendamento (UUID)' })
+  @ApiBody({ type: CancelAppointmentDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Agendamento cancelado com sucesso.',
+    type: AppointmentResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Agendamento já foi cancelado.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Você não tem permissão para acessar este agendamento.',
+  })
+  @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
+  async cancelAppointment(
+    @Request() req,
+    @Param('appointmentId') appointmentId: string,
+    @Body() dto: CancelAppointmentDto,
+  ): Promise<AppointmentResponseDto> {
+    this.logger.log(
+      `Usuário ${req.user.id} cancelando agendamento ${appointmentId}`,
+    );
+    return this.appointmentsService.cancelAppointment(appointmentId, dto);
   }
 }

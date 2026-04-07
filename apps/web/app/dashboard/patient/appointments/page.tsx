@@ -1,31 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { SearchIcon } from "../../../utils/icons";
 import { Appointment, TabKey } from "./appointments.types";
 import { AppointmentTabs } from "./components/AppointmentTabs";
 import { AppointmentCard } from "./components/AppointmentCard";
 import { EmptyAppointments } from "./components/EmptyAppointments";
-import { CancelConfirmDialog } from "./components/CancelConfirmDialog";
 import { patientsService } from "@/services/patients-service";
-import { useMyAppointmentsQuery } from "@/queries/useMyAppointmentsQuery";
-import { useCancelAppointmentMutation } from "@/queries/useCancelAppointmentMutation";
-import { AppointmentItem } from "@/services/appointments-service";
+import {
+  appointmentsService,
+  AppointmentResponse,
+} from "@/services/appointments-service";
 
-const mapToAppointment = (item: AppointmentItem): Appointment => ({
-  id: item.id,
-  professionalId: item.professionalId,
-  doctorName: item.doctorName,
-  specialty: item.specialty,
-  dateTime: item.dateTime,
-  status: item.status,
-  modality: item.modality,
-  notes: item.notes,
-});
+function mapApiToAppointment(appt: AppointmentResponse): Appointment {
+  return {
+    id: appt.id,
+    professionalId: appt.professional.id,
+    doctorName: appt.professional.name,
+    specialty: "",
+    dateTime: appt.dateTime,
+    status: appt.status,
+    modality: "VIRTUAL",
+    notes: appt.notes,
+  };
+}
 
 const getFilteredAppointments = (appointments: Appointment[], tab: TabKey) => {
   switch (tab) {
@@ -42,35 +45,54 @@ const getFilteredAppointments = (appointments: Appointment[], tab: TabKey) => {
 
 const AppointmentsPage = () => {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
-  const [cancelTarget, setCancelTarget] = useState<string | null>(null);
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
-  const { data: rawAppointments, isLoading } = useMyAppointmentsQuery();
-  const cancelMutation = useCancelAppointmentMutation();
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const result = await appointmentsService.listMyAppointments({
+          limit: 100,
+        });
+        if (result) {
+          setAppointments(result.data.map(mapApiToAppointment));
+        }
+      } catch (error) {
+        const msg =
+          error instanceof Error
+            ? error.message
+            : "Erro ao carregar consultas.";
+        toast.error(msg);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  const appointments: Appointment[] = (rawAppointments ?? []).map(mapToAppointment);
+  const handleCancel = async (id: string) => {
+    const confirmed = window.confirm(
+      "Tem certeza que deseja cancelar esta consulta?",
+    );
+    if (!confirmed) return;
 
-  const handleCancelClick = (id: string) => {
-    setCancelTarget(id);
-    setCancelDialogOpen(true);
-  };
-
-  const handleCancelConfirm = () => {
-    if (!cancelTarget) return;
-    cancelMutation.mutate(cancelTarget, {
-      onSuccess: () => {
-        toast.success("Consulta cancelada com sucesso.");
-        setCancelDialogOpen(false);
-        setCancelTarget(null);
-      },
-      onError: (error) => {
-        toast.error(
-          error instanceof Error ? error.message : "Erro ao cancelar consulta.",
-        );
-      },
-    });
+    try {
+      await appointmentsService.cancel(id);
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a.id === id ? { ...a, status: "CANCELLED" as const } : a,
+        ),
+      );
+      toast.success("Consulta cancelada com sucesso.");
+    } catch (error) {
+      const msg =
+        error instanceof Error ? error.message : "Erro ao cancelar consulta.";
+      toast.error(msg);
+    }
   };
 
   const filtered = getFilteredAppointments(appointments, activeTab).sort(
@@ -118,17 +140,29 @@ const AppointmentsPage = () => {
         : "Baixar Relatório de Canceladas";
 
   return (
-    <section className="w-full min-h-screen mx-auto px-4 sm:px-8 lg:px-16 py-8 bg-[#f8fafc]">
-      <div className="mb-6 sm:mb-8 flex justify-between items-start flex-wrap gap-4">
+    <section
+      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
+    >
+      <div
+        className={`mb-8 flex justify-between items-start flex-wrap gap-4 ${isMobile ? "flex-col" : ""}`}
+      >
         <div>
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
+          <h1
+            className={`font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
+          >
             Minhas Consultas
           </h1>
-          <p className="mt-1 text-sm sm:text-base text-gray-500">
+          <p
+            className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}
+          >
             Acompanhe e gerencie suas consultas agendadas.
           </p>
         </div>
-        <Button size="lg" onClick={() => router.push("/dashboard/patient/search")}>
+        <Button
+          size={isMobile ? "default" : "lg"}
+          onClick={() => router.push("/dashboard/patient/search")}
+          className={isMobile ? "w-full" : ""}
+        >
           <SearchIcon />
           Nova Consulta
         </Button>
@@ -140,14 +174,20 @@ const AppointmentsPage = () => {
         onTabChange={setActiveTab}
       />
 
-      <div className="mb-6 flex justify-end">
-        <Button size="lg" onClick={handleDownloadReport} disabled={isDownloadingReport}>
-          {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
-        </Button>
-      </div>
+      {!isMobile && (
+        <div className="mb-6 flex justify-end">
+          <Button
+            size="lg"
+            onClick={handleDownloadReport}
+            disabled={isDownloadingReport}
+          >
+            {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
+        <div className="py-16 flex justify-center items-center">
           <Spinner size="lg" />
         </div>
       ) : filtered.length === 0 ? (
@@ -161,19 +201,26 @@ const AppointmentsPage = () => {
             <AppointmentCard
               key={appt.id}
               appointment={appt}
-              onCancel={handleCancelClick}
+              onCancel={handleCancel}
               onRebook={() => router.push("/dashboard/patient/search")}
+              isMobile={isMobile}
             />
           ))}
         </div>
       )}
 
-      <CancelConfirmDialog
-        open={cancelDialogOpen}
-        onOpenChange={setCancelDialogOpen}
-        onConfirm={handleCancelConfirm}
-        isLoading={cancelMutation.isPending}
-      />
+      {isMobile && (
+        <div className="mt-6">
+          <Button
+            size="default"
+            onClick={handleDownloadReport}
+            disabled={isDownloadingReport}
+            className="w-full"
+          >
+            {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
+          </Button>
+        </div>
+      )}
     </section>
   );
 };
