@@ -27,6 +27,8 @@ import {
   CancelAppointmentDto,
   AppointmentResponseDto,
   AppointmentListResponseDto,
+  AvailableSlotsQueryDto,
+  AvailableSlotsResponseDto,
 } from './dto';
 import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
 import { AppointmentOwnerGuard } from './guards/appointment-owner.guard';
@@ -122,6 +124,39 @@ export class AppointmentsController {
       req.user.id as string,
       query,
     );
+  }
+
+  @Get('professionals/:professionalId/available-slots')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({
+    summary: 'Buscar horários disponíveis',
+    description:
+      'Retorna os horários disponíveis de um profissional para uma data específica, filtrando slots já ocupados.',
+  })
+  @ApiParam({
+    name: 'professionalId',
+    description: 'ID do profissional (UUID)',
+  })
+  @ApiQuery({
+    name: 'date',
+    description: 'Data para consulta (YYYY-MM-DD)',
+    example: '2026-04-10',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Horários disponíveis.',
+    type: AvailableSlotsResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 404, description: 'Profissional não encontrado.' })
+  async getAvailableSlots(
+    @Param('professionalId') professionalId: string,
+    @Query() query: AvailableSlotsQueryDto,
+  ): Promise<AvailableSlotsResponseDto> {
+    this.logger.log(
+      `Buscando slots disponíveis do profissional ${professionalId} para ${query.date}`,
+    );
+    return this.appointmentsService.getAvailableSlots(professionalId, query);
   }
 
   @Patch(':appointmentId/cancel')

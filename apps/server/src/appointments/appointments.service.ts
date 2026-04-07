@@ -10,9 +10,11 @@ import {
   ListAppointmentsQueryDto,
   CancelAppointmentDto,
   AppointmentResponseDto,
+  AvailableSlotsQueryDto,
 } from './dto';
 
 const APPOINTMENT_DURATION_MINUTES = 30;
+const MIN_CANCEL_ADVANCE_HOURS = 6;
 
 @Injectable()
 export class AppointmentsService {
@@ -194,6 +196,15 @@ export class AppointmentsService {
       throw new BadRequestException('Agendamento já foi cancelado');
     }
 
+    const hoursUntilAppointment =
+      (appointment.dateTime.getTime() - Date.now()) / (1000 * 60 * 60);
+
+    if (hoursUntilAppointment < MIN_CANCEL_ADVANCE_HOURS) {
+      throw new BadRequestException(
+        `Cancelamento permitido apenas com ${MIN_CANCEL_ADVANCE_HOURS}h de antecedência`,
+      );
+    }
+
     const cancelNote = dto.reason ? `[CANCELADO] ${dto.reason}` : '[CANCELADO]';
 
     const updatedNotes = appointment.notes
@@ -217,6 +228,68 @@ export class AppointmentsService {
     );
 
     return this.mapToResponseDto(updated);
+  }
+
+  async getAvailableSlots(
+    professionalId: string,
+    query: AvailableSlotsQueryDto,
+  ) {
+    const professional = await this.prisma.user.findUnique({
+      where: { id: professionalId },
+    });
+
+    if (!professional) {
+      throw new NotFoundException('Profissional não encontrado');
+    }
+
+    const targetDate = new Date(query.date + 'T00:00:00');
+    const dayOfWeek = targetDate.getDay();
+
+    const availability = await this.prisma.availability.findFirst({
+      where: {
+        professionalId,
+        dayOfWeek,
+        validFrom: { lte: targetDate },
+        OR: [{ validUntil: null }, { validUntil: { gte: targetDate } }],
+      },
+    });
+
+    if (!availability) {
+      return { professionalId, date: query.date, slots: [] };
+    }
+
+    const [startHour] = availability.startTime.split(':').map(Number);
+    const [endHour] = availability.endTime.split(':').map(Number);
+
+    const dayStart = new Date(query.date + 'T00:00:00');
+    const dayEnd = new Date(query.date + 'T23:59:59');
+
+    const existingAppointments = await this.prisma.appointment.findMany({
+      where: {
+        professionalId,
+        dateTime: { gte: dayStart, lte: dayEnd },
+        status: { not: 'CANCELLED' },
+      },
+      select: { dateTime: true },
+    });
+
+    const bookedTimes = new Set(
+      existingAppointments.map((a) => {
+        const h = a.dateTime.getHours().toString().padStart(2, '0');
+        const m = a.dateTime.getMinutes().toString().padStart(2, '0');
+        return `${h}:${m}`;
+      }),
+    );
+
+    const slots: { time: string; available: boolean }[] = [];
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (const minutes of [0, 30]) {
+        const time = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        slots.push({ time, available: !bookedTimes.has(time) });
+      }
+    }
+
+    return { professionalId, date: query.date, slots };
   }
 
   private mapToResponseDto(appointment: any): AppointmentResponseDto {
