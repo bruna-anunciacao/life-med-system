@@ -20,6 +20,7 @@ import {
 function mapApiToAppointment(appt: AppointmentResponse): Appointment {
   return {
     id: appt.id,
+    professionalId: appt.professional.id,
     doctorName: appt.professional.name,
     specialty: "",
     dateTime: appt.dateTime,

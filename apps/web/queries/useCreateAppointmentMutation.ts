@@ -1,17 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  managerService,
-  CreateAppointmentDto,
-} from "../services/manager-service";
+  appointmentsService,
+  CreateAppointmentPatientDto,
+} from "../services/appointments-service";
 
 export function useCreateAppointmentMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreateAppointmentDto) =>
-      managerService.createAppointment(data),
+    mutationFn: (payload: CreateAppointmentPatientDto) =>
+      appointmentsService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
     },
   });
 }

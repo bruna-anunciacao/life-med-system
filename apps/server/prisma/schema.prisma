@@ -139,9 +139,10 @@ model Appointment {
   patientId String @map("patient_id")
   patient   User   @relation("PatientAppointments", fields: [patientId], references: [id])
 
-  dateTime DateTime          @map("date_time")
-  status   AppointmentStatus @default(PENDING)
-  notes    String?           @db.Text
+  dateTime DateTime            @map("date_time")
+  status   AppointmentStatus   @default(PENDING)
+  modality AppointmentModality @default(VIRTUAL)
+  notes    String?             @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
 
