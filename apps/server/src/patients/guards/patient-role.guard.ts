@@ -12,8 +12,8 @@ export class PatientRoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const user = request.user;
 
-    if (!user || UserRole.PATIENT) {
-      new ForbiddenException('Only patients can export consults pdf');
+    if (!user || (user as any).role !== UserRole.PATIENT) {
+      throw new ForbiddenException('Acesso negado — somente PATIENT.');
     }
 
     return true;
