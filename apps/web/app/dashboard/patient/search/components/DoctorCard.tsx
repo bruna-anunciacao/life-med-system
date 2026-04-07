@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon } from "../../../../utils/icons";
 import { Check } from "@phosphor-icons/react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type Professional = {
   id: string;
@@ -27,15 +28,61 @@ const MODALITY_LABEL: Record<string, string> = {
 type DoctorCardProps = {
   professional: Professional;
   onViewProfile: () => void;
+  onBook: () => void;
 };
 
-export function DoctorCard({ professional, onViewProfile }: DoctorCardProps) {
+export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardProps) {
+  const isMobile = useIsMobile();
   const modality = professional.professionalProfile?.modality;
+
+  if (isMobile) {
+    return (
+      <Card className="border border-gray-200 rounded-xl bg-white">
+        <CardContent className="p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[#006fee] text-lg font-semibold text-white shrink-0">
+              {professional.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-gray-900 truncate">
+                {professional.name}
+              </h3>
+              <p className="text-xs text-gray-500">
+                {professional.professionalProfile?.specialty || "Especialidade não informada"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 items-center">
+            <Badge className="px-2 py-0.5 rounded text-[0.65rem] font-semibold">
+              {MODALITY_LABEL[modality ?? ""] ?? "Remoto"}
+            </Badge>
+            {professional.status === "VERIFIED" && (
+              <span className="text-xs font-medium">
+                Verificado
+                <Check className="inline size-2 ml-1" />
+              </span>
+            )}
+          </div>
+
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1 text-xs" onClick={onBook}>
+              <CalendarIcon />
+              Agendar
+            </Button>
+            <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={onViewProfile}>
+              Ver Perfil
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border border-gray-200 rounded-xl bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
       <CardContent className="p-6 flex gap-5">
-        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white flex-shrink-0">
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white shrink-0">
           {professional.name.charAt(0).toUpperCase()}
         </div>
 
@@ -57,18 +104,16 @@ export function DoctorCard({ professional, onViewProfile }: DoctorCardProps) {
               {MODALITY_LABEL[modality ?? ""] ?? "Remoto"}
             </Badge>
             {professional.status === "VERIFIED" && (
-              <>
-                <span className="text-xs font-medium">
-                  Verificado
-                  <Check className="inline size-2 ml-1" />
-                </span>
-              </>
+              <span className="text-xs font-medium">
+                Verificado
+                <Check className="inline size-2 ml-1" />
+              </span>
             )}
           </div>
         </div>
 
-        <div className="flex flex-row justify-start gap-2 flex-shrink-0">
-          <Button size="sm">
+        <div className="flex flex-row justify-start gap-2 shrink-0">
+          <Button size="sm" onClick={onBook}>
             <CalendarIcon />
             Agendar
           </Button>
