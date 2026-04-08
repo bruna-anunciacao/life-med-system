@@ -13,4 +13,5 @@ export {
   DotsThreeVertical as MoreVerticalIcon,
   Plus as PlusIcon,
   MagnifyingGlass as SearchIcon,
+  Trash as TrashIcon
 } from "@phosphor-icons/react";

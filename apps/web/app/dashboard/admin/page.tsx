@@ -7,11 +7,14 @@ import { LoadingPage } from "@/components/shared/LoadingPage";
 import { usePatientsQuery } from "@/queries/usePatientsQuery";
 import { useAllProfessionalsQuery } from "@/queries/useAllProfessionalsQuery";
 import { useQueryClient } from "@tanstack/react-query";
+import { SpecialitiesTable } from "./components/SpecialityTable";
+import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
 
 const AdminDashboard = () => {
   const queryClient = useQueryClient();
   const { data: patients = [], isLoading: loadingPatients } = usePatientsQuery();
   const { data: professionals = [], isLoading: loadingProfessionals } = useAllProfessionalsQuery();
+  const { data: specialities = [], isLoading: loadingSpecialities } = useSpecialitiesQuery();
 
   const handleStatusChange = async (
     userId: string,
@@ -54,6 +57,8 @@ const AdminDashboard = () => {
         emptyMessage="Nenhum profissional encontrado."
         onStatusChange={handleStatusChange}
       />
+
+      <SpecialitiesTable specialities={specialities} />
     </section>
   );
 };
