@@ -15,16 +15,23 @@ import {
   appointmentsService,
   AppointmentSlot,
 } from "@/services/appointments-service";
-import { CalendarDots, Clock, NotePencil } from "@phosphor-icons/react";
+import {
+  CalendarDots,
+  Clock,
+  NotePencil,
+  CurrencyDollar,
+} from "@phosphor-icons/react";
 
 interface BookingModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
   professional: {
     id: string;
     name: string;
     professionalProfile?: {
       specialty: string;
+      price?: number | null;
     } | null;
   } | null;
 }
@@ -32,6 +39,7 @@ interface BookingModalProps {
 export function BookingModal({
   isOpen,
   onOpenChange,
+  onSuccess,
   professional,
 }: BookingModalProps) {
   const isMobile = useIsMobile();
@@ -85,7 +93,12 @@ export function BookingModal({
         notes: notes || undefined,
       });
       toast.success("Consulta agendada com sucesso!");
-      handleClose();
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        handleClose();
+      }
     } catch (error) {
       const msg =
         error instanceof Error ? error.message : "Erro ao agendar consulta.";
@@ -106,6 +119,7 @@ export function BookingModal({
   if (!professional) return null;
 
   const availableSlots = slots.filter((s) => s.available);
+  const price = professional.professionalProfile?.price;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -194,6 +208,21 @@ export function BookingModal({
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
               />
             </div>
+
+            {price !== undefined && price !== null && (
+              <div className="mt-2 bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-blue-900 font-medium text-sm">
+                  <CurrencyDollar size={20} className="text-blue-600" />
+                  Valor da consulta
+                </div>
+                <span className="font-bold text-blue-700 text-lg">
+                  {price.toLocaleString("pt-BR", {
+                    style: "currency",
+                    currency: "BRL",
+                  })}
+                </span>
+              </div>
+            )}
           </div>
 
           <DialogFooter
