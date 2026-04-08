@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=2048' next dev --turbopack --port 3000",
+    "dev": "cross-env NODE_OPTIONS='--max-old-space-size=2048' next dev --turbopack --port 3000",
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings 0",
@@ -46,6 +46,7 @@
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "@types/zxcvbn": "^4.4.5",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.1",
     "typescript": "5.9.2"
   }

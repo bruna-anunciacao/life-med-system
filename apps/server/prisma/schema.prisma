@@ -42,14 +42,14 @@ enum AppointmentStatus {
 }
 
 model User {
-  id       String     @id @default(uuid())
-  email    String     @unique
-  password String
-  name     String
-  role     UserRole   @default(PATIENT)
-  status   UserStatus @default(PENDING)
-  cpf           String  @default("00000000000")
-  emailVerified Boolean @default(false) @map("email_verified")
+  id            String     @id @default(uuid())
+  email         String     @unique
+  password      String
+  name          String
+  role          UserRole   @default(PATIENT)
+  status        UserStatus @default(PENDING)
+  cpf           String     @default("00000000000")
+  emailVerified Boolean    @default(false) @map("email_verified")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -74,7 +74,7 @@ model ProfessionalProfile {
   userId              String              @unique @map("user_id")
   user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   professionalLicense String              @map("professional_license")
-  specialty           String
+  specialities        Speciality[]
   subspecialty        String?
   modality            AppointmentModality @default(VIRTUAL)
   bio                 String?             @db.Text
@@ -85,6 +85,16 @@ model ProfessionalProfile {
   payments            Json?
 
   @@map("professional_profiles")
+}
+
+model Speciality {
+  id                   String                @id @default(uuid())
+  name                 String                @unique
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  professionalProfiles ProfessionalProfile[]
+
+  @@map("specialties")
 }
 
 model PatientProfile {
