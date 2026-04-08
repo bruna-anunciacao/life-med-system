@@ -75,7 +75,6 @@ model ProfessionalProfile {
   user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   professionalLicense String              @map("professional_license")
   specialities        Speciality[]
-  subspecialty        String?
   modality            AppointmentModality @default(VIRTUAL)
   bio                 String?             @db.Text
   photoUrl            String?             @map("photo_url")

@@ -15,7 +15,7 @@ export class ManagerService {
   constructor(
     private prisma: PrismaService,
     private patientService: PatientsService,
-  ) {}
+  ) { }
 
   async createPatient(dto: CreatePatientDto) {
     return this.patientService.createPatient(dto);
@@ -97,7 +97,13 @@ export class ManagerService {
   async getProfessionalAvailability(professionalId: string) {
     const professional = await this.prisma.user.findUnique({
       where: { id: professionalId },
-      include: { professionalProfile: true },
+      include: {
+        professionalProfile: {
+          include: {
+            specialities: true
+          }
+        }
+      },
     });
 
     if (!professional || professional.role !== UserRole.PROFESSIONAL) {
@@ -117,7 +123,7 @@ export class ManagerService {
         id: professional.id,
         name: professional.name,
         email: professional.email,
-        specialty: professional.professionalProfile?.specialty,
+        specialty: professional.professionalProfile?.specialities?.map(s => s.name).join(', ') || '-',
       },
       availability: availability.map((a) => ({
         dayOfWeek: a.dayOfWeek,
