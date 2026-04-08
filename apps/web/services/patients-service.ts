@@ -76,7 +76,6 @@ export const patientsService = {
 
       downloadBlob(response.data, "relatorio-consultas-canceladas.pdf");
     } catch (error) {
-      console.log(error);
       throw new Error(
         (error as DefaultErrorPayload).message || "Erro ao baixar relatório de consultas canceladas.",
       );

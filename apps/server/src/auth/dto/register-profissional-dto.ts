@@ -1,3 +1,4 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
@@ -9,14 +10,20 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { AppointmentModalityEnum } from '../enums/appointment-modality-enum';
 import { AppointmentModality } from '@prisma/client';
 
 export class RegisterProfessionalDto {
+  @ApiProperty({ example: 'medico@email.com', description: 'E-mail do profissional' })
   @IsEmail({}, { message: 'Email inválido' })
   @IsNotEmpty({ message: 'Email é obrigatório' })
   email!: string;
 
+  @ApiProperty({
+    example: 'Senha@123',
+    description: 'Senha forte (mín. 8, máx. 64 chars; deve ter maiúscula, minúscula, número e especial)',
+    minLength: 8,
+    maxLength: 64,
+  })
   @IsString({ message: 'Senha deve ser texto' })
   @IsNotEmpty({ message: 'Senha é obrigatória' })
   @MinLength(8, { message: 'A senha deve ter no mínimo 8 caracteres' })
@@ -35,6 +42,7 @@ export class RegisterProfessionalDto {
   })
   password!: string;
 
+  @ApiProperty({ example: 'Dr. Carlos Mendes', description: 'Nome completo', minLength: 2, maxLength: 100 })
   @IsString({ message: 'Nome deve ser texto' })
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   @MinLength(2, { message: 'Nome deve ter no mínimo 2 caracteres' })
@@ -44,6 +52,7 @@ export class RegisterProfessionalDto {
   })
   name!: string;
 
+  @ApiProperty({ example: 'CRM12345', description: 'Registro profissional (mín. 4, máx. 20 chars)', minLength: 4, maxLength: 20 })
   @IsString({ message: 'Registro profissional deve ser texto' })
   @IsNotEmpty({ message: 'Registro profissional é obrigatório' })
   @MinLength(4, {
@@ -54,6 +63,7 @@ export class RegisterProfessionalDto {
   })
   professionalLicense!: string;
 
+  @ApiProperty({ example: 'Cardiologia', description: 'Especialidade médica', minLength: 2, maxLength: 100 })
   @IsString({ message: 'Especialidade deve ser texto' })
   @IsNotEmpty({ message: 'Especialidade é obrigatória' })
   @MinLength(2, { message: 'Especialidade deve ter no mínimo 2 caracteres' })
@@ -62,6 +72,7 @@ export class RegisterProfessionalDto {
   })
   specialty!: string;
 
+  @ApiPropertyOptional({ example: 'Arritmias', description: 'Subespecialidade (máx. 100 chars)', maxLength: 100 })
   @IsOptional()
   @IsString({ message: 'Subespecialidade deve ser texto' })
   @MaxLength(100, {
@@ -69,12 +80,21 @@ export class RegisterProfessionalDto {
   })
   subspecialty?: string;
 
+  @ApiPropertyOptional({
+    example: 'CLINIC',
+    description: 'Modalidade de atendimento',
+    enum: AppointmentModality,
+  })
   @IsOptional()
   @IsEnum(AppointmentModality, {
     message: 'Modalidade deve ser VIRTUAL, HOME_VISIT ou CLINIC',
   })
   modality!: AppointmentModality;
 
+  @ApiPropertyOptional({
+    description: 'Links de redes sociais do profissional',
+    example: { referenceLink: 'https://site.com', instagram: 'https://instagram.com/medico', other: '' },
+  })
   @IsOptional()
   @IsObject()
   socialLinks?: {
@@ -83,11 +103,13 @@ export class RegisterProfessionalDto {
     other?: string;
   };
 
+  @ApiPropertyOptional({ example: 'Médico cardiologista com 10 anos de experiência.', description: 'Biografia (máx. 500 chars)', maxLength: 500 })
   @IsOptional()
   @IsString({ message: 'Biografia deve ser texto' })
   @MaxLength(500, { message: 'Biografia deve ter no máximo 500 caracteres' })
   bio?: string;
 
+  @ApiProperty({ example: '12345678900', description: 'CPF do profissional (somente números)' })
   @IsString({ message: 'CPF deve ser texto' })
   @IsNotEmpty({ message: 'CPF é obrigatório' })
   cpf!: string;

@@ -17,6 +17,7 @@ enum UserRole {
   PROFESSIONAL
   PATIENT
   ADMIN
+  MANAGER
 }
 
 enum UserStatus {
@@ -55,6 +56,7 @@ model User {
 
   professionalProfile ProfessionalProfile?
   patientProfile      PatientProfile?
+  managerProfile      ManagerProfile?
 
   appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
   appointmentsAsPatient Appointment[] @relation("PatientAppointments")
@@ -99,6 +101,20 @@ model PatientProfile {
   @@map("patient_profiles")
 }
 
+model ManagerProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String?
+  bio       String?  @db.Text
+  photoUrl  String?  @map("photo_url")
+  address   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("manager_profiles")
+}
+
 model Availability {
   id             String @id @default(uuid())
   professionalId String @map("professional_id")
@@ -123,9 +139,10 @@ model Appointment {
   patientId String @map("patient_id")
   patient   User   @relation("PatientAppointments", fields: [patientId], references: [id])
 
-  dateTime DateTime          @map("date_time")
-  status   AppointmentStatus @default(PENDING)
-  notes    String?           @db.Text
+  dateTime DateTime            @map("date_time")
+  status   AppointmentStatus   @default(PENDING)
+  modality AppointmentModality @default(VIRTUAL)
+  notes    String?             @db.Text
 
   createdAt DateTime @default(now()) @map("created_at")
 

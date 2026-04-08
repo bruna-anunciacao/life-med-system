@@ -30,6 +30,14 @@ export interface RegisterProfessionalDto {
   password: string;
 }
 
+export interface RegisterManagerDto {
+  email: string;
+  password: string;
+  phone: string;
+  address?: string;
+  bio?: string;
+}
+
 export interface LoginDto {
   email: string;
   password: string;
@@ -48,7 +56,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: "PROFESSIONAL" | "PATIENT" | "ADMIN";
+  role: "PROFESSIONAL" | "PATIENT" | "ADMIN" | "MANAGER";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
   emailVerified: boolean;
 }
@@ -85,6 +93,25 @@ export const authService = {
   async registerProfessional(data: RegisterProfessionalDto) {
     try {
       const response = await api.post("/auth/register/professional", data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao realizar cadastro.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async registerManager(data: RegisterManagerDto) {
+    try {
+      const response = await api.post("/auth/register/manager", data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

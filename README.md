@@ -10,7 +10,8 @@ Plataforma digital web responsiva, sem fins lucrativos, destinada a facilitar o 
 | **Backend (Produção)** | https://life-med-system.onrender.com |
 | **Repositório Principal** | https://github.com/bruna-anunciacao/life-med-system |
 | **Documentação de Requisitos** | [Google Docs](https://docs.google.com/document/d/1nTb6WZjGDMXA394hR0gvFeqp7Gk6E-zGJrsyybsuBJ4/edit?usp=sharing) |
-
+| **Documentação da API (local)** | http://localhost:8000/api/docs |
+| **Arquitetura C4** | [Google Drive](https://drive.google.com/file/d/1DR9QUuljaCMrjepajVdWZDnpnJh7PpGL/view?usp=sharing) |
 ## Visão Geral
 
 O LifeMed atua como intermediário que permite:
@@ -51,6 +52,30 @@ life-med-system/
 ---
 
 ### 1. Instalação do PostgreSQL
+
+#### Alternativa com Docker (recomendado)
+
+Se preferir não instalar o PostgreSQL localmente, você pode usar o Docker:
+
+```bash
+docker run --name life-med-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=root \
+  -e POSTGRES_DB=life-med \
+  -p 5432:5432 \
+  -d postgres:16
+```
+
+Para parar ou iniciar o container depois:
+
+```bash
+docker stop life-med-db
+docker start life-med-db
+```
+
+> Com essa opção, pule direto para o [passo 3](#3-configuração-do-projeto).
+
+---
 
 #### Linux (Ubuntu/Debian)
 
@@ -180,7 +205,8 @@ npm run dev
 
 Acesse:
 - **Frontend:** http://localhost:3000
-- **Backend:** http://localhost:3001
+- **Backend:** http://localhost:8000
+- **Documentação da API (Scalar):** http://localhost:8000/api/docs
 
 ---
 

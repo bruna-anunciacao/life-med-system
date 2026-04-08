@@ -15,6 +15,7 @@ const sizeClasses: Record<string, string> = {
   xs: "h-6 px-2 text-xs rounded-md",
   sm: "h-7 px-2.5 text-[0.8125rem] rounded-md",
   lg: "h-9 px-4",
+  xl: "h-10 px-6",
   icon: "size-8 p-0",
   "icon-xs": "size-6 p-0 rounded-md",
   "icon-sm": "size-7 p-0 rounded-md",

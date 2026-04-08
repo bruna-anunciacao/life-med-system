@@ -63,10 +63,7 @@ const SchedulePage = () => {
           <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Minha Agenda</h1>
           <p className="mt-1 text-base text-gray-500">Visualize e gerencie seus horários.</p>
         </div>
-        <Button
-          className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200"
-          onClick={() => setIsOpen(true)}
-        >
+        <Button size="lg" onClick={() => setIsOpen(true)}>
           Gerenciar Horários
         </Button>
       </div>

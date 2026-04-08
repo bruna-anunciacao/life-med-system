@@ -1,14 +1,13 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import Logo from "../../../life-med-logo.png";
+import { LifeMedLogo } from "../../../ui/life-med-logo";
 
 export function InvalidTokenCard() {
   return (
     <div className="w-full max-w-96 sm:max-w-105 flex flex-col gap-5">
       <div className="flex flex-col">
         <Link href="/" className="w-fit mb-3">
-          <Image src={Logo} alt="Life Med" width={160} className="h-auto" />
+          <LifeMedLogo width={160} className="h-auto" />
         </Link>
       </div>
 

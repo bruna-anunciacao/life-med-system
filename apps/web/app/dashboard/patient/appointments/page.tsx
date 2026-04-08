@@ -1,68 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { SearchIcon } from "../../../utils/icons";
 import { Appointment, TabKey } from "./appointments.types";
 import { AppointmentTabs } from "./components/AppointmentTabs";
 import { AppointmentCard } from "./components/AppointmentCard";
 import { EmptyAppointments } from "./components/EmptyAppointments";
 import { patientsService } from "@/services/patients-service";
+import {
+  appointmentsService,
+  AppointmentResponse,
+} from "@/services/appointments-service";
 
-const MOCK_APPOINTMENTS: Appointment[] = [
-  {
-    id: "1",
-    doctorName: "Dra. Ana Paula",
-    specialty: "Cardiologista",
-    dateTime: "2026-02-24T14:00:00.000Z",
-    status: "CONFIRMED",
+function mapApiToAppointment(appt: AppointmentResponse): Appointment {
+  return {
+    id: appt.id,
+    professionalId: appt.professional.id,
+    doctorName: appt.professional.name,
+    specialty: "",
+    dateTime: appt.dateTime,
+    status: appt.status,
     modality: "VIRTUAL",
-  },
-  {
-    id: "2",
-    doctorName: "Dr. Carlos Lima",
-    specialty: "Dermatologista",
-    dateTime: "2026-02-26T09:00:00.000Z",
-    status: "PENDING",
-    modality: "CLINIC",
-  },
-  {
-    id: "3",
-    doctorName: "Dra. Fernanda Souza",
-    specialty: "Nutricionista",
-    dateTime: "2026-03-02T10:30:00.000Z",
-    status: "CONFIRMED",
-    modality: "VIRTUAL",
-  },
-  {
-    id: "4",
-    doctorName: "Dr. João Silva",
-    specialty: "Clínico Geral",
-    dateTime: "2026-02-10T08:00:00.000Z",
-    status: "COMPLETED",
-    modality: "CLINIC",
-    notes: "Retorno em 30 dias. Exames solicitados.",
-  },
-  {
-    id: "5",
-    doctorName: "Dra. Maria Clara",
-    specialty: "Psicóloga",
-    dateTime: "2026-01-28T15:00:00.000Z",
-    status: "COMPLETED",
-    modality: "VIRTUAL",
-    notes: "Acompanhamento semanal mantido.",
-  },
-  {
-    id: "6",
-    doctorName: "Dr. Pedro Santos",
-    specialty: "Ortopedista",
-    dateTime: "2026-02-05T11:00:00.000Z",
-    status: "CANCELLED",
-    modality: "CLINIC",
-  },
-];
+    notes: appt.notes,
+  };
+}
 
 const getFilteredAppointments = (appointments: Appointment[], tab: TabKey) => {
   switch (tab) {
@@ -79,22 +45,54 @@ const getFilteredAppointments = (appointments: Appointment[], tab: TabKey) => {
 
 const AppointmentsPage = () => {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
-  const [appointments, setAppointments] =
-    useState<Appointment[]>(MOCK_APPOINTMENTS);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
 
-  const handleCancel = (id: string) => {
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const result = await appointmentsService.listMyAppointments({
+          limit: 100,
+        });
+        if (result) {
+          setAppointments(result.data.map(mapApiToAppointment));
+        }
+      } catch (error) {
+        const msg =
+          error instanceof Error
+            ? error.message
+            : "Erro ao carregar consultas.";
+        toast.error(msg);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleCancel = async (id: string) => {
     const confirmed = window.confirm(
       "Tem certeza que deseja cancelar esta consulta?",
     );
     if (!confirmed) return;
-    setAppointments((prev) =>
-      prev.map((a) =>
-        a.id === id ? { ...a, status: "CANCELLED" as const } : a,
-      ),
-    );
-    toast.success("Consulta cancelada com sucesso.");
+
+    try {
+      await appointmentsService.cancel(id);
+      setAppointments((prev) =>
+        prev.map((a) =>
+          a.id === id ? { ...a, status: "CANCELLED" as const } : a,
+        ),
+      );
+      toast.success("Consulta cancelada com sucesso.");
+    } catch (error) {
+      const msg =
+        error instanceof Error ? error.message : "Erro ao cancelar consulta.";
+      toast.error(msg);
+    }
   };
 
   const filtered = getFilteredAppointments(appointments, activeTab).sort(
@@ -142,19 +140,28 @@ const AppointmentsPage = () => {
         : "Baixar Relatório de Canceladas";
 
   return (
-    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
-      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
+    <section
+      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
+    >
+      <div
+        className={`mb-8 flex justify-between items-start flex-wrap gap-4 ${isMobile ? "flex-col" : ""}`}
+      >
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+          <h1
+            className={`font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
+          >
             Minhas Consultas
           </h1>
-          <p className="mt-1 text-base text-gray-500">
+          <p
+            className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}
+          >
             Acompanhe e gerencie suas consultas agendadas.
           </p>
         </div>
         <Button
-          className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3]"
+          size={isMobile ? "default" : "lg"}
           onClick={() => router.push("/dashboard/patient/search")}
+          className={isMobile ? "w-full" : ""}
         >
           <SearchIcon />
           Nova Consulta
@@ -167,17 +174,23 @@ const AppointmentsPage = () => {
         onTabChange={setActiveTab}
       />
 
-      <div className="mb-6 flex justify-end">
-        <Button
-          className="px-4 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer transition-all duration-200 hover:bg-[#0056b3] disabled:opacity-60"
-          onClick={handleDownloadReport}
-          disabled={isDownloadingReport}
-        >
-          {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
-        </Button>
-      </div>
+      {!isMobile && (
+        <div className="mb-6 flex justify-end">
+          <Button
+            size="lg"
+            onClick={handleDownloadReport}
+            disabled={isDownloadingReport}
+          >
+            {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
+          </Button>
+        </div>
+      )}
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="py-16 flex justify-center items-center">
+          <Spinner size="lg" />
+        </div>
+      ) : filtered.length === 0 ? (
         <EmptyAppointments
           activeTab={activeTab}
           onSearch={() => router.push("/dashboard/patient/search")}
@@ -190,8 +203,22 @@ const AppointmentsPage = () => {
               appointment={appt}
               onCancel={handleCancel}
               onRebook={() => router.push("/dashboard/patient/search")}
+              isMobile={isMobile}
             />
           ))}
+        </div>
+      )}
+
+      {isMobile && (
+        <div className="mt-6">
+          <Button
+            size="default"
+            onClick={handleDownloadReport}
+            disabled={isDownloadingReport}
+            className="w-full"
+          >
+            {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
+          </Button>
         </div>
       )}
     </section>

@@ -57,7 +57,7 @@ export default function PatientsPage() {
           <h1 className="text-4xl font-bold text-gray-900">Pacientes</h1>
           <p className="mt-1 text-gray-500">Gerencie e visualize seus pacientes cadastrados.</p>
         </div>
-        <Button className="px-4 py-2 flex items-center gap-2 rounded-lg bg-[#006fee] font-semibold text-base text-white cursor-pointer transition-all duration-200">
+        <Button size="lg">
           <PlusIcon />
           Novo Paciente
         </Button>
@@ -93,7 +93,7 @@ export default function PatientsPage() {
               <p><strong>Última Consulta:</strong> {patient.lastVisit ?? "—"}</p>
             </div>
             <div className="flex justify-end">
-              <Button size="sm" className="px-4 py-2">Ver Perfil</Button>
+              <Button size="sm">Ver Perfil</Button>
             </div>
           </div>
         ))}
