@@ -85,14 +85,8 @@ export const registerProfessionalValidation = z
       .string()
       .min(4, "Registro profissional deve ter no mínimo 4 caracteres")
       .max(20, "Registro profissional deve ter no máximo 20 caracteres"),
-    specialty: z
-      .string()
-      .min(2, "Especialidade deve ter no mínimo 2 caracteres")
-      .max(100, "Especialidade deve ter no máximo 100 caracteres"),
-    subspecialty: z
-      .string()
-      .max(100, "Subespecialidade deve ter no máximo 100 caracteres")
-      .optional(),
+    primarySpecialty: z.string().min(1, "A especialidade principal é obrigatória"),
+    secondarySpecialty: z.string().optional(),
     modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"], {
       error: () => ({ message: "Selecione uma modalidade válida" }),
     }),
@@ -122,10 +116,10 @@ export type RegisterFormData = {
   phone: string;
   dateOfBirth: Date | null;
   gender: string;
-  subspecialty: string;
   modality: string;
   bio: string;
-  specialty: string;
+  primarySpecialty: string;
+  secondarySpecialty: string;
   socialLinks?: {
     referenceLink?: string;
     instagram?: string;

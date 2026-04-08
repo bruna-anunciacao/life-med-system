@@ -1,9 +1,9 @@
 "use client";
-
 import { type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { RegisterFormData } from "../register-validation";
+import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
 
 type ProfessionalFieldsProps = {
   register: UseFormRegister<RegisterFormData>;
@@ -14,6 +14,8 @@ export function ProfessionalFields({
   register,
   errors,
 }: ProfessionalFieldsProps) {
+  const { data: specialities = [], isLoading: loadingSpecialities } = useSpecialitiesQuery();
+
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length <= 11) {
@@ -28,7 +30,6 @@ export function ProfessionalFields({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* CPF + Registro profissional */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="cpf" className="text-sm font-semibold text-[#374151]">CPF</Label>
@@ -56,33 +57,6 @@ export function ProfessionalFields({
         </div>
       </div>
 
-      {/* Especialidade + Subespecialidade */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="specialty" className="text-sm font-semibold text-[#374151]">Especialidade</Label>
-          <Input
-            id="specialty"
-            placeholder="Ex: Cardiologia"
-            {...register("specialty")}
-          />
-          {errors.specialty && (
-            <p className="text-xs font-medium text-[#dc2626]">{errors.specialty.message}</p>
-          )}
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="subspecialty" className="text-sm font-semibold text-[#374151]">Subespecialidade</Label>
-          <Input
-            id="subspecialty"
-            placeholder="Ex: Cardiologia infantil"
-            {...register("subspecialty")}
-          />
-          {errors.subspecialty && (
-            <p className="text-xs font-medium text-[#dc2626]">{errors.subspecialty.message}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Modalidade + Link de referência */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="modality" className="text-sm font-semibold text-[#374151]">Modalidade de atendimento</Label>
@@ -116,12 +90,56 @@ export function ProfessionalFields({
         </div>
       </div>
 
-      {/* Biografia — largura total */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="primarySpecialty" className="text-sm font-semibold text-[#374151]">
+            Especialidade Principal
+          </Label>
+          <select
+            id="primarySpecialty"
+            className="h-9 px-3 py-1 rounded-md border border-input text-sm text-[#334155] bg-white outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring disabled:opacity-50"
+            disabled={loadingSpecialities}
+            {...register("primarySpecialty")}
+          >
+            <option value="" disabled>
+              {loadingSpecialities ? "Carregando..." : "Selecione..."}
+            </option>
+            {specialities.map((spec: any) => (
+              <option key={spec.id} value={spec.id}>
+                {spec.name}
+              </option>
+            ))}
+          </select>
+          {errors.primarySpecialty && (
+            <p className="text-xs font-medium text-[#dc2626]">{errors.primarySpecialty.message as string}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="secondarySpecialty" className="text-sm font-semibold text-[#374151]">
+            Subespecialidade <span className="text-gray-400 font-normal">(Opcional)</span>
+          </Label>
+          <select
+            id="secondarySpecialty"
+            className="h-9 px-3 py-1 rounded-md border border-input text-sm text-[#334155] bg-white outline-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring disabled:opacity-50"
+            disabled={loadingSpecialities}
+            {...register("secondarySpecialty")}
+          >
+            <option value="">Nenhuma</option>
+            {specialities.map((spec: any) => (
+              <option key={spec.id} value={spec.id}>
+                {spec.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="bio" className="text-sm font-semibold text-[#374151]">Biografia</Label>
         <textarea
           id="bio"
-          placeholder="Ex: Sou um profissional de saúde com 10 anos de experiência"
+          placeholder="Ex: Sou um profissional de saúde com 10 anos de experiência..."
           className="w-full px-3 py-2 rounded-md border border-input text-sm text-[#334155] bg-white outline-none resize-none transition-colors focus:border-ring focus:ring-1 focus:ring-ring"
           rows={3}
           {...register("bio")}
