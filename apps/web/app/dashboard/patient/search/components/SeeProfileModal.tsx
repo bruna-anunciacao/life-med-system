@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
+import { env } from "@/config/env";
 
 export interface ProfessionalData {
   id: string;
@@ -88,6 +89,8 @@ export function SeeProfileModal({
   onOpenChange,
   professional,
 }: SeeProfileModalProps) {
+  const [imageError, setImageError] = useState(false);
+
   if (!professional || !professional.professionalProfile) return null;
 
   const { professionalProfile: profile } = professional;
@@ -102,6 +105,10 @@ export function SeeProfileModal({
     (!!profile.socialLinks.instagram ||
       !!profile.socialLinks.linkedin ||
       !!profile.socialLinks.other);
+  
+  const resolvedPhotoUrl = profile.photoUrl 
+    ? `${env.NEXT_PUBLIC_API_URL}${profile.photoUrl}`
+    : null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -115,19 +122,22 @@ export function SeeProfileModal({
           </DialogHeader>
           <div className="gap-6 pb-2">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
-              {profile.photoUrl ? (
-                <Image
-                  src={profile.photoUrl}
-                  alt={professional.name}
-                  width={100}
-                  height={100}
-                  className="rounded-full object-cover w-[100px] h-[100px] border-4 border-gray-50 shadow-sm shrink-0"
-                />
-              ) : (
-                <div className="w-[100px] h-[100px] rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-4xl font-semibold shadow-sm border border-blue-100 shrink-0">
-                  {professional.name.charAt(0).toUpperCase()}
-                </div>
-              )}
+              
+              <div className="relative w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white flex-shrink-0 overflow-hidden">
+                  {resolvedPhotoUrl && !imageError ? (
+                    <Image
+                      src={resolvedPhotoUrl}
+                      alt={`Foto de perfil de ${professional.name}`}
+                      fill
+                      className="object-cover"
+                      unoptimized
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    professional.name.charAt(0).toUpperCase()
+                  )}
+              </div>
+
               <div className="flex flex-col items-center sm:items-start flex-1 mt-2">
                 <h3 className="text-2xl font-bold text-gray-900 text-center sm:text-left">
                   {professional.name}
