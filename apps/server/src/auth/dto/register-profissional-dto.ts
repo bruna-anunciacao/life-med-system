@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  ArrayMinSize,
+  IsArray,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -63,22 +65,15 @@ export class RegisterProfessionalDto {
   })
   professionalLicense!: string;
 
-  @ApiProperty({ example: 'Cardiologia', description: 'Especialidade médica', minLength: 2, maxLength: 100 })
-  @IsString({ message: 'Especialidade deve ser texto' })
-  @IsNotEmpty({ message: 'Especialidade é obrigatória' })
-  @MinLength(2, { message: 'Especialidade deve ter no mínimo 2 caracteres' })
-  @MaxLength(100, {
-    message: 'Especialidade deve ter no máximo 100 caracteres',
+  @ApiProperty({
+    example: ['id-cardiologista', 'id-clinica-medica'],
+    description: 'id das especialidades do profissional',
+    type: [String],
   })
-  specialty!: string;
-
-  @ApiPropertyOptional({ example: 'Arritmias', description: 'Subespecialidade (máx. 100 chars)', maxLength: 100 })
-  @IsOptional()
-  @IsString({ message: 'Subespecialidade deve ser texto' })
-  @MaxLength(100, {
-    message: 'Subespecialidade deve ter no máximo 100 caracteres',
-  })
-  subspecialty?: string;
+  @IsArray({ message: 'Especialidade deve vir em um array' })
+  @IsString({ each: true, message: 'Especialidade deve ser texto (ID válido)' })
+  @ArrayMinSize(1, { message: 'Especialidade é obrigatória' })
+  specialty!: string[];
 
   @ApiPropertyOptional({
     example: 'CLINIC',

@@ -25,7 +25,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly emailVerification: EmailVerificationService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -138,6 +138,10 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
+    const specialtyIds = Array.isArray(dto.specialty)
+      ? dto.specialty
+      : [dto.specialty];
+
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -149,8 +153,9 @@ export class AuthService {
         professionalProfile: {
           create: {
             professionalLicense: dto.professionalLicense,
-            specialty: dto.specialty,
-            subspecialty: dto.subspecialty,
+            specialities: {
+              connect: specialtyIds.map((id) => ({ id })),
+            },
             modality: dto.modality,
             bio: dto.bio,
             socialLinks: dto.socialLinks,
@@ -158,7 +163,11 @@ export class AuthService {
         },
       },
       include: {
-        professionalProfile: true,
+        professionalProfile: {
+          include: {
+            specialities: true,
+          },
+        },
       },
     });
     await this.emailVerification.sendVerification(user);

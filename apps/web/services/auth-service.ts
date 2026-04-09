@@ -17,8 +17,7 @@ export interface RegisterProfessionalDto {
   email: string;
   cpf: string;
   professionalLicense: string;
-  specialty: string;
-  subspecialty?: string;
+  specialty: string[];
   modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
   bio?: string;
   socialLinks?: {

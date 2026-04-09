@@ -36,7 +36,7 @@ import { UserRole } from '@prisma/client';
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get('me')
   @UseGuards(EmailVerifiedGuard)

@@ -24,7 +24,7 @@ export class PatientsService {
     private readonly prisma: PrismaService,
     private readonly reportsService: ReportsService,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async exportDoneAppointmentsReport(
     patientId: string,
@@ -89,7 +89,12 @@ export class PatientsService {
             name: true,
             professionalProfile: {
               select: {
-                specialty: true,
+                specialities: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                },
                 modality: true,
                 price: true,
               },
@@ -111,7 +116,9 @@ export class PatientsService {
       patientName: appointment.patient.name,
       professionalId: appointment.professional.id,
       professionalName: appointment.professional.name,
-      specialty: appointment.professional.professionalProfile?.specialty || '-',
+      specialty: appointment.professional.professionalProfile?.specialities
+        ?.map((spec) => spec.name)
+        .join(', ') || '-',
       modality: appointment.professional.professionalProfile?.modality || '-',
       price: appointment.professional.professionalProfile?.price || 0,
     }));

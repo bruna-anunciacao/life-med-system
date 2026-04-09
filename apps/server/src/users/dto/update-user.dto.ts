@@ -9,6 +9,7 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  IsArray,
 } from 'class-validator';
 import { AppointmentModality } from '@prisma/client';
 import { UserStatus } from '@prisma/client';
@@ -75,20 +76,13 @@ export class UpdateUserDto {
 
   @ApiPropertyOptional({ example: 'Cardiologia', description: 'Especialidade (somente profissionais)', minLength: 2, maxLength: 100 })
   @IsOptional()
-  @IsString({ message: 'Especialidade deve ser texto' })
+  @IsString({ each: true })
+  @IsArray()
   @MinLength(2, { message: 'Especialidade deve ter no mínimo 2 caracteres' })
   @MaxLength(100, {
     message: 'Especialidade deve ter no máximo 100 caracteres',
   })
-  specialty?: string;
-
-  @ApiPropertyOptional({ example: 'Arritmias', description: 'Subespecialidade', maxLength: 100 })
-  @IsOptional()
-  @IsString({ message: 'Subespecialidade deve ser texto' })
-  @MaxLength(100, {
-    message: 'Subespecialidade deve ter no máximo 100 caracteres',
-  })
-  subspecialty?: string;
+  specialty?: string[];
 
   @ApiPropertyOptional({ example: 'CRM12345', description: 'Registro profissional (CRM)', minLength: 4, maxLength: 20 })
   @IsOptional()

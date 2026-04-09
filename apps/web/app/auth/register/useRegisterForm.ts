@@ -24,10 +24,10 @@ const INITIAL_FORM: RegisterFormData = {
   phone: "",
   dateOfBirth: null,
   gender: "",
-  subspecialty: "",
   modality: "VIRTUAL",
   bio: "",
-  specialty: "",
+  primarySpecialty: "",
+  secondarySpecialty: "",
   socialLinks: { referenceLink: "", instagram: "", other: "" },
 };
 
@@ -61,14 +61,18 @@ export function useRegisterForm() {
         const professional = data as z.infer<
           typeof registerProfessionalValidation
         >;
+        const specialitiesArray = [professional.primarySpecialty];
+        if (professional.secondarySpecialty) {
+          specialitiesArray.push(professional.secondarySpecialty);
+        }
+
         await authService.registerProfessional({
           name: professional.name,
           email: professional.email,
           password: professional.password,
           cpf: professional.cpf.replace(/\D/g, ""),
           professionalLicense: professional.professionalLicense,
-          specialty: professional.specialty,
-          subspecialty: professional.subspecialty,
+          specialty: specialitiesArray,
           bio: professional.bio,
           modality: professional.modality as
             | "VIRTUAL"

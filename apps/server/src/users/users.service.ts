@@ -4,13 +4,16 @@ import { MailService } from 'src/mail/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 import { UserRole, UserStatus } from '@prisma/client';
+import { connect } from 'http2';
+import { set } from 'zod';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
-  ) {}
+  ) { }
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -20,7 +23,11 @@ export class UsersService {
       },
       include: {
         patientProfile: true,
-        professionalProfile: true,
+        professionalProfile: {
+          include: {
+            specialities: true
+          }
+        }
       },
     });
 
@@ -32,7 +39,14 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto) {
     const user = await this.prisma.user.findUnique({
       where: { id },
-      include: { professionalProfile: true, patientProfile: true },
+      include: {
+        patientProfile: true,
+        professionalProfile: {
+          include: {
+            specialities: true
+          }
+        }
+      },
     });
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
@@ -43,7 +57,6 @@ export class UsersService {
       bio,
       status,
       modality,
-      subspecialty,
       photoUrl,
       socialLinks,
       phone,
@@ -56,10 +69,14 @@ export class UsersService {
 
     let newStatus = status ? status : user.status;
 
+    const specialtyIds = Array.isArray(specialty)
+      ? specialty
+      : (specialty ? [specialty] : []);
+
     if (user.role === 'PROFESSIONAL' && user.status === 'PENDING') {
       const hasProfessionalLicense =
         professionalLicense || user.professionalProfile?.professionalLicense;
-      const hasSpecialty = specialty || user.professionalProfile?.specialty;
+      const hasSpecialty = (specialty && specialty.length > 0) || (user.professionalProfile?.specialities && user.professionalProfile.specialities.length > 0);
 
       if (hasProfessionalLicense && hasSpecialty) {
         newStatus = UserStatus.COMPLETED;
@@ -84,7 +101,6 @@ export class UsersService {
         professionalLicense ||
         bio ||
         modality ||
-        subspecialty ||
         photoUrl
       ) {
         await this.prisma.professionalProfile.upsert({
@@ -92,21 +108,23 @@ export class UsersService {
           create: {
             userId: id,
             professionalLicense: professionalLicense || '',
-            specialty: specialty || '',
             modality: modality || 'VIRTUAL',
             bio: bio,
-            subspecialty: subspecialty,
             photoUrl: photoUrl,
             socialLinks: socialLinks,
+            specialities: specialtyIds.length > 0 ? {
+              connect: specialtyIds.map(id => ({ id }))
+            } : undefined,
           },
           update: {
             professionalLicense: professionalLicense,
-            specialty: specialty,
             modality: modality,
             bio: bio,
-            subspecialty: subspecialty,
             photoUrl: photoUrl ?? user.professionalProfile?.photoUrl,
             socialLinks: socialLinks,
+            specialities: specialtyIds.length > 0 ? {
+              set: specialtyIds.map(id => ({ id }))
+            } : undefined,
           },
         });
       }
@@ -171,7 +189,11 @@ export class UsersService {
         name: true,
         email: true,
         status: true,
-        professionalProfile: true,
+        professionalProfile: {
+          include: {
+            specialities: true
+          }
+        }
       },
     });
   }
