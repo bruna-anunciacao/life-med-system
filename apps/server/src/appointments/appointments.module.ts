@@ -2,12 +2,17 @@ import { Module } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { AppointmentsController } from './appointments.controller';
 import { PrismaModule } from '../prisma/prisma.module';
-import { AppointmentOwnerGuard } from './guards/appointment-owner.guard';
+import { AppointmentPatientOwnerGuard } from './guards/appointment-patient-owner.guard';
+import { AppointmentProfessionalGuard } from './guards/appointment-professional.guard';
 
 @Module({
   imports: [PrismaModule],
   controllers: [AppointmentsController],
-  providers: [AppointmentsService, AppointmentOwnerGuard],
+  providers: [
+    AppointmentsService,
+    AppointmentPatientOwnerGuard,
+    AppointmentProfessionalGuard,
+  ],
   exports: [AppointmentsService],
 })
 export class AppointmentsModule {}
