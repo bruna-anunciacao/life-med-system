@@ -51,3 +51,37 @@ export class CreateAppointmentPatientDto {
   @IsOptional()
   notes?: string;
 }
+
+export class CreateAppointmentPatientForManagerDto {
+  @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'ID do profissional (UUID)',
+  })
+  @IsUUID('4', { message: 'ID do profissional deve ser um UUID válido' })
+  professionalId!: string;
+
+  @ApiProperty({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: 'ID do profissional (UUID)',
+  })
+  @IsUUID('4', { message: 'ID do paciente deve ser um UUID válido' })
+  patientId!: string;
+
+  @ApiProperty({
+    example: '2024-06-15T10:00:00Z',
+    description: 'Data/hora da consulta (ISO 8601 UTC) - deve ser futura',
+  })
+  @IsDateString({}, { message: 'Data/hora deve estar no formato ISO 8601' })
+  @Validate(IsFutureDateConstraint)
+  dateTime!: string;
+
+  @ApiProperty({
+    example: 'Tenho dúvidas sobre minha medicação',
+    description: 'Observações/motivo da consulta',
+    required: false,
+  })
+  @IsString({ message: 'Notas deve ser texto' })
+  @MaxLength(500, { message: 'Notas não pode ter mais de 500 caracteres' })
+  @IsOptional()
+  notes?: string;
+}
