@@ -8,6 +8,9 @@ import { createAccountApprovedEmail } from './templates/account-approved.templat
 import { createAccountRejectedEmail } from './templates/account-rejected.template';
 import { createEmailVerificationEmail } from './templates/email-verification.template';
 import { createTempPasswordEmail } from './templates/temp-password.template';
+import { createAppointmentCreatedPatientEmail } from './templates/appointment-created-patient.template';
+import { createAppointmentCreatedProfessionalEmail } from './templates/appointment-created-professional.template';
+import { createAppointmentCancelledEmail } from './templates/appointment-cancelled.template';
 
 export type EmailAttachment = {
   filename: string;
@@ -39,7 +42,9 @@ export class MailService implements OnModuleInit {
         secure: false,
         auth: { user: testAccount.user, pass: testAccount.pass },
       });
-      this.logger.log('Transporter de email configurado (modo desenvolvimento)');
+      this.logger.log(
+        'Transporter de email configurado (modo desenvolvimento)',
+      );
     } else {
       this.transporter = nodemailer.createTransport({
         host: process.env.MAIL_HOST,
@@ -66,17 +71,24 @@ export class MailService implements OnModuleInit {
       });
 
       if (this.isDevelopment) {
-        this.logger.log(`Email de teste enviado: ${nodemailer.getTestMessageUrl(info)}`);
+        this.logger.log(
+          `Email de teste enviado: ${nodemailer.getTestMessageUrl(info)}`,
+        );
       } else {
         this.logger.log(`Email enviado: ${info.messageId}`);
       }
     } catch (error) {
-      this.logger.error(`Falha ao enviar email para ${input.to}: ${(error as Error).message}`);
+      this.logger.error(
+        `Falha ao enviar email para ${input.to}: ${(error as Error).message}`,
+      );
       throw error;
     }
   }
 
-  async sendPasswordResetEmail(user: { name: string; email: string }, resetUrl: string) {
+  async sendPasswordResetEmail(
+    user: { name: string; email: string },
+    resetUrl: string,
+  ) {
     const htmlBody = createPasswordResetEmail({ nome: user.name, resetUrl });
     await this.sendEmail({
       to: user.email,
@@ -97,7 +109,10 @@ export class MailService implements OnModuleInit {
   async sendAccountApprovedEmail(user: { name: string; email: string }) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const loginUrl = `${frontendUrl}/auth/login`;
-    const htmlBody = createAccountApprovedEmail({ userName: user.name, loginUrl });
+    const htmlBody = createAccountApprovedEmail({
+      userName: user.name,
+      loginUrl,
+    });
     await this.sendEmail({
       to: user.email,
       subject: 'Conta Aprovada - LifeMed',
@@ -167,5 +182,108 @@ export class MailService implements OnModuleInit {
       subject: 'Confirme seu E-mail - LifeMed',
       html: htmlBody,
     });
+  }
+
+  async sendAppointmentCreatedPatientEmail(
+    patient: { name: string; email: string },
+    appointment: {
+      professionalName: string;
+      dateTime: Date;
+      modality: string;
+    },
+  ) {
+    const date = appointment.dateTime.toLocaleDateString('pt-BR', {
+      timeZone: 'America/Bahia',
+    });
+    const time = appointment.dateTime.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Bahia',
+    });
+    const htmlBody = createAppointmentCreatedPatientEmail({
+      patientName: patient.name,
+      professionalName: appointment.professionalName,
+      date,
+      time,
+      modality: this.formatModality(appointment.modality),
+    });
+    await this.sendEmail({
+      to: patient.email,
+      subject: 'Agendamento Realizado - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendAppointmentCreatedProfessionalEmail(
+    professional: { name: string; email: string },
+    appointment: {
+      patientName: string;
+      dateTime: Date;
+      modality: string;
+      notes?: string | null;
+    },
+  ) {
+    const date = appointment.dateTime.toLocaleDateString('pt-BR', {
+      timeZone: 'America/Bahia',
+    });
+    const time = appointment.dateTime.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Bahia',
+    });
+    const htmlBody = createAppointmentCreatedProfessionalEmail({
+      professionalName: professional.name,
+      patientName: appointment.patientName,
+      date,
+      time,
+      modality: this.formatModality(appointment.modality),
+      notes: appointment.notes ?? undefined,
+    });
+    await this.sendEmail({
+      to: professional.email,
+      subject: 'Novo Agendamento - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendAppointmentCancelledEmail(
+    recipient: { name: string; email: string },
+    appointment: {
+      patientName: string;
+      professionalName: string;
+      dateTime: Date;
+      reason?: string;
+    },
+  ) {
+    const date = appointment.dateTime.toLocaleDateString('pt-BR', {
+      timeZone: 'America/Bahia',
+    });
+    const time = appointment.dateTime.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Bahia',
+    });
+    const htmlBody = createAppointmentCancelledEmail({
+      recipientName: recipient.name,
+      patientName: appointment.patientName,
+      professionalName: appointment.professionalName,
+      date,
+      time,
+      reason: appointment.reason,
+    });
+    await this.sendEmail({
+      to: recipient.email,
+      subject: 'Agendamento Cancelado - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  private formatModality(modality: string): string {
+    const map: Record<string, string> = {
+      VIRTUAL: 'Teleconsulta',
+      HOME_VISIT: 'Visita Domiciliar',
+      CLINIC: 'Presencial',
+    };
+    return map[modality] ?? modality;
   }
 }
