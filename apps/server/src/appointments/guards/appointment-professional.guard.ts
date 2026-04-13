@@ -8,13 +8,13 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
-export class AppointmentOwnerGuard implements CanActivate {
+export class AppointmentProfessionalGuard implements CanActivate {
   constructor(private prisma: PrismaService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const userId = request.user?.id;
-    const appointmentId = request.params.appointmentId;
+    const appointmentId = request.params?.id;
 
     if (!userId || !appointmentId) {
       throw new ForbiddenException('Acesso negado');
@@ -27,10 +27,8 @@ export class AppointmentOwnerGuard implements CanActivate {
     if (!appointment) {
       throw new NotFoundException('Agendamento não encontrado');
     }
-    if (
-      appointment.patientId !== userId &&
-      appointment.professionalId !== userId
-    ) {
+
+    if (appointment.professionalId !== userId) {
       throw new ForbiddenException(
         'Você não tem permissão para acessar este agendamento',
       );
