@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import {
   CreateAppointmentPatientDto,
   ListAppointmentsQueryDto,
@@ -20,7 +21,10 @@ const MIN_CANCEL_ADVANCE_HOURS = 6;
 export class AppointmentsService {
   private readonly logger = new Logger(AppointmentsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async createAppointment(
     patientId: string,
@@ -71,6 +75,34 @@ export class AppointmentsService {
     });
 
     this.logger.log(`Agendamento criado com sucesso: ${appointment.id}`);
+
+    await Promise.all([
+      this.mailService.sendAppointmentCreatedPatientEmail(
+        { name: appointment.patient.name, email: appointment.patient.email },
+        {
+          professionalName: appointment.professional.name,
+          dateTime: appointment.dateTime,
+          modality: appointment.modality,
+        },
+      ),
+      this.mailService.sendAppointmentCreatedProfessionalEmail(
+        {
+          name: appointment.professional.name,
+          email: appointment.professional.email,
+        },
+        {
+          patientName: appointment.patient.name,
+          dateTime: appointment.dateTime,
+          modality: appointment.modality,
+          notes: appointment.notes,
+        },
+      ),
+    ]).catch((err) =>
+      this.logger.error(
+        `Falha ao enviar emails de agendamento: ${err.message}`,
+      ),
+    );
+
     return this.mapToResponseDto(appointment);
   }
 
@@ -225,6 +257,31 @@ export class AppointmentsService {
 
     this.logger.log(
       `Agendamento ${appointmentId} cancelado por: ${dto.reason || 'sem motivo'}`,
+    );
+
+    await Promise.all([
+      this.mailService.sendAppointmentCancelledEmail(
+        { name: updated.patient.name, email: updated.patient.email },
+        {
+          patientName: updated.patient.name,
+          professionalName: updated.professional.name,
+          dateTime: updated.dateTime,
+          reason: dto.reason,
+        },
+      ),
+      this.mailService.sendAppointmentCancelledEmail(
+        { name: updated.professional.name, email: updated.professional.email },
+        {
+          patientName: updated.patient.name,
+          professionalName: updated.professional.name,
+          dateTime: updated.dateTime,
+          reason: dto.reason,
+        },
+      ),
+    ]).catch((err) =>
+      this.logger.error(
+        `Falha ao enviar emails de cancelamento: ${err.message}`,
+      ),
     );
 
     return this.mapToResponseDto(updated);
