@@ -36,9 +36,12 @@ import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
 import { ProfessionalRoleGuard } from '../professional/guards/professional-role.guard';
 import { AppointmentPatientOwnerGuard } from './guards/appointment-patient-owner.guard';
 import { AppointmentProfessionalGuard } from './guards/appointment-professional.guard';
+import { AppointmentOwnerGuard } from './guards/appointment-owner.guard';
+import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Appointments')
 @ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'), QuestionnaireCompletionGuard)
 @Controller('appointments')
 export class AppointmentsController {
   private readonly logger = new Logger(AppointmentsController.name);

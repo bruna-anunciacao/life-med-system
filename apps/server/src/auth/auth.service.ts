@@ -30,6 +30,13 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
+      include: {
+        patientProfile: {
+          select: {
+            questionnaireCompleted: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -66,6 +73,7 @@ export class AuthService {
         role: user.role,
         status: user.status,
         emailVerified: user.emailVerified,
+        patientProfile: user.patientProfile,
       },
     };
   }

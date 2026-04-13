@@ -13,15 +13,17 @@ import { AuthGuard } from '@nestjs/passport';
 import { PatientRoleGuard } from './guards/patient-role.guard';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import type { Response } from 'express';
+import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Patients')
 @ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'), QuestionnaireCompletionGuard)
 @Controller('patients')
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @Get('export/done-appointments')
-  @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
+  @UseGuards(PatientRoleGuard)
   @ApiOperation({
     summary: 'Exportar relatório de consultas concluídas (PDF)',
     description:
@@ -71,7 +73,7 @@ export class PatientsController {
   }
 
   @Get('export/pending-appointments')
-  @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
+  @UseGuards(PatientRoleGuard)
   @ApiOperation({
     summary: 'Exportar relatório de consultas pendentes (PDF)',
     description:
@@ -121,7 +123,7 @@ export class PatientsController {
   }
 
   @Get('export/cancelled-appointments')
-  @UseGuards(AuthGuard('jwt'), PatientRoleGuard)
+  @UseGuards(PatientRoleGuard)
   @ApiOperation({
     summary: 'Exportar relatório de consultas canceladas (PDF)',
     description:
