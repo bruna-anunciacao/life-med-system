@@ -1,6 +1,12 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import {
+  AUTH_TOKEN_KEY,
+  QUESTIONNAIRE_COMPLETED_KEY,
+  USER_KEY,
+  USER_STATUS,
+} from "../lib/auth-constants";
 
 export interface RegisterPatientDto {
   name: string;
@@ -58,16 +64,15 @@ export interface User {
   role: "PROFESSIONAL" | "PATIENT" | "ADMIN" | "MANAGER";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
   emailVerified: boolean;
+  patientProfile?: {
+    questionnaireCompleted: boolean;
+  } | null;
 }
 
 export interface LoginResponse {
   accessToken: string;
   user: User;
 }
-
-export const AUTH_TOKEN_KEY = "auth-token";
-export const USER_KEY = "user-role";
-export const USER_STATUS = "user-status";
 
 export const authService = {
   async registerPatient(data: RegisterPatientDto) {
@@ -141,6 +146,16 @@ export const authService = {
         Cookies.set(USER_KEY, user.role, { expires: 1 });
 
         Cookies.set(USER_STATUS, user.status, { expires: 1 });
+
+        if (user.role === "PATIENT") {
+          Cookies.set(
+            QUESTIONNAIRE_COMPLETED_KEY,
+            String(Boolean(user.patientProfile?.questionnaireCompleted)),
+            { expires: 1 },
+          );
+        } else {
+          Cookies.remove(QUESTIONNAIRE_COMPLETED_KEY);
+        }
       }
 
       if (user) {
@@ -237,6 +252,7 @@ export const authService = {
     Cookies.remove(AUTH_TOKEN_KEY);
     Cookies.remove(USER_KEY);
     Cookies.remove(USER_STATUS);
+    Cookies.remove(QUESTIONNAIRE_COMPLETED_KEY);
 
     window.location.href = "/auth/login";
   },

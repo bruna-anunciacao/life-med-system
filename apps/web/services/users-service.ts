@@ -1,5 +1,7 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
+import Cookies from "js-cookie";
+import { QUESTIONNAIRE_COMPLETED_KEY } from "../lib/auth-constants";
 
 export interface UpdateProfileDto {
   name?: string;
@@ -29,7 +31,16 @@ export const usersService = {
   async getUser() {
     try {
       const response = await api.get("/users/me");
-      return response.data;
+      const user = response.data;
+
+      if (typeof window !== "undefined" && user?.role === "PATIENT") {
+        Cookies.set(
+          QUESTIONNAIRE_COMPLETED_KEY,
+          String(Boolean(user.patientProfile?.questionnaireCompleted)),
+          { expires: 1 },
+        );
+      }
+      return user;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
         const message = error.response.data.message;

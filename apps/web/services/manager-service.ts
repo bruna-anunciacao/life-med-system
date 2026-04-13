@@ -18,6 +18,41 @@ export interface UpdatePatientDto {
   address?: string;
 }
 
+export interface QuestionnaireSummary {
+  id: string;
+  answeredBy: "PATIENT" | "MANAGER";
+  answeredByUserId: string;
+  totalScore: number;
+  isVulnerable: boolean;
+  responseDate: string;
+  responses: Record<string, unknown>;
+}
+
+export interface ManagerPatientResponse {
+  id: string;
+  email: string;
+  name: string;
+  cpf?: string;
+  role: string;
+  status: string;
+  emailVerified: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: string;
+  patientProfile?: {
+    id: string;
+    phone?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    address?: string;
+    questionnaireCompleted?: boolean;
+  };
+  questionnaire?: QuestionnaireSummary | null;
+}
+
 export interface CreateAppointmentDto {
   patientId: string;
   professionalId: string;
@@ -44,7 +79,6 @@ export const managerService = {
       throw new Error("Erro de conexão com o servidor.");
     }
   },
-
   async updatePatient(patientId: string, data: UpdatePatientDto) {
     try {
       const response = await api.patch(`/manager/patients/${patientId}`, data);
@@ -142,7 +176,9 @@ export const managerService = {
 
   async getPatient(patientId: string) {
     try {
-      const response = await api.get(`/manager/patients/${patientId}`);
+      const response = await api.get<ManagerPatientResponse>(
+        `/manager/patients/${patientId}`,
+      );
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

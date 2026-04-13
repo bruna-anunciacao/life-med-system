@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { managerService } from "@/services/manager-service";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { editPatientSchema, type EditPatientSchema } from "./edit-patient.validation";
 
 export default function PatientDetailsPage() {
@@ -228,6 +229,42 @@ export default function PatientDetailsPage() {
         </Card>
 
         <Card className="bg-white">
+          <CardContent className="p-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Questionário de Vulnerabilidade
+            </h2>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm text-slate-600">
+                    Status do questionário
+                  </p>
+                  <p className="font-medium text-slate-900">
+                    {patient.patientProfile?.questionnaireCompleted
+                      ? "Respondido"
+                      : "Pendente"}
+                  </p>
+                  {patient.questionnaire && (
+                    <p className="text-sm text-slate-600">
+                      Pontuação: {patient.questionnaire.totalScore} |{" "}
+                      {patient.questionnaire.isVulnerable
+                        ? "Vulnerável"
+                        : "Não vulnerável"}
+                    </p>
+                  )}
+                </div>
+
+                <Link href={`/dashboard/manager/patients/${patient.id}/questionnaire`}>
+                  <Button>
+                    {patient.questionnaire ? "Editar questionário" : "Preencher questionário"}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white mt-6">
           <CardContent className="p-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Informações do Sistema
