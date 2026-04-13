@@ -12,7 +12,7 @@ export class ProfessionalRoleGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     if (!user || user.role !== UserRole.PROFESSIONAL) {
-      throw new ForbiddenException('Only professionals can update settings');
+      throw new ForbiddenException('Acesso negado — somente PROFESSIONAL.');
     }
 
     return true;

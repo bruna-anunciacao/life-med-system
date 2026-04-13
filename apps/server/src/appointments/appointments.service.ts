@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,7 +13,9 @@ import {
   CancelAppointmentDto,
   AppointmentResponseDto,
   AvailableSlotsQueryDto,
+  UpdateAppointmentStatusDto,
 } from './dto';
+import { AppointmentStatus } from '@prisma/client';
 
 const APPOINTMENT_DURATION_MINUTES = 30;
 const MIN_CANCEL_ADVANCE_HOURS = 6;
@@ -282,6 +285,47 @@ export class AppointmentsService {
       this.logger.error(
         `Falha ao enviar emails de cancelamento: ${err.message}`,
       ),
+    );
+
+    return this.mapToResponseDto(updated);
+  }
+
+  async updateAppointmentStatus(
+    appointmentId: string,
+    professionalId: string,
+    dto: UpdateAppointmentStatusDto,
+  ): Promise<AppointmentResponseDto> {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException('Agendamento não encontrado');
+    }
+
+    if (appointment.professionalId !== professionalId) {
+      throw new ForbiddenException(
+        'Você não tem permissão para acessar este agendamento',
+      );
+    }
+
+    if (appointment.status === AppointmentStatus.CANCELLED) {
+      throw new BadRequestException(
+        'Não é possível alterar o status de um agendamento cancelado',
+      );
+    }
+
+    const updated = await this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: { status: dto.status },
+      include: {
+        patient: true,
+        professional: true,
+      },
+    });
+
+    this.logger.log(
+      `Agendamento ${appointmentId} status atualizado para ${dto.status} pelo profissional ${professionalId}`,
     );
 
     return this.mapToResponseDto(updated);

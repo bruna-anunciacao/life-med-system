@@ -25,13 +25,16 @@ import {
   CreateAppointmentPatientDto,
   ListAppointmentsQueryDto,
   CancelAppointmentDto,
+  UpdateAppointmentStatusDto,
   AppointmentResponseDto,
   AppointmentListResponseDto,
   AvailableSlotsQueryDto,
   AvailableSlotsResponseDto,
 } from './dto';
 import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
-import { AppointmentOwnerGuard } from './guards/appointment-owner.guard';
+import { ProfessionalRoleGuard } from '../professional/guards/professional-role.guard';
+import { AppointmentPatientOwnerGuard } from './guards/appointment-patient-owner.guard';
+import { AppointmentProfessionalGuard } from './guards/appointment-professional.guard';
 
 @ApiTags('Appointments')
 @ApiBearerAuth('access-token')
@@ -159,14 +162,54 @@ export class AppointmentsController {
     return this.appointmentsService.getAvailableSlots(professionalId, query);
   }
 
-  @Patch(':appointmentId/cancel')
-  @UseGuards(AuthGuard('jwt'), AppointmentOwnerGuard)
+  @Patch(':id/status')
+  @UseGuards(
+    AuthGuard('jwt'),
+    ProfessionalRoleGuard,
+    AppointmentProfessionalGuard,
+  )
+  @ApiOperation({
+    summary: 'Atualizar status do agendamento',
+    description:
+      'Profissional altera o status (ex.: CONFIRMED, COMPLETED, NO_SHOW). Cancelamento pelo paciente usa PATCH /appointments/:id/cancel.',
+  })
+  @ApiParam({ name: 'id', description: 'ID do agendamento (UUID)' })
+  @ApiBody({ type: UpdateAppointmentStatusDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Status atualizado.',
+    type: AppointmentResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Agendamento cancelado ou dados inválidos.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado — somente PROFESSIONAL atribuído ao agendamento.',
+  })
+  @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
+  async updateAppointmentStatus(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateAppointmentStatusDto,
+  ): Promise<AppointmentResponseDto> {
+    this.logger.log(
+      `Profissional ${req.user.id} atualizando status do agendamento ${id}`,
+    );
+    return this.appointmentsService.updateAppointmentStatus(
+      id,
+      req.user.id as string,
+      dto,
+    );
+  }
+
+  @Patch(':id/cancel')
+  @UseGuards(AuthGuard('jwt'), PatientRoleGuard, AppointmentPatientOwnerGuard)
   @ApiOperation({
     summary: 'Cancelar agendamento',
     description:
-      'Cancela um agendamento existente. Apenas o paciente ou profissional podem cancelar.',
+      'Cancela um agendamento (status CANCELLED). Apenas o paciente dono do agendamento.',
   })
-  @ApiParam({ name: 'appointmentId', description: 'ID do agendamento (UUID)' })
+  @ApiParam({ name: 'id', description: 'ID do agendamento (UUID)' })
   @ApiBody({ type: CancelAppointmentDto })
   @ApiResponse({
     status: 200,
@@ -177,17 +220,16 @@ export class AppointmentsController {
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({
     status: 403,
-    description: 'Você não tem permissão para acessar este agendamento.',
+    description:
+      'Acesso negado — somente PATIENT dono do agendamento.',
   })
   @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
   async cancelAppointment(
     @Request() req,
-    @Param('appointmentId') appointmentId: string,
+    @Param('id') id: string,
     @Body() dto: CancelAppointmentDto,
   ): Promise<AppointmentResponseDto> {
-    this.logger.log(
-      `Usuário ${req.user.id} cancelando agendamento ${appointmentId}`,
-    );
-    return this.appointmentsService.cancelAppointment(appointmentId, dto);
+    this.logger.log(`Paciente ${req.user.id} cancelando agendamento ${id}`);
+    return this.appointmentsService.cancelAppointment(id, dto);
   }
 }
