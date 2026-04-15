@@ -7,7 +7,8 @@ import { DayPicker } from "react-day-picker";
 import { format, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
-import { useDailyScheduleQuery } from "../../../../queries/useDailyScheduleQuery";
+import { useDailyScheduleQuery } from "@/queries/useDailyScheduleQuery";
+import { useUpdateAppointmentStatusMutation } from "@/queries/useProfessionalAppointments";
 import { ScheduleTimeline } from "./components/ScheduleTimeline";
 import ScheduleModal from "./scheduleModal";
 
@@ -21,24 +22,48 @@ type Appointment = {
 
 const SchedulePage = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
 
   const dateStr = selectedDate ? format(selectedDate, "yyyy-MM-dd") : "";
-  const { data: scheduleData, isLoading, isError } = useDailyScheduleQuery(dateStr);
+  const {
+    data: scheduleData,
+    isLoading,
+    isError,
+  } = useDailyScheduleQuery(dateStr);
+
+  const { mutate: updateStatus } = useUpdateAppointmentStatusMutation();
 
   useEffect(() => {
     if (isError) toast.error("Erro ao carregar a agenda do dia.");
   }, [isError]);
 
   const { appointments, timeSlots, isAvailableToday } = useMemo(() => {
-    if (!scheduleData) return { appointments: [] as Appointment[], timeSlots: [] as string[], isAvailableToday: true };
+    if (!scheduleData)
+      return {
+        appointments: [] as Appointment[],
+        timeSlots: [] as string[],
+        isAvailableToday: true,
+      };
 
     const appts = scheduleData.appointments as Appointment[];
 
-    if (!scheduleData.availability) return { appointments: appts, timeSlots: [] as string[], isAvailableToday: false };
+    if (!scheduleData.availability)
+      return {
+        appointments: appts,
+        timeSlots: [] as string[],
+        isAvailableToday: false,
+      };
 
-    const startHour = parseInt(scheduleData.availability.startTime.split(":")[0], 10);
-    const endHour = parseInt(scheduleData.availability.endTime.split(":")[0], 10);
+    const startHour = parseInt(
+      scheduleData.availability.startTime.split(":")[0],
+      10,
+    );
+    const endHour = parseInt(
+      scheduleData.availability.endTime.split(":")[0],
+      10,
+    );
     const slots: string[] = [];
     for (let i = startHour; i < endHour; i++) {
       slots.push(`${i.toString().padStart(2, "0")}:00`);
@@ -51,17 +76,27 @@ const SchedulePage = () => {
     if (!selectedDate) return undefined;
     return appointments.find((apt) => {
       const aptDate = new Date(apt.dateTime);
-      return isSameDay(aptDate, selectedDate) &&
-        aptDate.getUTCHours().toString().padStart(2, "0") + ":00" === slotTime;
+      return (
+        isSameDay(aptDate, selectedDate) &&
+        aptDate.getUTCHours().toString().padStart(2, "0") + ":00" === slotTime
+      );
     });
+  };
+
+  const handleStatusChange = (id: string, newStatus: string) => {
+    updateStatus({ id, status: newStatus });
   };
 
   return (
     <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
       <div className="mb-10 flex justify-between items-center">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Minha Agenda</h1>
-          <p className="mt-1 text-base text-gray-500">Visualize e gerencie seus horários.</p>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            Minha Agenda
+          </h1>
+          <p className="mt-1 text-base text-gray-500">
+            Visualize e gerencie seus horários.
+          </p>
         </div>
         <Button size="lg" onClick={() => setIsOpen(true)}>
           Gerenciar Horários
@@ -71,16 +106,24 @@ const SchedulePage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-8">
         <aside className="flex flex-col gap-6">
           <div className="border border-gray-200 shadow-sm bg-white rounded-[20px] p-4">
-            <DayPicker mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={ptBR} />
+            <DayPicker
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              locale={ptBR}
+            />
           </div>
         </aside>
 
         <main className="bg-white rounded-2xl border border-gray-200 p-6 min-h-[600px] shadow-sm">
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
             <h2 className="text-xl font-semibold text-gray-700 capitalize">
-              {selectedDate && format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+              {selectedDate &&
+                format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
             </h2>
-            {isAvailableToday && <Badge className="py-1 px-4">Dia de Atendimento</Badge>}
+            {isAvailableToday && (
+              <Badge className="py-1 px-4">Dia de Atendimento</Badge>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -89,6 +132,7 @@ const SchedulePage = () => {
               isAvailableToday={isAvailableToday}
               timeSlots={timeSlots}
               getAppointmentForSlot={getAppointmentForSlot}
+              onStatusChange={handleStatusChange}
             />
           </div>
         </main>

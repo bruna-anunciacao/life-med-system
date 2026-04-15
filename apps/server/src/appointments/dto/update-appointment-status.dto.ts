@@ -7,6 +7,7 @@ export const PROFESSIONAL_SETTABLE_APPOINTMENT_STATUSES = [
   AppointmentStatus.CONFIRMED,
   AppointmentStatus.COMPLETED,
   AppointmentStatus.NO_SHOW,
+  AppointmentStatus.CANCELLED,
 ] as const;
 
 export type ProfessionalSettableAppointmentStatus =

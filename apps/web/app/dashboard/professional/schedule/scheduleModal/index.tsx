@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
-import { useProfessionalSettingsQuery } from "../../../../../queries/useProfessionalSettingsQuery";
+import { useProfessionalSettingsQuery } from "@/queries/useProfessionalAppointments";
 import { useScheduleModalForm } from "./useScheduleModalForm";
 
 interface ScheduleModalProps {

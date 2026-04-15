@@ -85,6 +85,43 @@ export const appointmentsService = {
     }
   },
 
+  async listProfessionalAppointments(params?: {
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    try {
+      const response = await api.get(
+        "/appointments/professional-appointments",
+        {
+          params,
+        },
+      );
+      return response.data as AppointmentListResponse;
+    } catch (error) {
+      extractErrorMessage(
+        error,
+        "Erro ao listar agendamentos do profissional.",
+      );
+    }
+  },
+
+  async updateStatus(appointmentId: string, status: string) {
+    try {
+      const response = await api.patch(
+        `/appointments/${appointmentId}/status`,
+        {
+          status,
+        },
+      );
+      return response.data as AppointmentResponse;
+    } catch (error) {
+      extractErrorMessage(error, "Erro ao atualizar status da consulta.");
+    }
+  },
+
   async cancel(appointmentId: string, data?: CancelAppointmentDto) {
     try {
       const response = await api.patch(

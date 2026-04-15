@@ -129,6 +129,61 @@ export class AppointmentsController {
     );
   }
 
+  @Get('professional-appointments')
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard)
+  @ApiOperation({
+    summary: 'Listar agendamentos do profissional',
+    description:
+      'Retorna todos os agendamentos do profissional autenticado com opções de filtro.',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filtrar por status',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description: 'Data inicial (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description: 'Data final (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Página (padrão: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Registros por página (padrão: 10)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de agendamentos do profissional.',
+    type: AppointmentListResponseDto,
+  })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado — somente PROFESSIONAL.',
+  })
+  async listProfessionalAppointments(
+    @Request() req,
+    @Query() query: ListAppointmentsQueryDto,
+  ): Promise<AppointmentListResponseDto> {
+    this.logger.log(
+      `Profissional ${req.user.id} listando agendamentos - página ${query.page || 1}`,
+    );
+    return this.appointmentsService.listProfessionalAppointments(
+      req.user.id as string,
+      query,
+    );
+  }
+
   @Get('professionals/:professionalId/available-slots')
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({
@@ -180,11 +235,15 @@ export class AppointmentsController {
     description: 'Status atualizado.',
     type: AppointmentResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Agendamento cancelado ou dados inválidos.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Agendamento cancelado ou dados inválidos.',
+  })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({
     status: 403,
-    description: 'Acesso negado — somente PROFESSIONAL atribuído ao agendamento.',
+    description:
+      'Acesso negado — somente PROFESSIONAL atribuído ao agendamento.',
   })
   @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
   async updateAppointmentStatus(
@@ -220,8 +279,7 @@ export class AppointmentsController {
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({
     status: 403,
-    description:
-      'Acesso negado — somente PATIENT dono do agendamento.',
+    description: 'Acesso negado — somente PATIENT dono do agendamento.',
   })
   @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
   async cancelAppointment(
