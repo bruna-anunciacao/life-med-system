@@ -6,9 +6,14 @@ import {
   ApiResponse,
   ApiQuery,
   ApiBody,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles-auth.guard';
+import { Roles } from './decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
@@ -60,9 +65,15 @@ export class AuthController {
 
   @Post('register/admin')
   @Throttle({ short: { ttl: 60000, limit: 5 } })
-  @ApiOperation({ summary: 'Cadastrar administrador', description: 'Cria uma conta com perfil de administrador do sistema.' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Cadastrar administrador', description: 'Cria uma conta com perfil de administrador do sistema. Requer autenticação e role ADMIN.' })
   @ApiBody({ type: RegisterAdminDto })
   @ApiResponse({ status: 201, description: 'Administrador cadastrado com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente ADMIN.' })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   async registerAdmin(@Body() dto: RegisterAdminDto) {

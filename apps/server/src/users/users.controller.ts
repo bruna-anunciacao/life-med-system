@@ -24,6 +24,7 @@ import { VerifyUserDto } from './dto/verify-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { RolesGuard } from '../auth/guards/roles-auth.guard';
+import { ResourceOwnershipGuard } from './guards/resource-ownership.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
@@ -36,7 +37,7 @@ import { UserRole } from '@prisma/client';
 @UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
   @UseGuards(EmailVerifiedGuard)
@@ -89,10 +90,12 @@ export class UsersController {
   }
 
   @Get('patients')
-  @UseGuards(EmailVerifiedGuard)
-  @ApiOperation({ summary: 'Listar todos os pacientes' })
+  @UseGuards(EmailVerifiedGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({summary: 'Listar todos os pacientes (Admin)',description:'Somente administradores podem listar todos os pacientes do sistema.' })
   @ApiResponse({ status: 200, description: 'Lista de pacientes.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente ADMIN.' })
   listPatients() {
     return this.usersService.findAllPatients();
   }
@@ -111,21 +114,24 @@ export class UsersController {
   }
 
   @Patch(':id')
-  @UseGuards(EmailVerifiedGuard)
+  @UseGuards(EmailVerifiedGuard, ResourceOwnershipGuard)
   @ApiOperation({ summary: 'Atualizar dados de um usuário por ID' })
   @ApiParam({ name: 'id', description: 'ID do usuário (UUID)' })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: 'Usuário atualizado com sucesso.' })
+  @ApiResponse({status: 403, description: 'Acesso negado — somente o próprio usuário ou ADMIN pode editar.' })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   updateUserStatus(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
   }
 
   @Get(':id')
-  @UseGuards(EmailVerifiedGuard)
+  @UseGuards(EmailVerifiedGuard, ResourceOwnershipGuard)
   @ApiOperation({ summary: 'Buscar usuário por ID' })
   @ApiParam({ name: 'id', description: 'ID do usuário (UUID)' })
   @ApiResponse({ status: 200, description: 'Dados do usuário.' })
+  @ApiResponse({status: 401,description: 'Não autenticado ou email não verificado.' })
+  @ApiResponse({status: 403,description: 'Acesso negado — somente o próprio usuário ou ADMIN pode visualizar.'})
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   getUserbyId(@Param('id') id: string) {
     return this.usersService.findOne(id);
