@@ -22,7 +22,7 @@ async function main() {
   const hashedPassword = bcryptjs.hashSync(passwordText, 10);
 
   // ─────────────────────────────────────────
-  // 1. ESPECIALIDADES MÉDICAS 
+  // 1. ESPECIALIDADES MÉDICAS
   // ─────────────────────────────────────────
   console.log('⏳ Criando Especialidades...');
   const specialitiesList = [
@@ -45,7 +45,7 @@ async function main() {
     });
     specialitiesData.push(specialty);
   }
-  console.log(`✅ ${specialitiesData.length} Especialidades criadas/atualizadas.`);
+  console.log(`  ${specialitiesData.length} Especialidades criadas/atualizadas.`);
 
   // ─────────────────────────────────────────
   // 2. ADMIN 
@@ -66,7 +66,7 @@ async function main() {
       emailVerified: true,
     },
   });
-  console.log('✅ Admin criado/atualizado.');
+  console.log('  Admin criado/atualizado.');
 
   // ─────────────────────────────────────────
   // 3. PROFISSIONAIS 
@@ -147,7 +147,7 @@ async function main() {
       });
     }
   }
-  console.log(`✅ ${professionals.length} Profissionais e Disponibilidades criados.`);
+  console.log(`  ${professionals.length} Profissionais e Disponibilidades criados.`);
 
   // ─────────────────────────────────────────
   // 4. PACIENTES 
@@ -185,17 +185,43 @@ async function main() {
             dateOfBirth: new Date('1990-01-01'),
             gender: 'Masculino',
             address: 'Rua Principal, 123, Bairro Centro'
-          }
-        }
+          },
+        },
       },
       include: { patientProfile: true },
     });
     patients.push(patientUser);
   }
-  console.log(`✅ ${patients.length} Pacientes criados.`);
+  console.log(`  ${patients.length} Pacientes criados.`);
+
+   // ─────────────────────────────────────────
+  // 5. GESTORES 
+  // ─────────────────────────────────────────
+  console.log('⏳ Criando Gestor...');
+  const gestorUser = await prisma.user.upsert({
+    where: { email: 'gestor@lifemed.com' },
+    update: { password: hashedPassword },
+    create: {
+      email: 'gestor@lifemed.com',
+      cpf: '33333333301',
+      password: hashedPassword,
+      name: 'Gestor do Sistema',
+      role: UserRole.MANAGER,
+      status: UserStatus.VERIFIED,
+      emailVerified: true,
+      managerProfile: {
+        create: {
+          phone: '(11) 99999-1111',
+          bio: 'Gestor responsável pela administração do sistema.',
+        },
+      },
+    },
+    include: { managerProfile: true },
+  });
+  console.log('  Gestor criado/atualizado.');
 
   // ─────────────────────────────────────────
-  // 5. CONSULTAS 
+  // 6. CONSULTAS 
   // ─────────────────────────────────────────
   console.log('⏳ Criando Consultas (Appointments)...');
 
@@ -242,7 +268,7 @@ async function main() {
       update: {
         status,
         modality,
-        dateTime: getRelativeDate(daysDiff)
+        dateTime: getRelativeDate(daysDiff),
       },
       create: {
         id: appointmentId,
@@ -251,19 +277,22 @@ async function main() {
         status,
         modality,
         dateTime: getRelativeDate(daysDiff),
-        notes: status === AppointmentStatus.COMPLETED ? 'Consulta realizada com sucesso. Paciente bem e medicado.' : null
+        notes:
+          status === AppointmentStatus.COMPLETED
+            ? 'Consulta realizada com sucesso. Paciente bem e medicado.'
+            : null,
       }
     });
     appointmentsCreated++;
   }
 
-  console.log(`✅ ${appointmentsCreated} Consultas criadas.`);
+  console.log(`  ${appointmentsCreated} Consultas criadas.`);
   console.log('🎉 Seed finalizado com sucesso!');
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Erro no seed:', e);
+    console.error('  Erro no seed:', e);
     process.exit(1);
   })
   .finally(async () => {

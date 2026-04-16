@@ -24,9 +24,9 @@ export default function NewPatientPage() {
 
   const onSubmit = (data: NewPatientSchema) => {
     createPatient(data, {
-      onSuccess: () => {
+      onSuccess: (patient) => {
         toast.success('Paciente cadastrado com sucesso!');
-        router.push('/dashboard/manager/patients');
+        router.push(`/dashboard/manager/patients/${patient.id}/questionnaire`);
       },
       onError: (error: any) => {
         toast.error(error?.message || 'Erro ao cadastrar paciente');

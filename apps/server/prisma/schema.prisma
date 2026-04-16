@@ -41,6 +41,11 @@ enum AppointmentStatus {
   NO_SHOW
 }
 
+enum QuestionnaireAnsweredBy {
+  PATIENT
+  MANAGER
+}
+
 model User {
   id            String     @id @default(uuid())
   email         String     @unique
@@ -65,6 +70,7 @@ model User {
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
   sessions           Session[]
+  answeredQuestionnaires VulnerabilityQuestionnaire[]
 
   @@map("users")
 }
@@ -97,17 +103,34 @@ model Speciality {
 }
 
 model PatientProfile {
-  id          String    @id @default(uuid())
-  userId      String    @unique @map("user_id")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  phone       String?
-  dateOfBirth DateTime? @map("date_of_birth")
-  gender      String?
-  address     String?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id                     String                      @id @default(uuid())
+  userId                 String                      @unique @map("user_id")
+  user                   User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone                  String?
+  dateOfBirth            DateTime?                   @map("date_of_birth")
+  gender                 String?
+  address                String?
+  questionnaireCompleted Boolean                     @default(false) @map("questionnaire_completed")
+  questionnaire          VulnerabilityQuestionnaire?
+  createdAt              DateTime                    @default(now()) @map("created_at")
+  updatedAt              DateTime                    @updatedAt @map("updated_at")
 
   @@map("patient_profiles")
+}
+
+model VulnerabilityQuestionnaire {
+  id               String                  @id @default(uuid())
+  patientProfileId String                  @unique @map("patient_profile_id")
+  patientProfile   PatientProfile          @relation(fields: [patientProfileId], references: [id], onDelete: Cascade)
+  answeredBy       QuestionnaireAnsweredBy @map("answered_by")
+  answeredByUserId String                  @map("answered_by_user_id")
+  answeredByUser   User                    @relation(fields: [answeredByUserId], references: [id])
+  totalScore       Int                     @map("total_score")
+  isVulnerable     Boolean                 @default(false) @map("is_vulnerable")
+  responseDate     DateTime                @default(now()) @map("response_date")
+  responses        Json?
+
+  @@map("vulnerability_questionnaires")
 }
 
 model ManagerProfile {

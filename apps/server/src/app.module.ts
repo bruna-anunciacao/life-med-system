@@ -15,6 +15,7 @@ import { ReportsModule } from './reports/reports.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { ManagerModule } from './manager/manager.module';
 import { SpecialityModule } from './speciality/speciality.module';
+import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SpecialityModule } from './speciality/speciality.module';
     AppointmentsModule,
     ManagerModule,
     SpecialityModule,
+    QuestionnaireModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService, AdminSeederService],

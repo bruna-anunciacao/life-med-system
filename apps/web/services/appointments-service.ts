@@ -5,6 +5,7 @@ export interface CreateAppointmentPatientDto {
   professionalId: string;
   dateTime: string;
   notes?: string;
+  patientId?: string;
 }
 
 export interface CancelAppointmentDto {
@@ -62,6 +63,16 @@ export const appointmentsService = {
   async create(data: CreateAppointmentPatientDto) {
     try {
       const response = await api.post("/appointments", data);
+      return response.data as AppointmentResponse;
+    } catch (error) {
+      extractErrorMessage(error, "Erro ao agendar consulta.");
+    }
+  
+  },
+
+  async createForManager(data: CreateAppointmentPatientDto) {
+    try {
+      const response = await api.post("/appointments/manager", data);
       return response.data as AppointmentResponse;
     } catch (error) {
       extractErrorMessage(error, "Erro ao agendar consulta.");

@@ -1,26 +1,48 @@
-'use client';
+"use client";
 
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCreateAppointmentMutation } from '@/queries/useCreateAppointmentMutation';
-import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
-import { useProfessionalsQuery } from '@/queries/useProfessionalsQuery';
-import { useProfessionalAvailabilityQuery } from '@/queries/useProfessionalAvailabilityQuery';
-import { Autocomplete } from '@/components/ui/autocomplete';
-import { ProfessionalAvailabilityDisplay } from '@/components/ui/professional-availability-display';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react";
+import { Spinner } from "@/components/ui/spinner";
+import { usersService } from "../../../../../services/users-service";
+import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { SearchBar } from "../../../patient/search/components/SearchBar";
+import { DoctorCard } from "../../../patient/search/components/DoctorCard";
+import { EmptySearch } from "../../../patient/search/components/EmptySearch";
+import { ProfessionalData, SeeProfileModal } from "../../../patient/search/components/SeeProfileModal";
+import { BookingModal } from "../../../patient/search/components/BookingModal";
+import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
+import { Autocomplete } from "@/components/ui/autocomplete";
+import { Label } from "@/components/ui/label";
 import { newAppointmentSchema, type NewAppointmentSchema } from './new-appointment.validation';
 
-export default function NewAppointmentPage() {
-  const router = useRouter();
-  const { data: patients = [] } = useListPatientsQuery();
-  const { data: professionals = [] } = useProfessionalsQuery();
+type Professional = {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  professionalProfile?: {
+    id: string;
+    specialty: string;
+    professionalLicense: string;
+    modality?: string;
+    bio?: string;
+    photoUrl?: string;
+    address?: string;
+  };
+};
 
-  const {
+const NewApointmentPage = () => {
+  const isMobile = useIsMobile();
+  const { data: patients = [] } = useListPatientsQuery();
+  const [professionals, setProfessionals] = useState<Professional[]>([]);
+  const [search, setSearch] = useState("");
+  const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
+  const [selectedLocation, setSelectedLocation] = useState("Todas");
+  
+  
+    const {
     control,
     register,
     handleSubmit,
@@ -31,36 +53,64 @@ export default function NewAppointmentPage() {
     defaultValues: { patientId: '', professionalId: '', dateTime: '', notes: '' },
   });
 
-  const selectedProfessionalId = watch('professionalId');
+  const selectedPatientId = watch('patientId');
+  const [selectedProfessional, setSelectedProfessional] =
+    useState<Professional | null>(null);
+  const [bookingProfessional, setBookingProfessional] =
+    useState<Professional | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: professionalAvailability, isLoading: availabilityLoading } =
-    useProfessionalAvailabilityQuery(selectedProfessionalId || null);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const data = await usersService.getAllProfessionals();
+        setProfessionals(data);
+      } catch {
+        toast.error("Erro ao carregar profissionais.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
 
-  const { mutate: createAppointment, isPending } = useCreateAppointmentMutation();
+  const filtered = professionals
+    .filter((p) => p.status !== "PENDING" && p.status !== "BLOCKED")
+    .filter((p) => {
+      const term = search.toLowerCase();
+      const matchesSearch =
+        p.name.toLowerCase().includes(term) ||
+        (p.professionalProfile?.specialty || "").toLowerCase().includes(term);
 
-  const onSubmit = (data: NewAppointmentSchema) => {
-    createAppointment(data, {
-      onSuccess: () => {
-        toast.success('Consulta agendada com sucesso!');
-        router.push('/dashboard/manager/appointments');
-      },
-      onError: (error: any) => {
-        toast.error(error?.message || 'Erro ao agendar consulta');
-      },
+      const matchesSpecialty =
+        selectedSpecialty === "Todas" ||
+        (p.professionalProfile?.specialty || "")
+          .toLowerCase()
+          .includes(selectedSpecialty.toLowerCase());
+
+      const matchesLocation =
+        selectedLocation === "Todas" ||
+        (p.professionalProfile?.address || "")
+          .toLowerCase()
+          .includes(selectedLocation.toLowerCase());
+
+      return matchesSearch && matchesSpecialty && matchesLocation;
     });
-  };
 
   return (
-    <div className="py-12">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          Agendar Nova Consulta
-        </h1>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label htmlFor="patientId">Paciente *</Label>
+    <section
+      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
+    >
+      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
+        <div>
+          <h1
+            className={`my-10 font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
+          >
+            Agendamento de consulta
+          </h1>
+        <div className="space-y-2">
+              <Label htmlFor="patientId">Paciente</Label>
               <Controller
                 name="patientId"
                 control={control}
@@ -82,90 +132,58 @@ export default function NewAppointmentPage() {
                 <p className="text-xs text-red-500">{errors.patientId.message}</p>
               )}
             </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="professionalId">Profissional *</Label>
-              <Controller
-                name="professionalId"
-                control={control}
-                render={({ field }) => (
-                  <Autocomplete
-                    items={professionals.map((prof: any) => ({
-                      id: prof.id,
-                      email: prof.email,
-                      name: prof.name || prof.email,
-                      specialty: prof.professionalProfile?.specialty || 'Não informado',
-                      label: prof.name || prof.email,
-                    }))}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Buscar profissional..."
-                    displayKey="email"
-                    searchKeys={['email', 'name', 'specialty']}
-                  />
-                )}
-              />
-              {errors.professionalId && (
-                <p className="text-xs text-red-500">{errors.professionalId.message}</p>
-              )}
-            </div>
-
-            {selectedProfessionalId && (
-              <div className="md:col-span-2">
-                <ProfessionalAvailabilityDisplay
-                  availability={professionalAvailability?.availability || []}
-                  isLoading={availabilityLoading}
-                  className="mb-0"
-                />
-              </div>
-            )}
-
-            <div className="md:col-span-2 space-y-1">
-              <Label htmlFor="dateTime">Data e Hora *</Label>
-              <Input
-                id="dateTime"
-                type="datetime-local"
-                {...register('dateTime')}
-              />
-              {errors.dateTime && (
-                <p className="text-xs text-red-500">{errors.dateTime.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="notes">Notas (opcional)</Label>
-            <textarea
-              id="notes"
-              placeholder="Informações relevantes sobre a consulta..."
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              {...register('notes')}
-            />
-            {errors.notes && (
-              <p className="text-xs text-red-500">{errors.notes.message}</p>
-            )}
-          </div>
-
-          <div className="flex gap-4">
-            <Button
-              type="submit"
-              disabled={isPending}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              {isPending ? 'Agendando...' : 'Agendar Consulta'}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => router.back()}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-          </div>
-        </form>
+        </div>
       </div>
-    </div>
+
+      <SearchBar
+        search={search}
+        selectedSpecialty={selectedSpecialty}
+        selectedLocation={selectedLocation}
+        resultsCount={filtered.length}
+        isLoading={isLoading}
+        onSearchChange={setSearch}
+        onSpecialtyChange={setSelectedSpecialty}
+        onLocationChange={setSelectedLocation}
+      />
+
+      {isLoading ? (
+        <div className="py-16 px-8 flex justify-center items-center">
+          <Spinner size="lg" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <EmptySearch />
+      ) : (
+        <div
+          className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"}`}
+        >
+          {filtered.map((prof) => (
+            <DoctorCard
+              key={prof.id}
+              professional={prof}
+              onViewProfile={() => setSelectedProfessional(prof)}
+              onBook={() => setBookingProfessional(prof)}
+            />
+          ))}
+        </div>
+      )}
+
+      <SeeProfileModal
+        isOpen={!!selectedProfessional}
+        onOpenChange={(open) => {
+          if (!open) setSelectedProfessional(null);
+        }}
+        professional={selectedProfessional as ProfessionalData}
+      />
+
+      <BookingModal
+        isOpen={!!bookingProfessional}
+        onOpenChange={(open) => {
+          if (!open) setBookingProfessional(null);
+        }}
+        pacienteId={selectedPatientId}
+        professional={bookingProfessional}/>
+    </section>
   );
-}
+};
+
+export default NewApointmentPage;

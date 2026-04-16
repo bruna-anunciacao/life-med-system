@@ -31,10 +31,12 @@ import { extname } from 'path';
 import { diskStorage } from 'multer';
 
 import { UserRole } from '@prisma/client';
+import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
+@UseGuards(QuestionnaireCompletionGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

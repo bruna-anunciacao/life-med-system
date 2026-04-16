@@ -51,7 +51,7 @@ export class AdminSeederService implements OnModuleInit {
           status: UserStatus.VERIFIED,
         },
       });
-      this.logger.log(`✅ Usuário Admin criado com sucesso: ${adminEmail}`);
+      this.logger.log(`  Usuário Admin criado com sucesso: ${adminEmail}`);
     } catch (error) {
       this.logger.error('Erro ao criar usuário admin:', error);
     }

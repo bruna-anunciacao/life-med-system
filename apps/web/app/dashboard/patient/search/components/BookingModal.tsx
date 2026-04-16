@@ -26,6 +26,7 @@ interface BookingModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  pacienteId?: string;
   professional: {
     id: string;
     name: string;
@@ -40,6 +41,7 @@ export function BookingModal({
   isOpen,
   onOpenChange,
   onSuccess,
+  pacienteId,
   professional,
 }: BookingModalProps) {
   const isMobile = useIsMobile();
@@ -87,11 +89,21 @@ export function BookingModal({
 
     setIsSubmitting(true);
     try {
-      await appointmentsService.create({
-        professionalId: professional.id,
-        dateTime,
-        notes: notes || undefined,
-      });
+      if (pacienteId) {
+        await appointmentsService.createForManager({
+          patientId: pacienteId,
+          professionalId: professional.id,
+          dateTime,
+          notes: notes || undefined,
+        });
+      } else {
+        await appointmentsService.create({
+          professionalId: professional.id,
+          dateTime,
+          notes: notes || undefined,
+        });
+      }
+
       toast.success("Consulta agendada com sucesso!");
 
       if (onSuccess) {
