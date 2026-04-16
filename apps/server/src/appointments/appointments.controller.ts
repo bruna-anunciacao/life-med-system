@@ -36,7 +36,6 @@ import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
 import { ProfessionalRoleGuard } from '../professional/guards/professional-role.guard';
 import { AppointmentPatientOwnerGuard } from './guards/appointment-patient-owner.guard';
 import { AppointmentProfessionalGuard } from './guards/appointment-professional.guard';
-import { AppointmentOwnerGuard } from './guards/appointment-owner.guard';
 import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Appointments')
@@ -81,11 +80,10 @@ export class AppointmentsController {
     );
   }
   @Post('manager')
-  @UseGuards(AuthGuard('jwt') )
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({
     summary: 'Agendar consulta pelo pelo gestor',
-    description:
-      'Cria um novo agendamento de consulta. Requer autenticação.',
+    description: 'Cria um novo agendamento de consulta. Requer autenticação.',
   })
   @ApiBody({ type: CreateAppointmentPatientDto })
   @ApiResponse({
@@ -216,11 +214,15 @@ export class AppointmentsController {
     description: 'Status atualizado.',
     type: AppointmentResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Agendamento cancelado ou dados inválidos.' })
+  @ApiResponse({
+    status: 400,
+    description: 'Agendamento cancelado ou dados inválidos.',
+  })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({
     status: 403,
-    description: 'Acesso negado — somente PROFESSIONAL atribuído ao agendamento.',
+    description:
+      'Acesso negado — somente PROFESSIONAL atribuído ao agendamento.',
   })
   @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
   async updateAppointmentStatus(
@@ -256,8 +258,7 @@ export class AppointmentsController {
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({
     status: 403,
-    description:
-      'Acesso negado — somente PATIENT dono do agendamento.',
+    description: 'Acesso negado — somente PATIENT dono do agendamento.',
   })
   @ApiResponse({ status: 404, description: 'Agendamento não encontrado.' })
   async cancelAppointment(
