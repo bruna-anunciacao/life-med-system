@@ -8,7 +8,7 @@ import { CreatePatientDto } from '../patients/dto/create-patient.dto';
 import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { PatientsService } from '../patients/patients.service';
-import { UserRole } from '@prisma/client';
+import { UserRole, UserStatus } from '@prisma/client';
 
 @Injectable()
 export class ManagerService {

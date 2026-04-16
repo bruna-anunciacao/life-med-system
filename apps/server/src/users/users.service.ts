@@ -4,10 +4,6 @@ import { MailService } from 'src/mail/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 import { UserRole, UserStatus } from '@prisma/client';
-import { connect } from 'http2';
-import { set } from 'zod';
-import { UUID } from 'crypto';
-
 @Injectable()
 export class UsersService {
   constructor(
@@ -22,7 +18,11 @@ export class UsersService {
         password: true,
       },
       include: {
-        patientProfile: true,
+        patientProfile: {
+          include: {
+            questionnaire: true,
+          },
+        },
         professionalProfile: {
           include: {
             specialities: true
@@ -40,7 +40,11 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        patientProfile: true,
+        patientProfile: {
+          include: {
+            questionnaire: true,
+          },
+        },
         professionalProfile: {
           include: {
             specialities: true
@@ -206,7 +210,11 @@ export class UsersService {
         name: true,
         email: true,
         status: true,
-        patientProfile: true,
+        patientProfile: {
+          include: {
+            questionnaire: true,
+          },
+        },
       },
     });
   }

@@ -49,9 +49,16 @@ export class AuthController {
 
   @Post('register/professional')
   @Throttle({ short: { ttl: 60000, limit: 5 } })
-  @ApiOperation({ summary: 'Cadastrar profissional de saúde', description: 'Cria uma conta de profissional pendente de aprovação pelo admin.' })
+  @ApiOperation({
+    summary: 'Cadastrar profissional de saúde',
+    description:
+      'Cria uma conta de profissional pendente de aprovação pelo admin.',
+  })
   @ApiBody({ type: RegisterProfessionalDto })
-  @ApiResponse({ status: 201, description: 'Profissional cadastrado. Aguardando aprovação do administrador.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Profissional cadastrado. Aguardando aprovação do administrador.',
+  })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   async registerProfessional(@Body() dto: RegisterProfessionalDto) {
@@ -60,9 +67,15 @@ export class AuthController {
 
   @Post('register/admin')
   @Throttle({ short: { ttl: 60000, limit: 5 } })
-  @ApiOperation({ summary: 'Cadastrar administrador', description: 'Cria uma conta com perfil de administrador do sistema.' })
+  @ApiOperation({
+    summary: 'Cadastrar administrador', 
+    description: 'Cria uma conta com perfil de administrador do sistema.',
+  })
   @ApiBody({ type: RegisterAdminDto })
-  @ApiResponse({ status: 201, description: 'Administrador cadastrado com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Administrador cadastrado com sucesso.',
+  })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   async registerAdmin(@Body() dto: RegisterAdminDto) {

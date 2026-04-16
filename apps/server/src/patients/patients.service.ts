@@ -236,7 +236,13 @@ export class PatientsService {
   async listPatients() {
     return this.prisma.user.findMany({
       where: { role: UserRoleEnum.PATIENT },
-      include: { patientProfile: true },
+      include: {
+        patientProfile: {
+          include: {
+            questionnaire: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -244,7 +250,13 @@ export class PatientsService {
   async getPatient(patientId: string) {
     const patient = await this.prisma.user.findUnique({
       where: { id: patientId },
-      include: { patientProfile: true },
+      include: {
+        patientProfile: {
+          include: {
+            questionnaire: true,
+          },
+        },
+      },
     });
 
     if (!patient || patient.role !== UserRole.PATIENT) {
@@ -266,6 +278,7 @@ export class PatientsService {
       gender: patient.patientProfile?.gender,
       address: patient.patientProfile?.address,
       patientProfile: patient.patientProfile,
+      questionnaire: patient.patientProfile?.questionnaire ?? null,
     };
   }
 }

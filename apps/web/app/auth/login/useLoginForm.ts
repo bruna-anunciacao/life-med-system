@@ -10,6 +10,7 @@ const DASHBOARD_ROUTES: Record<string, string> = {
   PROFESSIONAL: "/dashboard/professional",
   PATIENT: "/dashboard/patient",
   ADMIN: "/dashboard/admin",
+  MANAGER: "/dashboard/manager",
 };
 
 export function useLoginForm() {
