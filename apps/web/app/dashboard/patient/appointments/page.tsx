@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
@@ -12,10 +12,9 @@ import { AppointmentTabs } from "./components/AppointmentTabs";
 import { AppointmentCard } from "./components/AppointmentCard";
 import { EmptyAppointments } from "./components/EmptyAppointments";
 import { patientsService } from "@/services/patients-service";
-import {
-  appointmentsService,
-  AppointmentResponse,
-} from "@/services/appointments-service";
+import { AppointmentResponse } from "@/services/appointments-service";
+import { useMyAppointmentsQuery } from "@/queries/useMyAppointmentsQuery";
+import { useCancelAppointmentMutation } from "@/queries/useCancelAppointmentMutation";
 
 function mapApiToAppointment(appt: AppointmentResponse): Appointment {
   return {
@@ -47,52 +46,32 @@ const AppointmentsPage = () => {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setIsLoading(true);
-        const result = await appointmentsService.listMyAppointments({
-          limit: 100,
-        });
-        if (result) {
-          setAppointments(result.data.map(mapApiToAppointment));
-        }
-      } catch (error) {
-        const msg =
-          error instanceof Error
-            ? error.message
-            : "Erro ao carregar consultas.";
-        toast.error(msg);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const { data, isLoading } = useMyAppointmentsQuery({ limit: 100 });
+  const cancelMutation = useCancelAppointmentMutation();
 
-  const handleCancel = async (id: string) => {
+  const appointments = useMemo(
+    () => (data?.data ?? []).map(mapApiToAppointment),
+    [data],
+  );
+
+  const handleCancel = (id: string) => {
     const confirmed = window.confirm(
       "Tem certeza que deseja cancelar esta consulta?",
     );
     if (!confirmed) return;
 
-    try {
-      await appointmentsService.cancel(id);
-      setAppointments((prev) =>
-        prev.map((a) =>
-          a.id === id ? { ...a, status: "CANCELLED" as const } : a,
-        ),
-      );
-      toast.success("Consulta cancelada com sucesso.");
-    } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : "Erro ao cancelar consulta.";
-      toast.error(msg);
-    }
+    cancelMutation.mutate(
+      { id },
+      {
+        onSuccess: () => toast.success("Consulta cancelada com sucesso."),
+        onError: (error) =>
+          toast.error(
+            error instanceof Error ? error.message : "Erro ao cancelar consulta.",
+          ),
+      },
+    );
   };
 
   const filtered = getFilteredAppointments(appointments, activeTab).sort(

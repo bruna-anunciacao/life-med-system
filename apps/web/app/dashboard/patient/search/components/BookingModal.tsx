@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   appointmentsService,
   AppointmentSlot,
@@ -45,6 +46,7 @@ export function BookingModal({
   professional,
 }: BookingModalProps) {
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [notes, setNotes] = useState("");
@@ -103,6 +105,9 @@ export function BookingModal({
           notes: notes || undefined,
         });
       }
+
+      void queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+      void queryClient.invalidateQueries({ queryKey: ["appointments"] });
 
       toast.success("Consulta agendada com sucesso!");
 
