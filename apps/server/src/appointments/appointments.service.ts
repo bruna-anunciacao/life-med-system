@@ -283,7 +283,7 @@ export class AppointmentsService {
       );
     }
 
-    const cancelNote = dto.reason ? `[CANCELADO] ${dto.reason}` : '[CANCELADO]';
+    const cancelNote = dto.reason ? `${dto.reason}` : '[CANCELADO]';
 
     const updatedNotes = appointment.notes
       ? `${appointment.notes}\n${cancelNote}`

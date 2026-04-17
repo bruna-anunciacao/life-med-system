@@ -12,6 +12,7 @@ import { AppointmentTabs } from "./components/AppointmentTabs";
 import { AppointmentCard } from "./components/AppointmentCard";
 import { EmptyAppointments } from "./components/EmptyAppointments";
 import { patientsService } from "@/services/patients-service";
+import { CancelConfirmDialog } from "./components/CancelConfirmDialog";
 import {
   appointmentsService,
   AppointmentResponse,
@@ -50,6 +51,11 @@ const AppointmentsPage = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(
+    null,
+  );
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -74,24 +80,33 @@ const AppointmentsPage = () => {
     load();
   }, []);
 
-  const handleCancel = async (id: string) => {
-    const confirmed = window.confirm(
-      "Tem certeza que deseja cancelar esta consulta?",
-    );
-    if (!confirmed) return;
+  const handleCancelClick = (id: string) => {
+    setAppointmentToCancel(id);
+    setIsCancelModalOpen(true);
+  };
+
+  const confirmCancel = async (reason?: string) => {
+    if (!appointmentToCancel) return;
 
     try {
-      await appointmentsService.cancel(id);
+      setIsCancelling(true);
+      await appointmentsService.cancel(appointmentToCancel, { reason });
       setAppointments((prev) =>
         prev.map((a) =>
-          a.id === id ? { ...a, status: "CANCELLED" as const } : a,
+          a.id === appointmentToCancel
+            ? { ...a, status: "CANCELLED" as const }
+            : a,
         ),
       );
       toast.success("Consulta cancelada com sucesso.");
+      setIsCancelModalOpen(false);
     } catch (error) {
       const msg =
         error instanceof Error ? error.message : "Erro ao cancelar consulta.";
       toast.error(msg);
+    } finally {
+      setIsCancelling(false);
+      setAppointmentToCancel(null);
     }
   };
 
@@ -201,7 +216,7 @@ const AppointmentsPage = () => {
             <AppointmentCard
               key={appt.id}
               appointment={appt}
-              onCancel={handleCancel}
+              onCancel={handleCancelClick}
               onRebook={() => router.push("/dashboard/patient/search")}
               isMobile={isMobile}
             />
@@ -221,6 +236,12 @@ const AppointmentsPage = () => {
           </Button>
         </div>
       )}
+      <CancelConfirmDialog
+        open={isCancelModalOpen}
+        onOpenChange={setIsCancelModalOpen}
+        onConfirm={confirmCancel}
+        isLoading={isCancelling}
+      />
     </section>
   );
 };
