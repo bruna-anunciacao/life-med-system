@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { MoreVerticalIcon } from "../../../../utils/icons";
+import { ConfirmModal } from "./ConfirmModal";
 
 type Appointment = {
   id: string;
@@ -43,7 +45,7 @@ const CARD_STATUS_CLASS: Record<string, string> = {
 type AppointmentCardProps = {
   appointment: Appointment;
   slot: string;
-  onStatusChange: (id: string, newStatus: string) => void;
+  onStatusChange: (id: string, newStatus: string, notes?: string) => void;
 };
 
 export function AppointmentCard({
@@ -51,80 +53,147 @@ export function AppointmentCard({
   slot,
   onStatusChange,
 }: AppointmentCardProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<string>("");
+
   const initials = appointment.patient.name.charAt(0).toUpperCase();
   const statusKey = appointment.status.toLowerCase();
 
+  const handleOpenModal = (status: string) => {
+    setPendingStatus(status);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirm = (notes?: string) => {
+    onStatusChange(appointment.id, pendingStatus, notes);
+    setIsModalOpen(false);
+  };
+
   return (
-    <Card
-      className={`h-full flex flex-col justify-center rounded-xl shadow-sm border border-gray-100 transition-all duration-200 overflow-hidden hover:translate-x-1 hover:shadow-md ${CARD_STATUS_CLASS[statusKey] ?? ""}`}
-    >
-      <CardContent className="flex flex-row items-center gap-4 p-4">
-        <div className="flex items-center justify-center min-w-[48px]">
-          <span className="font-bold text-[15px] text-[#0f172a]">{slot}</span>
-        </div>
-
-        <Separator orientation="vertical" className="h-10 bg-gray-200" />
-
-        <div className="flex items-center gap-3 flex-1">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-[15px] text-gray-500 bg-white border border-gray-200 shadow-sm shrink-0">
-            {initials}
+    <>
+      <Card
+        className={`h-full flex flex-col justify-center rounded-xl shadow-sm border border-gray-100 transition-all duration-200 overflow-hidden hover:translate-x-1 hover:shadow-md ${CARD_STATUS_CLASS[statusKey] ?? ""}`}
+      >
+        <CardContent className="flex flex-row items-center gap-4 p-4">
+          <div className="flex items-center justify-center min-w-12">
+            <span className="font-bold text-[15px] text-[#0f172a]">{slot}</span>
           </div>
-          <div className="flex flex-col items-start gap-1">
-            <p className="font-semibold text-[15px] text-[#0f172a] leading-none">
-              {appointment.patient.name}
-            </p>
-            <Badge
-              className={`px-2 py-0.5 rounded-md text-[11px] font-medium border-none shadow-none ${STATUS_CLASS[appointment.status] ?? "bg-gray-100 text-gray-700"}`}
-            >
-              {STATUS_TEXT[appointment.status] ?? appointment.status}
-            </Badge>
-          </div>
-        </div>
-
-        {appointment.status !== "CANCELLED" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center justify-center h-8 w-8 rounded-lg bg-gray-50 text-gray-400 border border-transparent hover:border-gray-200 hover:bg-white hover:text-gray-600 transition-all shadow-sm shrink-0">
-              <MoreVerticalIcon className="w-4 h-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="p-1 rounded-lg bg-white text-gray-700 shadow-md border-gray-100"
-            >
-              {appointment.status === "PENDING" ? (
-                <>
-                  <DropdownMenuItem
-                    className="cursor-pointer rounded-md focus:bg-gray-50"
-                    onClick={() => onStatusChange(appointment.id, "CONFIRMED")}
-                  >
-                    Confirmar
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="cursor-pointer rounded-md focus:bg-red-50 focus:text-red-600 text-red-600"
-                    onClick={() => onStatusChange(appointment.id, "CANCELLED")}
-                  >
-                    Cancelar
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <>
-                  <DropdownMenuItem
-                    className="cursor-pointer rounded-md focus:bg-gray-50"
-                    onClick={() => onStatusChange(appointment.id, "COMPLETED")}
-                  >
-                    Realizado
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="cursor-pointer rounded-md focus:bg-gray-50"
-                    onClick={() => onStatusChange(appointment.id, "NO_SHOW")}
-                  >
-                    Não Compareceu
-                  </DropdownMenuItem>
-                </>
+          <Separator
+            orientation="vertical"
+            className="w-px bg-gray-200 self-stretch min-h-10 h-auto"
+          />
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-[15px] text-gray-500 bg-white border border-gray-200 shadow-sm shrink-0">
+              {initials}
+            </div>
+            <div className="flex flex-col items-start gap-1">
+              <p className="font-semibold text-[15px] text-[#0f172a] leading-none">
+                {appointment.patient.name}
+              </p>
+              <Badge
+                className={`px-2 py-0.5 rounded-md text-[11px] font-medium border-none shadow-none w-fit ${STATUS_CLASS[appointment.status] ?? "bg-gray-100 text-gray-700"}`}
+              >
+                {STATUS_TEXT[appointment.status] ?? appointment.status}
+              </Badge>
+              {appointment.notes && (
+                <p className="text-xs italic text-gray-400 border-t border-gray-100 pt-2">
+                  Obs:{" "}
+                  {appointment.notes}
+                </p>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </CardContent>
-    </Card>
+            </div>
+          </div>
+          {appointment.status !== "CANCELLED" && (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center justify-center h-8 w-8 rounded-lg bg-gray-50 text-gray-400 border border-transparent hover:border-gray-200 hover:bg-white hover:text-gray-600 transition-all shadow-sm shrink-0">
+                <MoreVerticalIcon className="w-4 h-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="p-1 rounded-lg bg-white text-gray-700 shadow-md border-gray-100"
+              >
+                {appointment.status === "PENDING" && (
+                  <>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-gray-50"
+                      onClick={() => handleOpenModal("CONFIRMED")}
+                    >
+                      Confirmar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-red-50 focus:text-red-600 text-red-600"
+                      onClick={() => handleOpenModal("CANCELLED")}
+                    >
+                      Cancelar
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {appointment.status === "CONFIRMED" && (
+                  <>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-gray-50"
+                      onClick={() => handleOpenModal("COMPLETED")}
+                    >
+                      Realizado
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-gray-50"
+                      onClick={() => handleOpenModal("NO_SHOW")}
+                    >
+                      Não Compareceu
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-red-50 focus:text-red-600 text-red-600"
+                      onClick={() => handleOpenModal("CANCELLED")}
+                    >
+                      Cancelar
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {appointment.status === "COMPLETED" && (
+                  <>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-gray-50"
+                      onClick={() => handleOpenModal("NO_SHOW")}
+                    >
+                      Não Compareceu
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-red-50 focus:text-red-600 text-red-600"
+                      onClick={() => handleOpenModal("CANCELLED")}
+                    >
+                      Cancelar
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {appointment.status === "NO_SHOW" && (
+                  <>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-gray-50"
+                      onClick={() => handleOpenModal("COMPLETED")}
+                    >
+                      Realizado
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-red-50 focus:text-red-600 text-red-600"
+                      onClick={() => handleOpenModal("CANCELLED")}
+                    >
+                      Cancelar
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </CardContent>
+      </Card>
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onOpenChange={setIsModalOpen}
+        pendingStatus={pendingStatus}
+        onConfirm={handleConfirm}
+      />
+    </>
   );
 }

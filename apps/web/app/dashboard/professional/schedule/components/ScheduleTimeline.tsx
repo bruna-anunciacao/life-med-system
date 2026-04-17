@@ -14,7 +14,7 @@ type ScheduleTimelineProps = {
   isAvailableToday: boolean;
   timeSlots: string[];
   getAppointmentForSlot: (slot: string) => Appointment | undefined;
-  onStatusChange: (id: string, newStatus: string) => void;
+  onStatusChange: (id: string, newStatus: string, notes?: string) => void;
 };
 
 export function ScheduleTimeline({

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AppointmentStatus } from '@prisma/client';
-import { IsIn } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 export const PROFESSIONAL_SETTABLE_APPOINTMENT_STATUSES = [
   AppointmentStatus.PENDING,
@@ -24,4 +24,9 @@ export class UpdateAppointmentStatusDto {
     message: 'Status inválido para atualização pelo profissional',
   })
   status!: ProfessionalSettableAppointmentStatus;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

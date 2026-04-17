@@ -360,7 +360,10 @@ export class AppointmentsService {
 
     const updated = await this.prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: dto.status },
+      data: {
+        status: dto.status,
+        notes: dto.notes,
+      },
       include: {
         patient: true,
         professional: true,

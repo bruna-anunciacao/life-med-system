@@ -108,12 +108,13 @@ export const appointmentsService = {
     }
   },
 
-  async updateStatus(appointmentId: string, status: string) {
+  async updateStatus(appointmentId: string, status: string, notes?: string) {
     try {
       const response = await api.patch(
         `/appointments/${appointmentId}/status`,
         {
           status,
+          notes,
         },
       );
       return response.data as AppointmentResponse;

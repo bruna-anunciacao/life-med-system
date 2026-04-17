@@ -78,13 +78,17 @@ const SchedulePage = () => {
       const aptDate = new Date(apt.dateTime);
       return (
         isSameDay(aptDate, selectedDate) &&
-        aptDate.getUTCHours().toString().padStart(2, "0") + ":00" === slotTime
+        aptDate.getHours().toString().padStart(2, "0") + ":00" === slotTime
       );
     });
   };
 
-  const handleStatusChange = (id: string, newStatus: string) => {
-    updateStatus({ id, status: newStatus });
+  const handleStatusChange = (
+    id: string,
+    newStatus: string,
+    notes?: string,
+  ) => {
+    updateStatus({ id, status: newStatus, notes });
   };
 
   return (
