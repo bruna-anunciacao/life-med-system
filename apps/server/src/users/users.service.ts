@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from 'src/mail/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 @Injectable()
 export class UsersService {
   constructor(
@@ -212,7 +212,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  async verifyUser(id: string, emailVerified: boolean) { // tirar do controller
+  async verifyUser(id: string, emailVerified: boolean) {
     const user = await this.prisma.user.findUnique({ where: { id } });
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
@@ -263,20 +263,5 @@ export class UsersService {
     });
   }
 
-  async findAllPatients() { //tirar do controller de users
-    return this.prisma.user.findMany({
-      where: { role: UserRole.PATIENT },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        status: true,
-        patientProfile: {
-          include: {
-            questionnaire: true,
-          },
-        },
-      },
-    });
-  }
 }
+

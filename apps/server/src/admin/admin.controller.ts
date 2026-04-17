@@ -1,18 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { AdminService } from './admin.service';
+import { Controller, Get, Body, Patch, Param, UseGuards } from '@nestjs/common';
 import { ApiResponse, ApiTags, ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { RolesGuard } from 'src/auth/guards/roles-auth.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { UsersService } from 'src/users/users.service';
+import { PatientsService } from 'src/patients/patients.service';
 import { VerifyUserDto } from 'src/users/dto/verify-user.dto';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
-import { AuthService } from 'src/auth/auth.service';
-import { RegisterManagerDto } from 'src/auth/dto/register-manager.dto';
-import { RegisterAdminDto } from 'src/auth/dto/register-admin-dto';
-
 
 
 @ApiTags('Admin')
@@ -20,7 +16,10 @@ import { RegisterAdminDto } from 'src/auth/dto/register-admin-dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminController {
-  constructor(private readonly adminService: AdminService, private readonly usersService: UsersService, private readonly authService: AuthService) { }
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly patientsService: PatientsService,
+  ) {}
 
   @Get('patients')
   @UseGuards(EmailVerifiedGuard)
@@ -29,7 +28,18 @@ export class AdminController {
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente ADMIN.' })
   listAllPatients() {
-    return this.usersService.findAllPatients();
+    return this.patientsService.listPatients();
+  }
+
+  @Get('professionals')
+  @UseGuards(EmailVerifiedGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @ApiOperation({ summary: 'Listar todos os profissionais de saúde (Admin/Manager)', description: 'Administradores e gestores podem listar os profissionais cadastrados no sistema.' })
+  @ApiResponse({ status: 200, description: 'Lista de profissionais.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente ADMIN ou MANAGER.' })
+  listAllProfessionals() {
+    return this.usersService.findAllProfessionals();
   }
 
   @Patch('verify/:id')
@@ -56,24 +66,4 @@ export class AdminController {
   ) {
     return this.usersService.updateUserAsAdmin(userIdToUpdate, dto);
   }
-
-  @Post('manager')
-  @ApiOperation({ summary: 'Criar um novo manager (Admin)', description: 'Somente administradores podem criar um novo manager.' })
-  @ApiBody({ type: RegisterManagerDto })
-  @ApiResponse({ status: 201, description: 'Manager criado com sucesso.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente ADMIN.' })
-  createManager(@Body() dto: RegisterManagerDto) {
-    return this.authService.registerManager(dto);
-  }
-
-  @Post('admin')
-  @ApiOperation({ summary: 'Criar um novo admin (Admin)', description: 'Somente administradores podem criar um novo admin.' })
-  @ApiBody({ type: RegisterAdminDto })
-  @ApiResponse({ status: 201, description: 'Admin criado com sucesso.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente ADMIN.' })
-  createAdmin(@Body() dto: RegisterAdminDto) {
-    return this.authService.registerAdmin(dto);
-  }
-
-
 }

@@ -20,16 +20,12 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { VerifyUserDto } from './dto/verify-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
-import { RolesGuard } from '../auth/guards/roles-auth.guard';
 import { ResourceOwnershipGuard } from './guards/resource-ownership.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
-import { UserRole } from '@prisma/client';
 import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Users')
@@ -79,16 +75,6 @@ export class UsersController {
     }
 
     return this.usersService.update(req.user.userId as string, dto);
-  }
-
-  @Get('professionals')
-  @UseGuards(EmailVerifiedGuard, RolesGuard)
-  @Roles(UserRole.MANAGER, UserRole.ADMIN)
-  @ApiOperation({ summary: 'Listar todos os profissionais de saúde' })
-  @ApiResponse({ status: 200, description: 'Lista de profissionais.' })
-  @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  listProfessionals() {
-    return this.usersService.findAllProfessionals();
   }
 
   @Patch(':id')

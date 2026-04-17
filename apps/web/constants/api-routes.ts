@@ -11,9 +11,12 @@ export const API_ROUTES = {
   },
   USERS: {
     ME: "/users/me",
-    PATIENTS: "/users/patients",
-    PROFESSIONALS: "/users/professionals",
-    VERIFY: (id: string) => `/users/${id}/verify`,
+  },
+  ADMIN: {
+    PATIENTS: "/admin/patients",
+    PROFESSIONALS: "/admin/professionals",
+    VERIFY: (id: string) => `/admin/verify/${id}`,
+    UPDATE_USER: (id: string) => `/admin/user/${id}`,
   },
   PATIENTS: {
     EXPORT_DONE_APPOINTMENTS: "/patients/export/done-appointments",

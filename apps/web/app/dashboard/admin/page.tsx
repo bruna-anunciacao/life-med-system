@@ -1,6 +1,6 @@
 "use client";
 
-import { usersService } from "../../../services/users-service";
+import { adminService } from "../../../services/admin-service";
 import { toast } from "sonner";
 import { UsersTable } from "./components/UsersTable";
 import { LoadingPage } from "@/components/shared/LoadingPage";
@@ -22,9 +22,9 @@ const AdminDashboard = () => {
     listType: "patient" | "professional",
   ) => {
     try {
-      await usersService.updateUserStatus(userId, newStatus);
+      await adminService.updateUser(userId, { status: newStatus });
       toast.success(`Status atualizado`);
-      queryClient.invalidateQueries({ queryKey: [listType === "patient" ? "patients" : "admin-professionals"] });
+      queryClient.invalidateQueries({ queryKey: [listType === "patient" ? "admin-patients" : "admin-professionals"] });
     } catch (error) {
       console.error(error);
       toast.error("Erro ao atualizar status");

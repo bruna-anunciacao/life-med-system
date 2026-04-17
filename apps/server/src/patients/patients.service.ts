@@ -14,7 +14,6 @@ import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
-import { UserRoleEnum } from '../auth/enums/user-role-enum';
 
 @Injectable()
 export class PatientsService {
@@ -149,7 +148,7 @@ export class PatientsService {
     return where;
   }
 
-  async createPatient(dto: CreatePatientDto) {
+  async createAssistedPatient(dto: CreatePatientDto) {
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -235,7 +234,7 @@ export class PatientsService {
   }
   async listPatients() {
     return this.prisma.user.findMany({
-      where: { role: UserRoleEnum.PATIENT },
+      where: { role: UserRole.PATIENT },
       include: {
         patientProfile: {
           include: {

@@ -31,7 +31,7 @@ interface BookingModalProps {
     id: string;
     name: string;
     professionalProfile?: {
-      specialty: string;
+      specialty?: string;
       price?: number | null;
     } | null;
   } | null;

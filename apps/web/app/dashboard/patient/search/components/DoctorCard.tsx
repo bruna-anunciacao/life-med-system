@@ -14,13 +14,13 @@ type Professional = {
   email: string;
   status: string;
   professionalProfile?: {
-    id: string;
-    specialty: string;
-    professionalLicense: string;
+    id?: string;
+    specialty?: string;
+    professionalLicense?: string;
     modality?: string;
     bio?: string;
     photoUrl?: string;
-  };
+  } | null;
 };
 
 const MODALITY_LABEL: Record<string, string> = {

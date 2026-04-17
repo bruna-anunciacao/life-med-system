@@ -4,8 +4,8 @@ export type Professional = {
   id: string;
   name: string;
   professionalProfile?: {
-    specialty: string;
-  };
+    specialty?: string;
+  } | null;
 };
 
 export type StatItem = {
