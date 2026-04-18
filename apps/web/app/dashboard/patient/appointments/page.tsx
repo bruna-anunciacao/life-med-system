@@ -47,6 +47,11 @@ const AppointmentsPage = () => {
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(
+    null,
+  );
+  const [isCancelling, setIsCancelling] = useState(false);
 
   const { data, isLoading } = useMyAppointmentsQuery({ limit: 100 });
   const cancelMutation = useCancelAppointmentMutation();
@@ -180,7 +185,7 @@ const AppointmentsPage = () => {
             <AppointmentCard
               key={appt.id}
               appointment={appt}
-              onCancel={handleCancel}
+              onCancel={handleCancelClick}
               onRebook={() => router.push("/dashboard/patient/search")}
               isMobile={isMobile}
             />
@@ -200,6 +205,12 @@ const AppointmentsPage = () => {
           </Button>
         </div>
       )}
+      <CancelConfirmDialog
+        open={isCancelModalOpen}
+        onOpenChange={setIsCancelModalOpen}
+        onConfirm={confirmCancel}
+        isLoading={isCancelling}
+      />
     </section>
   );
 };
