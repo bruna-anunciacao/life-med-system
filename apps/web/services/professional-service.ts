@@ -13,6 +13,27 @@ export interface UpdateSettingsPayload {
   }[];
 }
 
+export interface PatientProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  lastVisit: string;
+}
+
+export interface PatientDetail {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  history: {
+    id: string;
+    dateTime: string;
+    status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+    notes?: string;
+  }[];
+}
+
 export const professionalService = {
   async getSettings() {
     try {
@@ -36,6 +57,34 @@ export const professionalService = {
       if (error instanceof AxiosError && error.response) {
         throw new Error(
           error.response.data.message || "Erro ao buscar a agenda.",
+        );
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async getPatients(): Promise<PatientProfile[]> {
+    try {
+      const response = await api.get("/professional/patients");
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(
+          error.response.data.message || "Erro ao buscar pacientes.",
+        );
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async getPatientDetail(patientId: string): Promise<PatientDetail> {
+    try {
+      const response = await api.get(`/professional/patients/${patientId}`);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(
+          error.response.data.message || "Erro ao buscar detalhes do paciente.",
         );
       }
       throw new Error("Erro de conexão com o servidor.");
