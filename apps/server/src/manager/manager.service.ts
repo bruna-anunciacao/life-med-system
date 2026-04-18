@@ -4,34 +4,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePatientDto } from '../patients/dto/create-patient.dto';
-import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
-import { PatientsService } from '../patients/patients.service';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class ManagerService {
-  constructor(
-    private prisma: PrismaService,
-    private patientService: PatientsService,
-  ) { }
-
-  async createPatient(dto: CreatePatientDto) {
-    return this.patientService.createPatient(dto);
-  }
-
-  async updatePatient(patientId: string, dto: UpdatePatientDto) {
-    return this.patientService.updatePatient(patientId, dto);
-  }
-
-  async listPatients() {
-    return this.patientService.listPatients();
-  }
-
-  async getPatient(patientId: string) {
-    return this.patientService.getPatient(patientId);
-  }
+  constructor(private prisma: PrismaService) {}
 
   async createAppointment(dto: CreateAppointmentDto) {
     const patient = await this.prisma.user.findUnique({
@@ -67,6 +45,7 @@ export class ManagerService {
         'Profissional não tem disponibilidade neste horário',
       );
     }
+
     const appointment = await this.prisma.appointment.create({
       data: {
         patientId: dto.patientId,
@@ -100,9 +79,9 @@ export class ManagerService {
       include: {
         professionalProfile: {
           include: {
-            specialities: true
-          }
-        }
+            specialities: true,
+          },
+        },
       },
     });
 
@@ -123,7 +102,10 @@ export class ManagerService {
         id: professional.id,
         name: professional.name,
         email: professional.email,
-        specialty: professional.professionalProfile?.specialities?.map(s => s.name).join(', ') || '-',
+        specialty:
+          professional.professionalProfile?.specialities
+            ?.map((s) => s.name)
+            .join(', ') || '-',
       },
       availability: availability.map((a) => ({
         dayOfWeek: a.dayOfWeek,

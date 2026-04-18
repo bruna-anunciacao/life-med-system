@@ -8,13 +8,11 @@ import {
   ApiBody,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles-auth.guard';
 import { Roles } from './decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
 import { RegisterProfessionalDto } from './dto/register-profissional-dto';
@@ -28,7 +26,7 @@ import { ResendVerificationDto } from './dto/resend-verification.dto';
 @Controller('auth')
 @UseGuards(ThrottlerGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
@@ -89,7 +87,10 @@ export class AuthController {
 
   @Post('register/manager')
   @Throttle({ short: { ttl: 60000, limit: 5 } })
-  @ApiOperation({ summary: 'Cadastrar gestor', description: 'Cria uma conta com perfil de gestor do sistema.' })
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Cadastrar gestor', description: 'Cria uma conta com perfil de gestor do sistema. Requer autenticação e role ADMIN.' })
   @ApiBody({ type: RegisterManagerDto })
   @ApiResponse({ status: 201, description: 'Gestor cadastrado com sucesso.' })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })

@@ -157,7 +157,7 @@ export const managerService = {
 
   async listProfessionals() {
     try {
-      const response = await api.get("/professionals");
+      const response = await api.get("/admin/professionals");
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

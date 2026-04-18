@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { usersService } from "../../../../services/users-service";
+import { adminService } from "../../../../services/admin-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { SearchBar } from "./components/SearchBar";
@@ -17,14 +17,15 @@ type Professional = {
   email: string;
   status: string;
   professionalProfile?: {
-    id: string;
-    specialty: string;
-    professionalLicense: string;
+    id?: string;
+    specialty?: string;
+    professionalLicense?: string;
     modality?: string;
     bio?: string;
     photoUrl?: string;
     address?: string;
-  };
+    specialities?: { id: string; name: string }[];
+  } | null;
 };
 
 const SearchDoctorsPage = () => {
@@ -44,7 +45,7 @@ const SearchDoctorsPage = () => {
     const load = async () => {
       try {
         setIsLoading(true);
-        const data = await usersService.getAllProfessionals();
+        const data = await adminService.listProfessionals();
         setProfessionals(data);
       } catch {
         toast.error("Erro ao carregar profissionais.");
@@ -133,7 +134,7 @@ const SearchDoctorsPage = () => {
         onOpenChange={(open) => {
           if (!open) setSelectedProfessional(null);
         }}
-        professional={selectedProfessional as ProfessionalData}
+        professional={selectedProfessional as unknown as ProfessionalData}
       />
 
       <BookingModal
@@ -141,7 +142,7 @@ const SearchDoctorsPage = () => {
         onOpenChange={(open) => {
           if (!open) setBookingProfessional(null);
         }}
-        professional={bookingProfessional}
+        professional={bookingProfessional as unknown as Professional}
       />
     </section>
   );
