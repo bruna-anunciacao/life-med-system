@@ -19,6 +19,9 @@ import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -31,9 +34,6 @@ import { QuestionnaireModule } from './questionnaire/questionnaire.module';
     ProfessionalModule,
     PrismaModule,
     MailModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     PatientsModule,
     ReportsModule,
     AppointmentsModule,

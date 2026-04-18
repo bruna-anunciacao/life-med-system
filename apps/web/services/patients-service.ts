@@ -12,6 +12,13 @@ interface DefaultErrorPayload {
     statusCode: number;
 }
 
+const getTimestampedFilename = (base: string): string => {
+  const now = new Date();
+  const date = now.toLocaleDateString("pt-BR").replace(/\//g, "-");
+  const time = now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }).replace(":", "-");
+  return `${base}_${date}_${time}.pdf`;
+};
+
 const downloadBlob = (blob: Blob, filename: string) => {
   const blobUrl = window.URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -34,7 +41,7 @@ export const patientsService = {
         },
       );
 
-      downloadBlob(response.data, "relatorio-consultas-concluidas.pdf");
+      downloadBlob(response.data, getTimestampedFilename("relatorio-consultas-concluidas"));
     } catch (error) {
       throw new Error(
         (error as DefaultErrorPayload).message || "Erro ao baixar relatório de consultas realizadas.",
@@ -54,7 +61,7 @@ export const patientsService = {
         },
       );
 
-      downloadBlob(response.data, "relatorio-consultas-pendentes.pdf");
+      downloadBlob(response.data, getTimestampedFilename("relatorio-consultas-pendentes"));
     } catch (error) {
       throw new Error(
         (error as DefaultErrorPayload).message || "Erro ao baixar relatório de consultas pendentes.",
@@ -74,7 +81,7 @@ export const patientsService = {
         },
       );
 
-      downloadBlob(response.data, "relatorio-consultas-canceladas.pdf");
+      downloadBlob(response.data, getTimestampedFilename("relatorio-consultas-canceladas"));
     } catch (error) {
       throw new Error(
         (error as DefaultErrorPayload).message || "Erro ao baixar relatório de consultas canceladas.",

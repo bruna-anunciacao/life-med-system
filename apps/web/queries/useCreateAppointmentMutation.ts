@@ -11,7 +11,8 @@ export function useCreateAppointmentMutation() {
     mutationFn: (payload: CreateAppointmentPatientDto) =>
       appointmentsService.create(payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+      void queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+      void queryClient.invalidateQueries({ queryKey: ["appointments"] });
     },
   });
 }

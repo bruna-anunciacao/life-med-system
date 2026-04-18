@@ -3,6 +3,19 @@ import PDFDocument from 'pdfkit';
 import type PDFKit from 'pdfkit';
 import { AppointmentReportItemDto } from './dto/appointment-made.dto';
 
+const STATUS_LABELS: Record<string, string> = {
+  COMPLETED: 'Concluída',
+  PENDING: 'Pendente',
+  CANCELLED: 'Cancelada',
+  CONFIRMED: 'Confirmada',
+};
+
+const MODALITY_LABELS: Record<string, string> = {
+  VIRTUAL: 'Teleconsulta',
+  HOME_VISIT: 'Visita Domiciliar',
+  CLINIC: 'Presencial',
+};
+
 @Injectable()
 export class ReportsService {
   generateDoneAppointmentsPdf(
@@ -76,7 +89,7 @@ export class ReportsService {
     doc
       .fontSize(11)
       .font('Helvetica-Bold')
-      .text(`Status: ${status}`, { align: 'center' })
+      .text(`Status: ${STATUS_LABELS[status] ?? status}`, { align: 'center' })
       .moveDown(0.5);
 
     doc
@@ -215,7 +228,7 @@ export class ReportsService {
           },
         )
         .text(
-          appointment.modality || '-',
+          (appointment.modality && (MODALITY_LABELS[appointment.modality] ?? appointment.modality)) || '-',
           startX +
             colWidths.number +
             colWidths.date +
@@ -247,6 +260,15 @@ export class ReportsService {
       yPosition += 12;
     });
 
+    const downloadedAt = new Date().toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
+
     const pages = doc.bufferedPageRange();
     for (let pageIndex = 0; pageIndex < pages.count; pageIndex++) {
       doc.switchToPage(pageIndex);
@@ -254,7 +276,7 @@ export class ReportsService {
         .fontSize(8)
         .font('Helvetica')
         .text(
-          `Página ${pageIndex + 1} de ${pages.count}`,
+          `Baixado em: ${downloadedAt}   |   Página ${pageIndex + 1} de ${pages.count}`,
           0,
           doc.page.height - 30,
           {
