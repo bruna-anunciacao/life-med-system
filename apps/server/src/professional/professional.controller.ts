@@ -6,6 +6,7 @@ import {
   UseGuards,
   Req,
   Query,
+  Param,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -38,21 +39,40 @@ export class ProfessionalController {
 
   @Get('settings')
   @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
-  @ApiOperation({ summary: 'Obter configurações do profissional autenticado', description: 'Retorna modalidade, disponibilidade, preço e formas de pagamento.' })
+  @ApiOperation({
+    summary: 'Obter configurações do profissional autenticado',
+    description:
+      'Retorna modalidade, disponibilidade, preço e formas de pagamento.',
+  })
   @ApiResponse({ status: 200, description: 'Configurações do profissional.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente PROFESSIONAL.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado — somente PROFESSIONAL.',
+  })
   getSettings(@Req() req) {
     return this.professionalService.getSettings(req.user.id as string);
   }
 
   @Get('schedule')
   @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
-  @ApiOperation({ summary: 'Obter agenda diária do profissional', description: 'Retorna os agendamentos do dia informado para o profissional autenticado.' })
-  @ApiQuery({ name: 'date', required: true, example: '2024-06-15', description: 'Data no formato YYYY-MM-DD' })
+  @ApiOperation({
+    summary: 'Obter agenda diária do profissional',
+    description:
+      'Retorna os agendamentos do dia informado para o profissional autenticado.',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: true,
+    example: '2024-06-15',
+    description: 'Data no formato YYYY-MM-DD',
+  })
   @ApiResponse({ status: 200, description: 'Lista de agendamentos do dia.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente PROFESSIONAL.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado — somente PROFESSIONAL.',
+  })
   getDailySchedule(@Req() req, @Query('date') date: string) {
     return this.professionalService.getDailySchedule(
       req.user.id as string,
@@ -60,14 +80,60 @@ export class ProfessionalController {
     );
   }
 
+  @Get('patients')
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
+  @ApiOperation({
+    summary: 'Obter lista de pacientes do profissional',
+    description:
+      'Retorna todos os pacientes que já tiveram consulta com este profissional.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de pacientes com última visita.',
+  })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado — somente PROFESSIONAL.',
+  })
+  getPatients(@Req() req) {
+    return this.professionalService.getPatients(req.user.id as string);
+  }
+
+  @Get('patients/:id')
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
+  @ApiOperation({
+    summary: 'Obter detalhes de um paciente',
+    description:
+      'Retorna o perfil e o histórico de consultas de um paciente com o profissional.',
+  })
+  @ApiResponse({ status: 200, description: 'Detalhes e histórico.' })
+  @ApiResponse({ status: 404, description: 'Paciente não encontrado.' })
+  getPatientDetail(@Req() req, @Param('id') patientId: string) {
+    return this.professionalService.getPatientDetail(
+      req.user.id as string,
+      patientId,
+    );
+  }
+
   @Patch('settings')
   @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
-  @ApiOperation({ summary: 'Atualizar configurações do profissional', description: 'Atualiza modalidade, endereço, disponibilidade, preço e formas de pagamento.' })
+  @ApiOperation({
+    summary: 'Atualizar configurações do profissional',
+    description:
+      'Atualiza modalidade, endereço, disponibilidade, preço e formas de pagamento.',
+  })
   @ApiBody({ type: UpdateProfessionalSettingsDto })
-  @ApiResponse({ status: 200, description: 'Configurações atualizadas com sucesso.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Configurações atualizadas com sucesso.',
+  })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente PROFESSIONAL.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado — somente PROFESSIONAL.',
+  })
   updateSettings(@Req() req, @Body() dto: UpdateProfessionalSettingsDto) {
     return this.professionalService.updateSettings(req.user.id as string, dto);
   }
