@@ -50,7 +50,10 @@ export class QuestionnaireService {
           label: 'Qual é a renda mensal da família?',
           type: 'select',
           options: [
-            { value: FamilyIncomeBracket.ATE_1_SM, label: 'Até 1 salário mínimo' },
+            {
+              value: FamilyIncomeBracket.ATE_1_SM,
+              label: 'Até 1 salário mínimo',
+            },
             {
               value: FamilyIncomeBracket.ENTRE_1_E_2_SM,
               label: 'Entre 1 e 2 salários mínimos',
@@ -71,7 +74,10 @@ export class QuestionnaireService {
           type: 'select',
           options: [
             { value: DependentsBracket.ATE_2, label: 'Até 2 pessoas' },
-            { value: DependentsBracket.TRES_OU_MAIS, label: '3 ou mais pessoas' },
+            {
+              value: DependentsBracket.TRES_OU_MAIS,
+              label: '3 ou mais pessoas',
+            },
           ],
         },
         {
@@ -268,7 +274,11 @@ export class QuestionnaireService {
       },
     });
 
-    if (!patient || patient.role !== UserRole.PATIENT || !patient.patientProfile) {
+    if (
+      !patient ||
+      patient.role !== UserRole.PATIENT ||
+      !patient.patientProfile
+    ) {
       throw new NotFoundException('Paciente não encontrado.');
     }
 

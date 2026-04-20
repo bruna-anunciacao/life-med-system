@@ -25,7 +25,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly emailVerification: EmailVerificationService,
-  ) { }
+  ) {}
 
   async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({

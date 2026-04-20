@@ -35,7 +35,9 @@ export class QuestionnaireController {
 
   @Get('questionnaire/questions')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Listar definição do questionário de vulnerabilidade' })
+  @ApiOperation({
+    summary: 'Listar definição do questionário de vulnerabilidade',
+  })
   @ApiResponse({
     status: 200,
     type: QuestionnaireDefinitionResponseDto,
@@ -79,7 +81,9 @@ export class QuestionnaireController {
   @Put('manager/patients/:patientId/questionnaire')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MANAGER)
-  @ApiOperation({ summary: 'Gestor atualiza questionário existente de um paciente' })
+  @ApiOperation({
+    summary: 'Gestor atualiza questionário existente de um paciente',
+  })
   @ApiParam({ name: 'patientId', description: 'ID do usuário paciente' })
   @ApiResponse({
     status: 200,

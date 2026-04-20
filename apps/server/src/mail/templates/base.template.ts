@@ -6,7 +6,8 @@ export interface BaseEmailProps {
   variant?: 'default' | 'destructive';
 }
 
-const LOGO_URL = 'https://res.cloudinary.com/dpgdqv7hv/image/upload/f_auto,q_auto/logo-life-med-white_cgcvvw';
+const LOGO_URL =
+  'https://res.cloudinary.com/dpgdqv7hv/image/upload/f_auto,q_auto/logo-life-med-white_cgcvvw';
 
 export const createBaseEmailTemplate = (props: BaseEmailProps): string => {
   const { title, content, buttonText, buttonUrl, variant = 'default' } = props;
@@ -44,9 +45,14 @@ export const createBaseEmailTemplate = (props: BaseEmailProps): string => {
             <td style="padding:40px 40px 32px;background-color:#ffffff;">
               <div style="font-size:16px;color:#374151;line-height:1.7;">
                 ${content
-                  .replace(/<h2>/g, '<h2 style="margin:0 0 16px 0;font-size:20px;font-weight:600;color:#0a0a0a;">')
-                  .replace(/<p>/g, '<p style="margin:0 0 16px 0;font-size:16px;color:#374151;line-height:1.7;">')
-                }
+                  .replace(
+                    /<h2>/g,
+                    '<h2 style="margin:0 0 16px 0;font-size:20px;font-weight:600;color:#0a0a0a;">',
+                  )
+                  .replace(
+                    /<p>/g,
+                    '<p style="margin:0 0 16px 0;font-size:16px;color:#374151;line-height:1.7;">',
+                  )}
               </div>
               ${
                 buttonText && buttonUrl

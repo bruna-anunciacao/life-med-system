@@ -34,7 +34,7 @@ import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-com
 @UseGuards(QuestionnaireCompletionGuard)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
   @UseGuards(EmailVerifiedGuard)
@@ -59,7 +59,10 @@ export class UsersController {
       }),
     }),
   )
-  @ApiOperation({ summary: 'Atualizar perfil do usuário autenticado', description: 'Aceita multipart/form-data para envio de foto de perfil.' })
+  @ApiOperation({
+    summary: 'Atualizar perfil do usuário autenticado',
+    description: 'Aceita multipart/form-data para envio de foto de perfil.',
+  })
   @ApiConsumes('multipart/form-data', 'application/json')
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: 'Perfil atualizado com sucesso.' })
@@ -83,7 +86,11 @@ export class UsersController {
   @ApiParam({ name: 'id', description: 'ID do usuário (UUID)' })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: 'Usuário atualizado com sucesso.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente o próprio usuário ou ADMIN pode editar.' })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Acesso negado — somente o próprio usuário ou ADMIN pode editar.',
+  })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   updateUserStatus(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
@@ -94,8 +101,15 @@ export class UsersController {
   @ApiOperation({ summary: 'Buscar usuário por ID' })
   @ApiParam({ name: 'id', description: 'ID do usuário (UUID)' })
   @ApiResponse({ status: 200, description: 'Dados do usuário.' })
-  @ApiResponse({ status: 401, description: 'Não autenticado ou email não verificado.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente o próprio usuário ou ADMIN pode visualizar.' })
+  @ApiResponse({
+    status: 401,
+    description: 'Não autenticado ou email não verificado.',
+  })
+  @ApiResponse({
+    status: 403,
+    description:
+      'Acesso negado — somente o próprio usuário ou ADMIN pode visualizar.',
+  })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   getUserbyId(@Param('id') id: string) {
     return this.usersService.findOne(id);

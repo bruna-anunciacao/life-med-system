@@ -37,7 +37,11 @@ export class ManagerController {
   ) {}
 
   @Post('patients')
-  @ApiOperation({ summary: 'Cadastro Assistido — criar paciente via gestor', description: 'Cria um novo paciente no sistema com senha temporária e e-mail já verificado. Requer role MANAGER.' })
+  @ApiOperation({
+    summary: 'Cadastro Assistido — criar paciente via gestor',
+    description:
+      'Cria um novo paciente no sistema com senha temporária e e-mail já verificado. Requer role MANAGER.',
+  })
   @ApiBody({ type: CreatePatientDto })
   @ApiResponse({ status: 201, description: 'Paciente criado com sucesso.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
@@ -48,7 +52,11 @@ export class ManagerController {
   }
 
   @Patch('patients/:patientId')
-  @ApiOperation({ summary: 'Atualizar dados do paciente', description: 'Atualiza telefone, data de nascimento, gênero e endereço do paciente.' })
+  @ApiOperation({
+    summary: 'Atualizar dados do paciente',
+    description:
+      'Atualiza telefone, data de nascimento, gênero e endereço do paciente.',
+  })
   @ApiParam({ name: 'patientId', description: 'ID do paciente (UUID)' })
   @ApiBody({ type: UpdatePatientDto })
   @ApiResponse({ status: 200, description: 'Paciente atualizado com sucesso.' })
@@ -84,7 +92,11 @@ export class ManagerController {
   }
 
   @Post('appointments')
-  @ApiOperation({ summary: 'Agendar consulta', description: 'Cria uma nova consulta entre um paciente e um profissional de saúde.' })
+  @ApiOperation({
+    summary: 'Agendar consulta',
+    description:
+      'Cria uma nova consulta entre um paciente e um profissional de saúde.',
+  })
   @ApiBody({ type: CreateAppointmentDto })
   @ApiResponse({ status: 201, description: 'Consulta agendada com sucesso.' })
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
@@ -104,8 +116,14 @@ export class ManagerController {
   }
 
   @Get('professionals/:professionalId/availability')
-  @ApiOperation({ summary: 'Consultar disponibilidade do profissional', description: 'Retorna os horários disponíveis do profissional informado.' })
-  @ApiParam({ name: 'professionalId', description: 'ID do profissional (UUID)' })
+  @ApiOperation({
+    summary: 'Consultar disponibilidade do profissional',
+    description: 'Retorna os horários disponíveis do profissional informado.',
+  })
+  @ApiParam({
+    name: 'professionalId',
+    description: 'ID do profissional (UUID)',
+  })
   @ApiResponse({ status: 200, description: 'Disponibilidade do profissional.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })

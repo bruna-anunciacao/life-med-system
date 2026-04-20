@@ -105,10 +105,7 @@ export class AppointmentsController {
     this.logger.log(
       `Gestor ${req.user.id} tentando agendar com profissional ${dto.professionalId} para paciente ${dto.patientId}`,
     );
-    return this.appointmentsService.createAppointment(
-      dto.patientId as string,
-      dto,
-    );
+    return this.appointmentsService.createAppointment(dto.patientId, dto);
   }
 
   @Get('my-appointments')
