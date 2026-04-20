@@ -23,7 +23,6 @@ import { StatsCards } from "./components/StatsCards";
 import { UpcomingAppointmentsList } from "./components/UpcomingAppointmentsList";
 import { RecentHistoryList } from "./components/RecentHistoryList";
 import { SuggestedDoctorsList } from "./components/SuggestedDoctorsList";
-import { HealthTipCard } from "./components/HealthTipCard";
 
 const SUGGESTED_DOCTORS_LIMIT = 3;
 const RECENT_HISTORY_LIMIT = 3;
@@ -66,15 +65,13 @@ const PatientDashboard = () => {
   const upcomingList = appointments
     .filter((a) => a.status === "CONFIRMED" || a.status === "PENDING")
     .sort(
-      (a, b) =>
-        new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+      (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
     );
 
   const recentCompleted = appointments
     .filter((a) => a.status === "COMPLETED")
     .sort(
-      (a, b) =>
-        new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
+      (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
     )
     .slice(0, RECENT_HISTORY_LIMIT);
 
@@ -175,7 +172,6 @@ const PatientDashboard = () => {
             onViewAll={goToSearch}
             onBook={goToSearch}
           />
-          <HealthTipCard />
         </div>
       </div>
     </section>

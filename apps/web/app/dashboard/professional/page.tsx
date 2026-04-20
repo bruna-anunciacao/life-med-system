@@ -23,9 +23,24 @@ const ProfessionalDashboard = () => {
   };
 
   const stats = [
-    { title: "Consultas Hoje", value: "8", icon: <CalendarIcon size={24} weight="duotone" />, color: "primary" },
-    { title: "Pendentes de Aprovação", value: "3", icon: <ClockIcon size={24} weight="duotone" />, color: "warning" },
-    { title: "Pacientes Atendidos", value: "142", icon: <UsersIcon size={24} weight="duotone" />, color: "success" },
+    {
+      title: "Consultas Hoje",
+      value: "8",
+      icon: <CalendarIcon size={24} weight="duotone" />,
+      color: "primary",
+    },
+    {
+      title: "Pendentes de Aprovação",
+      value: "3",
+      icon: <ClockIcon size={24} weight="duotone" />,
+      color: "warning",
+    },
+    {
+      title: "Pacientes Atendidos",
+      value: "142",
+      icon: <UsersIcon size={24} weight="duotone" />,
+      color: "success",
+    },
   ];
 
   const nextAppointment = {
@@ -36,10 +51,30 @@ const ProfessionalDashboard = () => {
   };
 
   const schedule = [
-    { time: "09:00", name: "Maria Clara", status: "COMPLETED", type: "Retorno" },
-    { time: "10:00", name: "João Pedro", status: "COMPLETED", type: "Primeira Vez" },
-    { time: "14:00", name: "Lucas Mendes", status: "UPCOMING", type: "Retorno" },
-    { time: "15:30", name: "Fernanda Lima", status: "UPCOMING", type: "Exames" },
+    {
+      time: "09:00",
+      name: "Maria Clara",
+      status: "COMPLETED",
+      type: "Retorno",
+    },
+    {
+      time: "10:00",
+      name: "João Pedro",
+      status: "COMPLETED",
+      type: "Primeira Vez",
+    },
+    {
+      time: "14:00",
+      name: "Lucas Mendes",
+      status: "UPCOMING",
+      type: "Retorno",
+    },
+    {
+      time: "15:30",
+      name: "Fernanda Lima",
+      status: "UPCOMING",
+      type: "Exames",
+    },
   ];
 
   const requests = [
@@ -57,8 +92,12 @@ const ProfessionalDashboard = () => {
     <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
       <div className="mb-10 flex justify-between items-center max-sm:flex-col max-sm:items-start max-sm:gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Painel Profissional</h1>
-          <p className="mt-1 text-base text-gray-500">Gerencie suas consultas e acompanhe seu dia.</p>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            Painel Profissional
+          </h1>
+          <p className="mt-1 text-base text-gray-500">
+            Gerencie suas consultas e acompanhe seu dia.
+          </p>
         </div>
         <Button size="lg" onClick={handleCalendarClick}>
           <CalendarIcon />
@@ -68,13 +107,22 @@ const ProfessionalDashboard = () => {
 
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="border border-gray-200 rounded-lg transition-transform duration-200 hover:-translate-y-0.5">
+          <Card
+            key={index}
+            className="border border-gray-200 rounded-lg transition-transform duration-200 hover:-translate-y-0.5"
+          >
             <CardContent className="p-4 flex flex-row justify-between items-center">
               <div>
-                <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                <h3 className="mt-1 text-4xl font-bold text-gray-900">{stat.value}</h3>
+                <p className="text-sm font-medium text-gray-500">
+                  {stat.title}
+                </p>
+                <h3 className="mt-1 text-4xl font-bold text-gray-900">
+                  {stat.value}
+                </h3>
               </div>
-              <div className={`w-12 h-12 flex items-center justify-center rounded-xl ${iconColorClass[stat.color]}`}>
+              <div
+                className={`w-12 h-12 flex items-center justify-center rounded-xl ${iconColorClass[stat.color]}`}
+              >
                 {stat.icon}
               </div>
             </CardContent>
@@ -86,16 +134,21 @@ const ProfessionalDashboard = () => {
         <div>
           <div className="mb-4 flex justify-between items-center">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
-              <span className="w-2 h-2 rounded-full bg-[#17c964] animate-pulse"></span> Próximo Atendimento
+              <span className="w-2 h-2 rounded-full bg-[#17c964] animate-pulse"></span>{" "}
+              Próximo Atendimento
             </h2>
           </div>
           <Card className="mb-8 border-l-4 border-l-[#006fee]">
             <CardContent className="p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6">
               <div className="flex items-center gap-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-700">{nextAppointment.patientName}</h3>
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    {nextAppointment.patientName}
+                  </h3>
                   <div className="flex items-center gap-2 text-gray-500 mt-1">
-                    <Badge className="px-2 py-1 rounded text-xs font-semibold">Consulta Online</Badge>
+                    <Badge className="px-2 py-1 rounded text-xs font-semibold">
+                      Consulta Online
+                    </Badge>
                     <span className="flex items-center gap-1 text-sm font-medium">
                       <ClockIcon /> {nextAppointment.time}
                     </span>
@@ -113,7 +166,9 @@ const ProfessionalDashboard = () => {
           </Card>
 
           <div className="mb-4 flex justify-between items-center">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">Agenda de Hoje</h2>
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
+              Agenda de Hoje
+            </h2>
           </div>
           <Card className="border border-gray-200 rounded-lg">
             <CardContent>
@@ -122,7 +177,9 @@ const ProfessionalDashboard = () => {
                   key={idx}
                   className="p-4 flex items-center gap-4 border-b border-gray-100 last:border-b-0 transition-colors duration-200 hover:bg-gray-50"
                 >
-                  <div className="w-[60px] font-mono font-semibold text-gray-500 text-center">{item.time}</div>
+                  <div className="w-[60px] font-mono font-semibold text-gray-500 text-center">
+                    {item.time}
+                  </div>
                   <div className="flex-1">
                     <p className="font-semibold text-gray-800">{item.name}</p>
                     <p className="text-xs text-gray-500">{item.type}</p>
@@ -140,8 +197,12 @@ const ProfessionalDashboard = () => {
 
         <div>
           <div className="mb-4 flex justify-between items-center">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">Solicitações</h2>
-            <Badge className="px-2 py-1 rounded-3xl text-xs font-semibold bg-yellow-100 text-yellow-700">2 Novas</Badge>
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
+              Solicitações
+            </h2>
+            <Badge className="px-2 py-1 rounded-3xl text-xs font-semibold bg-yellow-100 text-yellow-700">
+              2 Novas
+            </Badge>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -170,15 +231,6 @@ const ProfessionalDashboard = () => {
               </Card>
             ))}
           </div>
-
-          <Card className="mt-2 border border-[#cce7ff] rounded-lg bg-[#f0f9ff]">
-            <CardContent>
-              <h4 className="text-lg font-semibold text-gray-700">Dica do Sistema</h4>
-              <p className="text-sm text-gray-500">
-                Mantenha sua agenda atualizada para evitar conflitos de horário.
-              </p>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </section>
