@@ -64,11 +64,7 @@ export class UsersService {
       ...userData
     } = dto;
 
-    const specialtyIds = Array.isArray(specialty)
-      ? specialty
-      : specialty
-        ? [specialty]
-        : [];
+    const specialtyIds = specialty ?? [];
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },

@@ -11,6 +11,7 @@ import {
   MinLength,
   IsArray,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { AppointmentModality } from '@prisma/client';
 import { UserStatus } from '@prisma/client';
 
@@ -76,8 +77,12 @@ export class UpdateUserDto {
 
   @ApiPropertyOptional({ example: ['uuid-especialidade'], description: 'IDs das especialidades (somente profissionais)' })
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
+  @Transform(({ value }) => {
+    if (!value) return value;
+    return Array.isArray(value) ? value : [value];
+  })
+  @IsArray({ message: 'Especialidades deve ser um array' })
+  @IsString({ each: true, message: 'Cada especialidade deve ser um ID de texto' })
   specialty?: string[];
 
   @ApiPropertyOptional({ example: 'CRM12345', description: 'Registro profissional (CRM)', minLength: 4, maxLength: 20 })
