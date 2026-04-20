@@ -1,7 +1,7 @@
 import { AppointmentResponse } from "@/services/appointments-service";
-import { AdminUser } from "@/services/admin-service";
+import { ProfessionalUser } from "@/services/professionals-service";
 
-export type Professional = AdminUser;
+export type Professional = ProfessionalUser;
 
 export type StatItem = {
   title: string;

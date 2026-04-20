@@ -15,7 +15,7 @@ type Professional = {
   status: string;
   professionalProfile?: {
     id?: string;
-    specialty?: string;
+    specialities?: { id: string; name: string }[];
     professionalLicense?: string;
     modality?: string;
     bio?: string;
@@ -73,7 +73,7 @@ export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardPr
                 {professional.name}
               </h3>
               <p className="text-xs text-gray-500">
-                {professional.professionalProfile?.specialty || "Especialidade não informada"}
+                {professional.professionalProfile?.specialities?.[0]?.name || "Especialidade não informada"}
               </p>
             </div>
           </div>
