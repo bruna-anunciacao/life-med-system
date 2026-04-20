@@ -13,8 +13,7 @@ export const API_ROUTES = {
     ME: "/users/me",
   },
   ADMIN: {
-    PATIENTS: "/admin/patients",
-    PROFESSIONALS: "/admin/professionals",
+    USERS: "/admin/users",
     VERIFY: (id: string) => `/admin/verify/${id}`,
     UPDATE_USER: (id: string) => `/admin/user/${id}`,
   },

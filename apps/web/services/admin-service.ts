@@ -2,12 +2,12 @@ import { api } from "../lib/api";
 import { AxiosError } from "axios";
 import { API_ROUTES } from "../constants/api-routes";
 
-export interface AdminPatient {
+export interface AdminUser {
   id: string;
   name: string;
   email: string;
+  role: "PATIENT" | "PROFESSIONAL";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
-  role: "PATIENT" | "PROFESSIONAL" | "ADMIN" | "MANAGER";
   emailVerified: boolean;
   patientProfile?: {
     id: string;
@@ -16,20 +16,9 @@ export interface AdminPatient {
     gender?: string;
     address?: string;
     questionnaireCompleted: boolean;
-    questionnaire?: unknown;
   } | null;
-}
-
-export interface AdminProfessional {
-  id: string;
-  name: string;
-  email: string;
-  status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
-  role: "PATIENT" | "PROFESSIONAL" | "ADMIN" | "MANAGER";
-  emailVerified: boolean;
   professionalProfile?: {
     id?: string;
-    specialty?: string;
     professionalLicense?: string;
     modality?: string;
     bio?: string;
@@ -37,6 +26,12 @@ export interface AdminProfessional {
     address?: string;
     specialities?: { id: string; name: string }[];
   } | null;
+}
+
+export interface AdminUsersParams {
+  role?: "PATIENT" | "PROFESSIONAL";
+  status?: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
+  search?: string;
 }
 
 const handleError = (error: unknown, fallback: string): never => {
@@ -50,18 +45,20 @@ const handleError = (error: unknown, fallback: string): never => {
 };
 
 export const adminService = {
-  async listPatients(): Promise<AdminPatient[]> {
+  async listUsers(params?: AdminUsersParams): Promise<AdminUser[]> {
     try {
-      const response = await api.get(API_ROUTES.ADMIN.PATIENTS);
+      const response = await api.get(API_ROUTES.ADMIN.USERS, { params });
       return response.data;
     } catch (error) {
-      return handleError(error, "Erro ao listar pacientes.");
+      return handleError(error, "Erro ao listar usuários.");
     }
   },
 
-  async listProfessionals(): Promise<AdminProfessional[]> {
+  async listProfessionals(): Promise<AdminUser[]> {
     try {
-      const response = await api.get(API_ROUTES.ADMIN.PROFESSIONALS);
+      const response = await api.get(API_ROUTES.ADMIN.USERS, {
+        params: { role: "PROFESSIONAL" },
+      });
       return response.data;
     } catch (error) {
       return handleError(error, "Erro ao listar profissionais.");
