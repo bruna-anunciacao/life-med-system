@@ -94,6 +94,21 @@ export class ProfessionalService {
     };
   }
 
+  async listAll() {
+    return this.prisma.user.findMany({
+      where: { role: 'PROFESSIONAL' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        status: true,
+        professionalProfile: {
+          include: { specialities: true },
+        },
+      },
+    });
+  }
+
   async updateSettings(userId: string, dto: UpdateProfessionalSettingsDto) {
     const { modality, availability, address, payments, price } = dto;
 

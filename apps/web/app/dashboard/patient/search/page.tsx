@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { adminService } from "../../../../services/admin-service";
+import { professionalsService } from "../../../../services/professionals-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { SearchBar } from "./components/SearchBar";
@@ -45,7 +45,7 @@ const SearchDoctorsPage = () => {
     const load = async () => {
       try {
         setIsLoading(true);
-        const data = await adminService.listProfessionals();
+        const data = await professionalsService.listAll();
         setProfessionals(data);
       } catch {
         toast.error("Erro ao carregar profissionais.");

@@ -6,7 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { usersService } from "@/services/users-service";
-import { adminService } from "@/services/admin-service";
+import { professionalsService } from "@/services/professionals-service";
 import {
   appointmentsService,
   AppointmentResponse,
@@ -44,7 +44,7 @@ const PatientDashboard = () => {
           await Promise.all([
             usersService.getUser(),
             appointmentsService.listMyAppointments({ limit: 100 }),
-            adminService.listProfessionals(),
+            professionalsService.listAll(),
           ]);
 
         setUserName(userData.name?.split(" ")[0] || "");

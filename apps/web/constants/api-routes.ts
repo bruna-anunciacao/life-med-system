@@ -23,6 +23,7 @@ export const API_ROUTES = {
     EXPORT_CANCELLED_APPOINTMENTS: "/patients/export/cancelled-appointments",
   },
   PROFESSIONALS: {
+    LIST: "/professional",
     SETTINGS: "/professional/settings",
     SCHEDULE: "/professional/schedule",
   },

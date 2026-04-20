@@ -27,6 +27,15 @@ import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 export class ProfessionalController {
   constructor(private readonly professionalService: ProfessionalService) {}
 
+  @Get()
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
+  @ApiOperation({ summary: 'Listar todos os profissionais' })
+  @ApiResponse({ status: 200, description: 'Lista de profissionais.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  listAll() {
+    return this.professionalService.listAll();
+  }
+
   @Get('settings')
   @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
   @ApiOperation({ summary: 'Obter configurações do profissional autenticado', description: 'Retorna modalidade, disponibilidade, preço e formas de pagamento.' })
