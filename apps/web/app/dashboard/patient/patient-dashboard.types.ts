@@ -1,12 +1,7 @@
 import { AppointmentResponse } from "@/services/appointments-service";
+import { AdminUser } from "@/services/admin-service";
 
-export type Professional = {
-  id: string;
-  name: string;
-  professionalProfile?: {
-    specialty?: string;
-  } | null;
-};
+export type Professional = AdminUser;
 
 export type StatItem = {
   title: string;
