@@ -12,8 +12,7 @@ export interface UpdateProfileDto {
   address?: string;
   cpf?: string;
   professionalLicense?: string;
-  specialty?: string;
-  subspecialty?: string;
+  specialty?: string[];
   bio?: string;
   photoUrl?: string;
   socialLinks?: {

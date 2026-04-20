@@ -74,14 +74,10 @@ export class UpdateUserDto {
   @MaxLength(14, { message: 'CPF deve ter no máximo 14 caracteres' })
   cpf?: string;
 
-  @ApiPropertyOptional({ example: 'Cardiologia', description: 'Especialidade (somente profissionais)', minLength: 2, maxLength: 100 })
+  @ApiPropertyOptional({ example: ['uuid-especialidade'], description: 'IDs das especialidades (somente profissionais)' })
   @IsOptional()
-  @IsString({ each: true })
   @IsArray()
-  @MinLength(2, { message: 'Especialidade deve ter no mínimo 2 caracteres' })
-  @MaxLength(100, {
-    message: 'Especialidade deve ter no máximo 100 caracteres',
-  })
+  @IsString({ each: true })
   specialty?: string[];
 
   @ApiPropertyOptional({ example: 'CRM12345', description: 'Registro profissional (CRM)', minLength: 4, maxLength: 20 })

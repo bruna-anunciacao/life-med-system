@@ -6,9 +6,10 @@ type ProfessionalProfileFormProps = {
   register: UseFormRegister<ProfessionalFormSchema>;
   errors: FieldErrors<ProfessionalFormSchema>;
   isEditing: boolean;
+  specialities: { id: string; name: string }[];
 };
 
-export function ProfessionalProfileForm({ register, errors, isEditing }: ProfessionalProfileFormProps) {
+export function ProfessionalProfileForm({ register, errors, isEditing, specialities }: ProfessionalProfileFormProps) {
   return (
     <>
       <h3 className="mt-6 mb-1 text-base font-semibold text-gray-700">Informações Profissionais</h3>
@@ -29,11 +30,12 @@ export function ProfessionalProfileForm({ register, errors, isEditing }: Profess
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-gray-700">Especialidade</label>
-          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("specialty")} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">Subespecialidade</label>
-          <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("subspecialty")} />
+          <select className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("specialityId")}>
+            <option value="">Selecione uma especialidade</option>
+            {specialities.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-gray-700">Modalidade</label>
