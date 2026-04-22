@@ -308,6 +308,11 @@ const ProfessionalDashboard = () => {
                 {pendingRequests.length} Novas
               </Badge>
             )}
+            {pendingRequests.length > 0 && (
+              <Badge className="px-2 py-1 rounded-3xl text-xs font-semibold bg-yellow-100 text-yellow-700">
+                {pendingRequests.length} Novas
+              </Badge>
+            )}
           </div>
           <div className="flex flex-col gap-3">
             {pendingRequests.length === 0 ? (
