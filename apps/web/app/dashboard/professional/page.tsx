@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,20 +17,30 @@ import {
 } from "../../utils/icons";
 import { useRouter } from "next/navigation";
 import { useDailyScheduleQuery } from "@/queries/useDailyScheduleQuery";
-import { useProfessionalPatients } from "@/queries/useProfessionalPatients";
+import {
+  useProfessionalPatients,
+} from "@/queries/useProfessionalPatients";
 import { useUpdateAppointmentStatusMutation } from "@/queries/useProfessionalAppointments";
+import { ConfirmModal } from "./schedule/components/ConfirmModal";
 
 type Appointment = {
   id: string;
   dateTime: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+  modality?: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
   notes?: string;
-  patient: { name: string };
+  patient: { id: string; name: string; email?: string; phone?: string };
 };
 
 const ProfessionalDashboard = () => {
   const router = useRouter();
   const dateStr = format(new Date(), "yyyy-MM-dd");
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{
+    id: string;
+    status: "CONFIRMED" | "CANCELLED";
+  } | null>(null);
 
   const {
     data: scheduleData,
@@ -96,11 +106,22 @@ const ProfessionalDashboard = () => {
     router.push("/dashboard/professional/schedule");
   };
 
-  const handleStatusChange = (
-    id: string,
-    newStatus: "CONFIRMED" | "CANCELLED",
-  ) => {
-    updateStatus({ id, status: newStatus });
+  const handleOpenConfirm = (id: string, status: "CONFIRMED" | "CANCELLED") => {
+    setPendingAction({ id, status });
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmAction = (notes?: string) => {
+    if (!pendingAction) return;
+    updateStatus(
+      { id: pendingAction.id, status: pendingAction.status, notes },
+      {
+        onSuccess: () => {
+          setIsConfirmModalOpen(false);
+          setPendingAction(null);
+        },
+      },
+    );
   };
 
   const stats = [
@@ -158,7 +179,6 @@ const ProfessionalDashboard = () => {
           Minha Agenda
         </Button>
       </div>
-
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <Card
@@ -183,7 +203,6 @@ const ProfessionalDashboard = () => {
           </Card>
         ))}
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8">
         <div className="flex flex-col gap-8">
           <div>
@@ -193,7 +212,6 @@ const ProfessionalDashboard = () => {
                 Próximo Atendimento
               </h2>
             </div>
-
             {nextAppointment ? (
               <Card className="border-l-4 border-l-[#006fee]">
                 <CardContent className="p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6">
@@ -235,7 +253,6 @@ const ProfessionalDashboard = () => {
               </Card>
             )}
           </div>
-
           <div>
             <div className="mb-4 flex justify-between items-center">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
@@ -254,7 +271,7 @@ const ProfessionalDashboard = () => {
                       key={item.id}
                       className="p-4 flex items-center gap-4 border-b border-gray-100 last:border-b-0 transition-colors duration-200 hover:bg-gray-50"
                     >
-                      <div className="w-[60px] font-mono font-semibold text-gray-500 text-center">
+                      <div className="w-15 font-mono font-semibold text-gray-500 text-center">
                         {formatTime(item.dateTime)}
                       </div>
                       <div className="flex-1">
@@ -262,9 +279,7 @@ const ProfessionalDashboard = () => {
                           {item.patient.name}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {item.status === "COMPLETED"
-                            ? "Retorno"
-                            : "Primeira Vez"}
+                          {item.notes}
                         </p>
                       </div>
                       <Badge
@@ -283,7 +298,6 @@ const ProfessionalDashboard = () => {
             </Card>
           </div>
         </div>
-
         <div className="flex flex-col gap-4">
           <div className="mb-2 flex justify-between items-center">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
@@ -295,7 +309,6 @@ const ProfessionalDashboard = () => {
               </Badge>
             )}
           </div>
-
           <div className="flex flex-col gap-3">
             {pendingRequests.length === 0 ? (
               <Card className="border-none shadow-sm">
@@ -319,8 +332,8 @@ const ProfessionalDashboard = () => {
                       <Button
                         size="sm"
                         className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
+                        onClick={() => handleOpenConfirm(req.id, "CONFIRMED")}
                         disabled={isUpdating}
-                        onClick={() => handleStatusChange(req.id, "CONFIRMED")}
                       >
                         <CheckIcon />
                         Aceitar
@@ -328,8 +341,8 @@ const ProfessionalDashboard = () => {
                       <Button
                         size="sm"
                         className="flex-1 bg-red-500 hover:bg-red-700 text-white"
+                        onClick={() => handleOpenConfirm(req.id, "CANCELLED")}
                         disabled={isUpdating}
-                        onClick={() => handleStatusChange(req.id, "CANCELLED")}
                       >
                         <XIcon />
                         Recusar
@@ -340,7 +353,6 @@ const ProfessionalDashboard = () => {
               ))
             )}
           </div>
-
           <Card className="mt-4 border border-[#cce7ff] rounded-lg bg-[#f0f9ff]">
             <CardContent>
               <h4 className="text-lg font-semibold text-gray-700">
@@ -353,6 +365,12 @@ const ProfessionalDashboard = () => {
           </Card>
         </div>
       </div>
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        onOpenChange={setIsConfirmModalOpen}
+        pendingStatus={pendingAction?.status || ""}
+        onConfirm={handleConfirmAction}
+      />
     </section>
   );
 };
