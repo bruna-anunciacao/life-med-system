@@ -17,6 +17,7 @@ import { ManagerModule } from './manager/manager.module';
 import { SpecialityModule } from './speciality/speciality.module';
 import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 import { AdminModule } from './admin/admin.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -43,7 +44,7 @@ import { AdminModule } from './admin/admin.module';
     QuestionnaireModule,
     AdminModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService, PrismaService, AdminSeederService],
 })
 export class AppModule {}
