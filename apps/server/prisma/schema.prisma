@@ -71,6 +71,7 @@ model User {
   passwordResets     PasswordReset[]
   sessions           Session[]
   answeredQuestionnaires VulnerabilityQuestionnaire[]
+  address            Address?
 
   @@map("users")
 }
@@ -85,7 +86,6 @@ model ProfessionalProfile {
   bio                 String?             @db.Text
   photoUrl            String?             @map("photo_url")
   socialLinks         Json?               @map("social_links")
-  address             String?
   price               Float?
   payments            Json?
 
@@ -109,7 +109,6 @@ model PatientProfile {
   phone                  String?
   dateOfBirth            DateTime?                   @map("date_of_birth")
   gender                 String?
-  address                String?
   questionnaireCompleted Boolean                     @default(false) @map("questionnaire_completed")
   questionnaire          VulnerabilityQuestionnaire?
   createdAt              DateTime                    @default(now()) @map("created_at")
@@ -140,7 +139,6 @@ model ManagerProfile {
   phone     String?
   bio       String?  @db.Text
   photoUrl  String?  @map("photo_url")
-  address   String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -213,4 +211,24 @@ model EmailVerification {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("email_verifications")
+}
+
+model Address {
+  id         String  @id @default(uuid())
+  userId     String  @unique @map("user_id")
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  zipCode    String  @map("zip_code") 
+  street     String  
+  number     String  
+  complement String? 
+  district   String
+  city       String  
+  state      String  
+  country    String  @default("BR") 
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("addresses")
 }
