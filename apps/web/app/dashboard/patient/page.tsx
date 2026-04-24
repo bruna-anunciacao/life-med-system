@@ -6,7 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { usersService } from "@/services/users-service";
-import { adminService } from "@/services/admin-service";
+import { professionalsService } from "@/services/professionals-service";
 import {
   appointmentsService,
   AppointmentResponse,
@@ -23,7 +23,6 @@ import { StatsCards } from "./components/StatsCards";
 import { UpcomingAppointmentsList } from "./components/UpcomingAppointmentsList";
 import { RecentHistoryList } from "./components/RecentHistoryList";
 import { SuggestedDoctorsList } from "./components/SuggestedDoctorsList";
-import { HealthTipCard } from "./components/HealthTipCard";
 
 const SUGGESTED_DOCTORS_LIMIT = 3;
 const RECENT_HISTORY_LIMIT = 3;
@@ -44,14 +43,14 @@ const PatientDashboard = () => {
           await Promise.all([
             usersService.getUser(),
             appointmentsService.listMyAppointments({ limit: 100 }),
-            adminService.listProfessionals(),
+            professionalsService.listAll(),
           ]);
 
         setUserName(userData.name?.split(" ")[0] || "");
         if (appointmentsData) setAppointments(appointmentsData.data);
         setProfessionals(
           (professionalsData || []).filter(
-            (p: any) => p.status !== "PENDING" && p.status !== "BLOCKED",
+            (p: Professional) => p.status !== "PENDING" && p.status !== "BLOCKED",
           ),
         );
       } catch {
@@ -66,15 +65,13 @@ const PatientDashboard = () => {
   const upcomingList = appointments
     .filter((a) => a.status === "CONFIRMED" || a.status === "PENDING")
     .sort(
-      (a, b) =>
-        new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+      (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
     );
 
   const recentCompleted = appointments
     .filter((a) => a.status === "COMPLETED")
     .sort(
-      (a, b) =>
-        new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
+      (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
     )
     .slice(0, RECENT_HISTORY_LIMIT);
 
@@ -175,7 +172,6 @@ const PatientDashboard = () => {
             onViewAll={goToSearch}
             onBook={goToSearch}
           />
-          <HealthTipCard />
         </div>
       </div>
     </section>

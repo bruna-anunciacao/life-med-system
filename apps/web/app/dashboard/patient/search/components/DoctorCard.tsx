@@ -15,7 +15,7 @@ type Professional = {
   status: string;
   professionalProfile?: {
     id?: string;
-    specialty?: string;
+    specialities?: { id: string; name: string }[];
     professionalLicense?: string;
     modality?: string;
     bio?: string;
@@ -35,12 +35,16 @@ type DoctorCardProps = {
   onBook: () => void;
 };
 
-export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardProps) {
+export function DoctorCard({
+  professional,
+  onViewProfile,
+  onBook,
+}: DoctorCardProps) {
   const [imageError, setImageError] = useState(false);
-  
+
   const isMobile = useIsMobile();
   const modality = professional.professionalProfile?.modality;
-  
+
   const photoUrl = professional.professionalProfile?.photoUrl;
   const resolvedPhotoUrl = photoUrl
     ? `${env.NEXT_PUBLIC_API_URL}${photoUrl}`
@@ -73,7 +77,8 @@ export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardPr
                 {professional.name}
               </h3>
               <p className="text-xs text-gray-500">
-                {professional.professionalProfile?.specialty || "Especialidade não informada"}
+                {professional.professionalProfile?.specialities?.[0]?.name ||
+                  "Especialidade não informada"}
               </p>
             </div>
           </div>
@@ -95,7 +100,12 @@ export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardPr
               <CalendarIcon />
               Agendar
             </Button>
-            <Button size="sm" variant="outline" className="flex-1 text-xs" onClick={onViewProfile}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 text-xs"
+              onClick={onViewProfile}
+            >
               Ver Perfil
             </Button>
           </div>
@@ -108,7 +118,6 @@ export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardPr
     <Card className="border border-gray-200 rounded-xl bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
       <CardContent className="p-6 flex gap-5">
         <div className="relative w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white flex-shrink-0 overflow-hidden">
-          
           {resolvedPhotoUrl && !imageError ? (
             <Image
               src={resolvedPhotoUrl}
@@ -117,7 +126,7 @@ export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardPr
               className="object-cover"
               sizes="64px"
               unoptimized
-              onError={() => setImageError(true)} 
+              onError={() => setImageError(true)}
             />
           ) : (
             professional.name.charAt(0).toUpperCase()
@@ -129,7 +138,7 @@ export function DoctorCard({ professional, onViewProfile, onBook }: DoctorCardPr
             {professional.name}
           </h3>
           <p className="text-sm text-gray-500">
-            {professional.professionalProfile?.specialty ||
+            {professional.professionalProfile?.specialities?.[0]?.name ||
               "Especialidade não informada"}
           </p>
           {professional.professionalProfile?.professionalLicense && (

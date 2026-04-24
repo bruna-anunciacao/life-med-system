@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { usersService, type UpdateProfileDto } from "../../../../../services/users-service";
+import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
 import {
   patientFormSchema,
   professionalFormSchema,
@@ -28,8 +29,7 @@ type UserProfile = {
   };
   professionalProfile?: {
     professionalLicense?: string;
-    specialty?: string;
-    subspecialty?: string;
+    specialities?: { id: string; name: string }[];
     modality?: string;
     bio?: string;
     photoUrl?: string;
@@ -41,6 +41,7 @@ export function useAdminUserForm() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: specialities = [] } = useSpecialitiesQuery();
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +56,7 @@ export function useAdminUserForm() {
 
   const professionalForm = useForm<ProfessionalFormSchema>({
     resolver: zodResolver(professionalFormSchema),
-    defaultValues: { name: "", email: "", status: "", professionalLicense: "", specialty: "", subspecialty: "", modality: "", bio: "", linkedin: "", instagram: "" },
+    defaultValues: { name: "", email: "", status: "", professionalLicense: "", specialityId: "", modality: "", bio: "", linkedin: "", instagram: "" },
   });
 
   const loadProfile = async () => {
@@ -83,8 +84,7 @@ export function useAdminUserForm() {
           email: data.email || "",
           status: data.status || "",
           professionalLicense: data.professionalProfile?.professionalLicense || "",
-          specialty: data.professionalProfile?.specialty || "",
-          subspecialty: data.professionalProfile?.subspecialty || "",
+          specialityId: data.professionalProfile?.specialities?.[0]?.id || "",
           modality: data.professionalProfile?.modality || "",
           bio: data.professionalProfile?.bio || "",
           linkedin: data.professionalProfile?.socialLinks?.linkedin || "",
@@ -101,7 +101,7 @@ export function useAdminUserForm() {
   };
 
   useEffect(() => { setIsEditing(searchParams.get("edit") === "1"); }, [searchParams]);
-  useEffect(() => { void loadProfile(); }, [id]);
+  useEffect(() => { void loadProfile(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmitPatient = async (data: PatientFormSchema) => {
     if (!user) return;
@@ -136,8 +136,7 @@ export function useAdminUserForm() {
         email: data.email,
         status: data.status as UpdateProfileDto["status"],
         professionalLicense: data.professionalLicense || undefined,
-        specialty: data.specialty || undefined,
-        subspecialty: data.subspecialty || undefined,
+        specialty: data.specialityId ? [data.specialityId] : undefined,
         modality: (data.modality || undefined) as UpdateProfileDto["modality"],
         bio: data.bio || undefined,
         socialLinks: {
@@ -173,6 +172,7 @@ export function useAdminUserForm() {
     router,
     patientForm,
     professionalForm,
+    specialities,
     handleCancel,
     onSubmitPatient,
     onSubmitProfessional,

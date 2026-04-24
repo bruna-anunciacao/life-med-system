@@ -9,5 +9,3 @@ import { PatientsModule } from '../patients/patients.module';
   providers: [ManagerService],
 })
 export class ManagerModule {}
-
-

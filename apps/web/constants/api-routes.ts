@@ -13,8 +13,7 @@ export const API_ROUTES = {
     ME: "/users/me",
   },
   ADMIN: {
-    PATIENTS: "/admin/patients",
-    PROFESSIONALS: "/admin/professionals",
+    USERS: "/admin/users",
     VERIFY: (id: string) => `/admin/verify/${id}`,
     UPDATE_USER: (id: string) => `/admin/user/${id}`,
   },
@@ -24,6 +23,7 @@ export const API_ROUTES = {
     EXPORT_CANCELLED_APPOINTMENTS: "/patients/export/cancelled-appointments",
   },
   PROFESSIONALS: {
+    LIST: "/professional",
     SETTINGS: "/professional/settings",
     SCHEDULE: "/professional/schedule",
   },

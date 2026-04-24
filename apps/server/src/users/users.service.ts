@@ -4,12 +4,13 @@ import { MailService } from 'src/mail/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 import { UserRole } from '@prisma/client';
+import { ListAdminUsersQueryDto } from 'src/admin/dto/list-admin-users-query-dto';
 @Injectable()
 export class UsersService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
-  ) { }
+  ) {}
 
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
@@ -25,9 +26,9 @@ export class UsersService {
         },
         professionalProfile: {
           include: {
-            specialities: true
-          }
-        }
+            specialities: true,
+          },
+        },
       },
     });
 
@@ -41,7 +42,7 @@ export class UsersService {
       where: { id: userId },
       include: {
         patientProfile: true,
-        professionalProfile: { include: { specialities: true } }
+        professionalProfile: { include: { specialities: true } },
       },
     });
 
@@ -63,9 +64,7 @@ export class UsersService {
       ...userData
     } = dto;
 
-    const specialtyIds = Array.isArray(specialty)
-      ? specialty
-      : (specialty ? [specialty] : []);
+    const specialtyIds = specialty ?? [];
 
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -76,7 +75,15 @@ export class UsersService {
       },
     });
 
-    if (user.role === 'PROFESSIONAL' && (specialty || professionalLicense || bio || modality || photoUrl || socialLinks)) {
+    if (
+      user.role === 'PROFESSIONAL' &&
+      (specialty ||
+        professionalLicense ||
+        bio ||
+        modality ||
+        photoUrl ||
+        socialLinks)
+    ) {
       await this.prisma.professionalProfile.upsert({
         where: { userId: userId },
         create: {
@@ -86,9 +93,12 @@ export class UsersService {
           bio: bio,
           photoUrl: photoUrl,
           socialLinks: socialLinks,
-          specialities: specialtyIds.length > 0 ? {
-            connect: specialtyIds.map(id => ({ id }))
-          } : undefined,
+          specialities:
+            specialtyIds.length > 0
+              ? {
+                  connect: specialtyIds.map((id) => ({ id })),
+                }
+              : undefined,
         },
         update: {
           professionalLicense: professionalLicense,
@@ -96,14 +106,21 @@ export class UsersService {
           bio: bio,
           photoUrl: photoUrl ?? user.professionalProfile?.photoUrl,
           socialLinks: socialLinks,
-          specialities: specialtyIds.length > 0 ? {
-            set: specialtyIds.map(id => ({ id }))
-          } : undefined,
+          specialities:
+            specialtyIds.length > 0
+              ? {
+                  set: specialtyIds.map((id) => ({ id })),
+                }
+              : undefined,
         },
       });
     }
 
-    if (user.role === 'PATIENT' && user.patientProfile && (phone || dateOfBirth || gender || address || cpf)) {
+    if (
+      user.role === 'PATIENT' &&
+      user.patientProfile &&
+      (phone || dateOfBirth || gender || address || cpf)
+    ) {
       await this.prisma.patientProfile.update({
         where: { userId: userId },
         data: {
@@ -123,7 +140,7 @@ export class UsersService {
       where: { id: targetId },
       include: {
         patientProfile: { include: { questionnaire: true } },
-        professionalProfile: { include: { specialities: true } }
+        professionalProfile: { include: { specialities: true } },
       },
     });
 
@@ -149,11 +166,17 @@ export class UsersService {
 
     const specialtyIds = Array.isArray(specialty)
       ? specialty
-      : (specialty ? [specialty] : []);
+      : specialty
+        ? [specialty]
+        : [];
 
     if (user.role === 'PROFESSIONAL' && user.status === 'PENDING') {
-      const hasProfessionalLicense = professionalLicense || user.professionalProfile?.professionalLicense;
-      const hasSpecialty = (specialty && specialty.length > 0) || (user.professionalProfile?.specialities && user.professionalProfile.specialities.length > 0);
+      const hasProfessionalLicense =
+        professionalLicense || user.professionalProfile?.professionalLicense;
+      const hasSpecialty =
+        (specialty && specialty.length > 0) ||
+        (user.professionalProfile?.specialities &&
+          user.professionalProfile.specialities.length > 0);
 
       if (hasProfessionalLicense && hasSpecialty) {
         newStatus = 'COMPLETED';
@@ -170,7 +193,10 @@ export class UsersService {
       },
     });
 
-    if (user.role === 'PROFESSIONAL' && (specialty || professionalLicense || bio || modality || photoUrl)) {
+    if (
+      user.role === 'PROFESSIONAL' &&
+      (specialty || professionalLicense || bio || modality || photoUrl)
+    ) {
       await this.prisma.professionalProfile.upsert({
         where: { userId: targetId },
         create: {
@@ -180,9 +206,12 @@ export class UsersService {
           bio: bio,
           photoUrl: photoUrl,
           socialLinks: socialLinks,
-          specialities: specialtyIds.length > 0 ? {
-            connect: specialtyIds.map(id => ({ id }))
-          } : undefined,
+          specialities:
+            specialtyIds.length > 0
+              ? {
+                  connect: specialtyIds.map((id) => ({ id })),
+                }
+              : undefined,
         },
         update: {
           professionalLicense: professionalLicense,
@@ -190,14 +219,21 @@ export class UsersService {
           bio: bio,
           photoUrl: photoUrl ?? user.professionalProfile?.photoUrl,
           socialLinks: socialLinks,
-          specialities: specialtyIds.length > 0 ? {
-            set: specialtyIds.map(id => ({ id }))
-          } : undefined,
+          specialities:
+            specialtyIds.length > 0
+              ? {
+                  set: specialtyIds.map((id) => ({ id })),
+                }
+              : undefined,
         },
       });
     }
 
-    if (user.role === 'PATIENT' && user.patientProfile && (phone || dateOfBirth || gender || address || cpf)) {
+    if (
+      user.role === 'PATIENT' &&
+      user.patientProfile &&
+      (phone || dateOfBirth || gender || address || cpf)
+    ) {
       await this.prisma.patientProfile.update({
         where: { userId: targetId },
         data: {
@@ -246,6 +282,26 @@ export class UsersService {
     return updatedUser;
   }
 
+  async findAllUsers(query: ListAdminUsersQueryDto) {
+    return this.prisma.user.findMany({
+      where: {
+        role: query.role ?? { in: ['PATIENT', 'PROFESSIONAL'] },
+        ...(query.status && { status: query.status }),
+        ...(query.search && {
+          OR: [
+            { name: { contains: query.search, mode: 'insensitive' } },
+            { email: { contains: query.search, mode: 'insensitive' } },
+          ],
+        }),
+      },
+      include: {
+        patientProfile: true,
+        professionalProfile: { include: { specialities: true } },
+      },
+      orderBy: { [query.sortBy ?? 'name']: query.sortOrder ?? 'asc' },
+    });
+  }
+
   async findAllProfessionals() {
     return this.prisma.user.findMany({
       where: { role: UserRole.PROFESSIONAL },
@@ -256,12 +312,10 @@ export class UsersService {
         status: true,
         professionalProfile: {
           include: {
-            specialities: true
-          }
-        }
+            specialities: true,
+          },
+        },
       },
     });
   }
-
 }
-

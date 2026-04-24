@@ -12,7 +12,10 @@ import {
 import { Type } from 'class-transformer';
 
 class AvailabilityDto {
-  @ApiProperty({ example: 1, description: 'Dia da semana (0 = Domingo, 6 = Sábado)' })
+  @ApiProperty({
+    example: 1,
+    description: 'Dia da semana (0 = Domingo, 6 = Sábado)',
+  })
   @IsInt()
   dayOfWeek!: number;
 
@@ -34,12 +37,19 @@ export class UpdateProfessionalSettingsDto {
   @IsEnum(AppointmentModality)
   modality!: AppointmentModality;
 
-  @ApiPropertyOptional({ example: 'Rua das Flores, 123, Salvador – BA', description: 'Endereço do consultório' })
+  @ApiPropertyOptional({
+    example: 'Rua das Flores, 123, Salvador – BA',
+    description: 'Endereço do consultório',
+  })
   @IsOptional()
   @IsString()
   address?: string;
 
-  @ApiProperty({ example: ['PIX', 'Cartão de Crédito'], description: 'Formas de pagamento aceitas', type: [String] })
+  @ApiProperty({
+    example: ['PIX', 'Cartão de Crédito'],
+    description: 'Formas de pagamento aceitas',
+    type: [String],
+  })
   @IsArray()
   @IsString({ each: true })
   payments!: string[];

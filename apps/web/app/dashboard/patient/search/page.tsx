@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { adminService } from "../../../../services/admin-service";
+import { professionalsService } from "../../../../services/professionals-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { SearchBar } from "./components/SearchBar";
@@ -18,13 +18,12 @@ type Professional = {
   status: string;
   professionalProfile?: {
     id?: string;
-    specialty?: string;
+    specialities?: { id: string; name: string }[];
     professionalLicense?: string;
     modality?: string;
     bio?: string;
     photoUrl?: string;
     address?: string;
-    specialities?: { id: string; name: string }[];
   } | null;
 };
 
@@ -45,7 +44,7 @@ const SearchDoctorsPage = () => {
     const load = async () => {
       try {
         setIsLoading(true);
-        const data = await adminService.listProfessionals();
+        const data = await professionalsService.listAll();
         setProfessionals(data);
       } catch {
         toast.error("Erro ao carregar profissionais.");
@@ -62,11 +61,11 @@ const SearchDoctorsPage = () => {
       const term = search.toLowerCase();
       const matchesSearch =
         p.name.toLowerCase().includes(term) ||
-        (p.professionalProfile?.specialty || "").toLowerCase().includes(term);
+        (p.professionalProfile?.specialities?.[0]?.name || "").toLowerCase().includes(term);
 
       const matchesSpecialty =
         selectedSpecialty === "Todas" ||
-        (p.professionalProfile?.specialty || "")
+        (p.professionalProfile?.specialities?.[0]?.name || "")
           .toLowerCase()
           .includes(selectedSpecialty.toLowerCase());
 

@@ -104,7 +104,7 @@ export function ProfessionalFields({
             <option value="" disabled>
               {loadingSpecialities ? "Carregando..." : "Selecione..."}
             </option>
-            {specialities.map((spec: any) => (
+            {specialities.map((spec: { id: string; name: string }) => (
               <option key={spec.id} value={spec.id}>
                 {spec.name}
               </option>
@@ -126,7 +126,7 @@ export function ProfessionalFields({
             {...register("secondarySpecialty")}
           >
             <option value="">Nenhuma</option>
-            {specialities.map((spec: any) => (
+            {specialities.map((spec: { id: string; name: string }) => (
               <option key={spec.id} value={spec.id}>
                 {spec.name}
               </option>

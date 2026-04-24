@@ -10,12 +10,18 @@ export class ExportAppointmentsQueryDto {
   @IsUUID()
   professionalId?: string;
 
-  @ApiPropertyOptional({ example: '2024-01-01', description: 'Data inicial do filtro (ISO 8601)' })
+  @ApiPropertyOptional({
+    example: '2024-01-01',
+    description: 'Data inicial do filtro (ISO 8601)',
+  })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
-  @ApiPropertyOptional({ example: '2024-12-31', description: 'Data final do filtro (ISO 8601)' })
+  @ApiPropertyOptional({
+    example: '2024-12-31',
+    description: 'Data final do filtro (ISO 8601)',
+  })
   @IsOptional()
   @IsDateString()
   endDate?: string;

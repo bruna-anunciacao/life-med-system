@@ -32,7 +32,7 @@ interface BookingModalProps {
     id: string;
     name: string;
     professionalProfile?: {
-      specialty?: string;
+      specialities?: { id: string; name: string }[];
       price?: number | null;
     } | null;
   } | null;
@@ -154,7 +154,7 @@ export function BookingModal({
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               {professional.name} -{" "}
-              {professional.professionalProfile?.specialty || "Especialidade"}
+              {professional.professionalProfile?.specialities?.[0]?.name || "Especialidade"}
             </p>
           </DialogHeader>
 

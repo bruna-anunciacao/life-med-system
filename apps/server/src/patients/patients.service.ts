@@ -4,7 +4,12 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, Prisma, UserRole, UserStatus } from '@prisma/client';
+import {
+  AppointmentStatus,
+  Prisma,
+  UserRole,
+  UserStatus,
+} from '@prisma/client';
 import type PDFKit from 'pdfkit';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -23,7 +28,7 @@ export class PatientsService {
     private readonly prisma: PrismaService,
     private readonly reportsService: ReportsService,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   async exportDoneAppointmentsReport(
     patientId: string,
@@ -91,8 +96,8 @@ export class PatientsService {
                 specialities: {
                   select: {
                     id: true,
-                    name: true
-                  }
+                    name: true,
+                  },
                 },
                 modality: true,
                 price: true,
@@ -115,9 +120,10 @@ export class PatientsService {
       patientName: appointment.patient.name,
       professionalId: appointment.professional.id,
       professionalName: appointment.professional.name,
-      specialty: appointment.professional.professionalProfile?.specialities
-        ?.map((spec) => spec.name)
-        .join(', ') || '-',
+      specialty:
+        appointment.professional.professionalProfile?.specialities
+          ?.map((spec) => spec.name)
+          .join(', ') || '-',
       modality: appointment.professional.professionalProfile?.modality || '-',
       price: appointment.professional.professionalProfile?.price || 0,
     }));
@@ -184,8 +190,13 @@ export class PatientsService {
     });
 
     this.mailService
-      .sendTempPasswordEmail({ name: user.name, email: user.email }, tempPassword)
-      .catch((err) => this.logger.error('Falha ao enviar senha temporária:', err));
+      .sendTempPasswordEmail(
+        { name: user.name, email: user.email },
+        tempPassword,
+      )
+      .catch((err) =>
+        this.logger.error('Falha ao enviar senha temporária:', err),
+      );
 
     return {
       id: user.id,

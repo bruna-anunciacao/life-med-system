@@ -228,7 +228,9 @@ export class ReportsService {
           },
         )
         .text(
-          (appointment.modality && (MODALITY_LABELS[appointment.modality] ?? appointment.modality)) || '-',
+          (appointment.modality &&
+            (MODALITY_LABELS[appointment.modality] ?? appointment.modality)) ||
+            '-',
           startX +
             colWidths.number +
             colWidths.date +

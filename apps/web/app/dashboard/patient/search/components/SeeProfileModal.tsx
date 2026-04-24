@@ -28,8 +28,7 @@ export interface ProfessionalData {
   email: string;
   professionalProfile?: {
     professionalLicense: string;
-    specialty: string;
-    subspecialty?: string | null;
+    specialities?: { id: string; name: string }[];
     modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
     bio?: string | null;
     photoUrl?: string | null;
@@ -154,13 +153,7 @@ export function SeeProfileModal({
                   </h3>
                   <div className="flex items-center gap-2 mt-2 text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full text-sm">
                     <Stethoscope className="w-4 h-4" />
-                    <span>{profile.specialty}</span>
-                    {profile.subspecialty && (
-                      <>
-                        <span className="text-blue-300">•</span>
-                        <span>{profile.subspecialty}</span>
-                      </>
-                    )}
+                    <span>{profile.specialities?.[0]?.name || "Especialidade não informada"}</span>
                   </div>
                   <div className="mt-3 text-[0.85rem] text-[#8a91a0] bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
                     <span className="font-medium text-gray-600">Registro:</span>{" "}

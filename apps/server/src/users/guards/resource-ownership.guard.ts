@@ -22,7 +22,9 @@ export class ResourceOwnershipGuard implements CanActivate {
     }
 
     if (user.id !== id && user.userId !== id) {
-      throw new ForbiddenException('Usuario não possui permissão para editar este usuário',);
+      throw new ForbiddenException(
+        'Usuario não possui permissão para editar este usuário',
+      );
     }
 
     return true;
