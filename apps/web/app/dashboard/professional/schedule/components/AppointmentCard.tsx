@@ -74,20 +74,20 @@ export function AppointmentCard({
       <Card
         className={`h-full flex flex-col justify-center rounded-xl shadow-sm border border-gray-100 transition-all duration-200 overflow-hidden hover:translate-x-1 hover:shadow-md ${CARD_STATUS_CLASS[statusKey] ?? ""}`}
       >
-        <CardContent className="flex flex-row items-center gap-4 p-4">
-          <div className="flex items-center justify-center min-w-12">
+        <CardContent className="flex flex-row items-center gap-3 sm:gap-4 p-3 sm:p-4">
+          <div className="hidden sm:flex items-center justify-center min-w-12">
             <span className="font-bold text-[15px] text-[#0f172a]">{slot}</span>
           </div>
           <Separator
             orientation="vertical"
-            className="w-px bg-gray-200 self-stretch min-h-10 h-auto"
+            className="hidden sm:block w-px bg-gray-200 self-stretch min-h-10 h-auto"
           />
-          <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center font-medium text-[15px] text-gray-500 bg-white border border-gray-200 shadow-sm shrink-0">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-medium text-[15px] text-gray-500 bg-white border border-gray-200 shadow-sm shrink-0">
               {initials}
             </div>
-            <div className="flex flex-col items-start gap-1">
-              <p className="font-semibold text-[15px] text-[#0f172a] leading-none">
+            <div className="flex flex-col items-start gap-1 min-w-0">
+              <p className="font-semibold text-sm sm:text-[15px] text-[#0f172a] leading-none truncate max-w-full">
                 {appointment.patient.name}
               </p>
               <Badge
@@ -96,7 +96,7 @@ export function AppointmentCard({
                 {STATUS_TEXT[appointment.status] ?? appointment.status}
               </Badge>
               {appointment.notes && (
-                <p className="text-xs italic text-gray-400 border-t border-gray-100 pt-2">
+                <p className="text-xs italic text-gray-400 border-t border-gray-100 pt-2 line-clamp-2">
                   Obs:{" "}
                   {appointment.notes}
                 </p>

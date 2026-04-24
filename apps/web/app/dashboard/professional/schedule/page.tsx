@@ -92,24 +92,24 @@ const SchedulePage = () => {
   };
 
   return (
-    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
-      <div className="mb-10 flex justify-between items-center">
+    <section className="w-full min-h-screen mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-8 bg-[#f8fafc]">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
             Minha Agenda
           </h1>
-          <p className="mt-1 text-base text-gray-500">
+          <p className="mt-1 text-sm sm:text-base text-gray-500">
             Visualize e gerencie seus horários.
           </p>
         </div>
-        <Button size="lg" onClick={() => setIsOpen(true)}>
+        <Button size="lg" onClick={() => setIsOpen(true)} className="w-full sm:w-auto">
           Gerenciar Horários
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-6">
         <aside className="flex flex-col gap-6">
-          <div className="border border-gray-200 shadow-sm bg-white rounded-[20px] p-4">
+          <div className="border border-gray-200 shadow-sm bg-white rounded-[20px] p-4 overflow-x-auto">
             <DayPicker
               mode="single"
               selected={selectedDate}
@@ -119,14 +119,14 @@ const SchedulePage = () => {
           </div>
         </aside>
 
-        <main className="bg-white rounded-2xl border border-gray-200 p-6 min-h-[600px] shadow-sm">
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
-            <h2 className="text-xl font-semibold text-gray-700 capitalize">
+        <main className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 min-h-[400px] sm:min-h-[600px] shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mb-6 pb-4 border-b border-gray-100">
+            <h2 className="text-base sm:text-xl font-semibold text-gray-700 capitalize">
               {selectedDate &&
                 format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
             </h2>
             {isAvailableToday && (
-              <Badge className="py-1 px-4">Dia de Atendimento</Badge>
+              <Badge className="py-1 px-4 w-fit">Dia de Atendimento</Badge>
             )}
           </div>
 
