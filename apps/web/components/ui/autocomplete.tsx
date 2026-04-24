@@ -8,7 +8,7 @@ interface AutocompleteItem {
   id: string;
   label: string;
   email?: string;
-  [key: string]: any;
+  [key: string]: string | undefined;
 }
 
 interface AutocompleteProps {
@@ -84,7 +84,7 @@ export function Autocomplete({
       setSelectedItem(null);
       setSearchValue('');
     }
-  }, [value]);
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div ref={containerRef} className={cn('relative w-full', className)}>

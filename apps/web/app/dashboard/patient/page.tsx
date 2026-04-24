@@ -50,7 +50,7 @@ const PatientDashboard = () => {
         if (appointmentsData) setAppointments(appointmentsData.data);
         setProfessionals(
           (professionalsData || []).filter(
-            (p: any) => p.status !== "PENDING" && p.status !== "BLOCKED",
+            (p: Professional) => p.status !== "PENDING" && p.status !== "BLOCKED",
           ),
         );
       } catch {

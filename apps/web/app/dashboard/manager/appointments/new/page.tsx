@@ -45,8 +45,6 @@ const NewApointmentPage = () => {
   
     const {
     control,
-    register,
-    handleSubmit,
     watch,
     formState: { errors },
   } = useForm<NewAppointmentSchema>({
@@ -117,7 +115,7 @@ const NewApointmentPage = () => {
                 control={control}
                 render={({ field }) => (
                   <Autocomplete
-                    items={patients.map((p: any) => ({
+                    items={patients.map((p: { id: string; email: string; name?: string }) => ({
                       id: p.id,
                       email: p.email,
                       label: p.name || p.email,

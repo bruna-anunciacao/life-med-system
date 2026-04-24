@@ -101,7 +101,7 @@ export function useAdminUserForm() {
   };
 
   useEffect(() => { setIsEditing(searchParams.get("edit") === "1"); }, [searchParams]);
-  useEffect(() => { void loadProfile(); }, [id]);
+  useEffect(() => { void loadProfile(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmitPatient = async (data: PatientFormSchema) => {
     if (!user) return;

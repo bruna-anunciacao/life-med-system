@@ -49,7 +49,7 @@ export default function AppointmentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {appointments.map((appointment: any) => (
+                {appointments.map((appointment: { id: string; patient?: { name?: string; email?: string }; professional?: { name?: string; email?: string }; dateTime: string; status?: string }) => (
                   <tr key={appointment.id} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {appointment.patient?.name || appointment.patient?.email || '-'}

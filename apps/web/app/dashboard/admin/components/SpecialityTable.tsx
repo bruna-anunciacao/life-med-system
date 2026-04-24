@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EditIcon, TrashIcon } from "../../../utils/icons";
+
 import { useCreateSpeciality } from "@/queries/useCreateSpeciality";
 import { useUpdateSpeciality } from "@/queries/useUpdateSpeciality";
 import { useDeleteSpeciality } from "@/queries/useDeleteSpeciality";

@@ -3,7 +3,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
 import { useUserQuery } from "@/queries/useUserQuery";
 import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
 import { useListAppointmentsQuery } from "@/queries/useListAppointmentsQuery";
@@ -12,7 +11,6 @@ import { Users, Calendar, FileText, Plus } from "lucide-react";
 import Link from "next/link";
 
 const ManagerDashboard = () => {
-  const router = useRouter();
   const { data: user, isLoading: loadingUser } = useUserQuery();
   const { data: patients = [], isLoading: loadingPatients } = useListPatientsQuery();
   const { data: appointments = [], isLoading: loadingAppointments } = useListAppointmentsQuery();

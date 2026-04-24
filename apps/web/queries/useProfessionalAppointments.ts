@@ -43,7 +43,7 @@ export function useUpdateAppointmentStatusMutation() {
 
       toast.success("Status atualizado com sucesso!");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || "Erro ao atualizar status.");
     },
   });
