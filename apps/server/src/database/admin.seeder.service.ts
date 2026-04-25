@@ -39,7 +39,7 @@ export class AdminSeederService implements OnModuleInit {
     }
 
     const salt = await bcrypt.genSalt();
-    const hashedPassword = await bcrypt.hash(adminPassword as string, salt);
+    const hashedPassword = await bcrypt.hash(adminPassword, salt);
 
     try {
       await this.prisma.user.create({

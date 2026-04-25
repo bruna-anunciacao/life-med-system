@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   appointmentsService,
   AppointmentSlot,
@@ -31,7 +32,7 @@ interface BookingModalProps {
     id: string;
     name: string;
     professionalProfile?: {
-      specialty: string;
+      specialities?: { id: string; name: string }[];
       price?: number | null;
     } | null;
   } | null;
@@ -45,6 +46,7 @@ export function BookingModal({
   professional,
 }: BookingModalProps) {
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [notes, setNotes] = useState("");
@@ -104,6 +106,9 @@ export function BookingModal({
         });
       }
 
+      void queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+      void queryClient.invalidateQueries({ queryKey: ["appointments"] });
+
       toast.success("Consulta agendada com sucesso!");
 
       if (onSuccess) {
@@ -149,7 +154,7 @@ export function BookingModal({
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               {professional.name} -{" "}
-              {professional.professionalProfile?.specialty || "Especialidade"}
+              {professional.professionalProfile?.specialities?.[0]?.name || "Especialidade"}
             </p>
           </DialogHeader>
 

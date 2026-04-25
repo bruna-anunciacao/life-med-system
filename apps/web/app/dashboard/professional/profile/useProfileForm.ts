@@ -84,6 +84,7 @@ export function useProfileForm() {
       setIsSaving(true);
       await usersService.updateProfile({
         ...data,
+        specialty: data.specialty ? [data.specialty] : undefined,
         modality: data.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
         socialLinks: {
           linkedin: data.socialLinks.referenceLink,

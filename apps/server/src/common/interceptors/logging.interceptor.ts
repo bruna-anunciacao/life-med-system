@@ -23,9 +23,7 @@ export class LoggingInterceptor implements NestInterceptor {
     'authorization',
   ]);
 
-  private sanitizeBody(
-    body: Record<string, unknown>,
-  ): Record<string, unknown> {
+  private sanitizeBody(body: Record<string, unknown>): Record<string, unknown> {
     if (!body || typeof body !== 'object' || Array.isArray(body)) return body;
     const sanitized = { ...body };
     for (const key of Object.keys(sanitized)) {
@@ -48,7 +46,9 @@ export class LoggingInterceptor implements NestInterceptor {
 
     let bodyStr = '[unserializable]';
     try {
-      bodyStr = JSON.stringify(this.sanitizeBody(body as Record<string, unknown>));
+      bodyStr = JSON.stringify(
+        this.sanitizeBody(body as Record<string, unknown>),
+      );
     } catch {}
 
     this.logger.log(

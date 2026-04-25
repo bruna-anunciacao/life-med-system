@@ -51,7 +51,7 @@ export default function PatientsPage() {
                 </tr>
               </thead>
               <tbody>
-                {patients.map((patient: any) => (
+                {patients.map((patient: { id: string; name: string; email: string; patientProfile?: { phone?: string; dateOfBirth?: string; gender?: string } }) => (
                   <tr key={patient.id} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-900">{patient.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{patient.email}</td>

@@ -60,7 +60,7 @@ export function usePatientProfileForm() {
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCancel = () => {
     if (user) {

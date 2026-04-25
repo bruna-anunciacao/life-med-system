@@ -15,14 +15,18 @@ import {
 import { AppointmentModality } from '@prisma/client';
 
 export class RegisterProfessionalDto {
-  @ApiProperty({ example: 'medico@email.com', description: 'E-mail do profissional' })
+  @ApiProperty({
+    example: 'medico@email.com',
+    description: 'E-mail do profissional',
+  })
   @IsEmail({}, { message: 'Email inválido' })
   @IsNotEmpty({ message: 'Email é obrigatório' })
   email!: string;
 
   @ApiProperty({
     example: 'Senha@123',
-    description: 'Senha forte (mín. 8, máx. 64 chars; deve ter maiúscula, minúscula, número e especial)',
+    description:
+      'Senha forte (mín. 8, máx. 64 chars; deve ter maiúscula, minúscula, número e especial)',
     minLength: 8,
     maxLength: 64,
   })
@@ -44,7 +48,12 @@ export class RegisterProfessionalDto {
   })
   password!: string;
 
-  @ApiProperty({ example: 'Dr. Carlos Mendes', description: 'Nome completo', minLength: 2, maxLength: 100 })
+  @ApiProperty({
+    example: 'Dr. Carlos Mendes',
+    description: 'Nome completo',
+    minLength: 2,
+    maxLength: 100,
+  })
   @IsString({ message: 'Nome deve ser texto' })
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   @MinLength(2, { message: 'Nome deve ter no mínimo 2 caracteres' })
@@ -54,7 +63,12 @@ export class RegisterProfessionalDto {
   })
   name!: string;
 
-  @ApiProperty({ example: 'CRM12345', description: 'Registro profissional (mín. 4, máx. 20 chars)', minLength: 4, maxLength: 20 })
+  @ApiProperty({
+    example: 'CRM12345',
+    description: 'Registro profissional (mín. 4, máx. 20 chars)',
+    minLength: 4,
+    maxLength: 20,
+  })
   @IsString({ message: 'Registro profissional deve ser texto' })
   @IsNotEmpty({ message: 'Registro profissional é obrigatório' })
   @MinLength(4, {
@@ -88,7 +102,11 @@ export class RegisterProfessionalDto {
 
   @ApiPropertyOptional({
     description: 'Links de redes sociais do profissional',
-    example: { referenceLink: 'https://site.com', instagram: 'https://instagram.com/medico', other: '' },
+    example: {
+      referenceLink: 'https://site.com',
+      instagram: 'https://instagram.com/medico',
+      other: '',
+    },
   })
   @IsOptional()
   @IsObject()
@@ -98,13 +116,20 @@ export class RegisterProfessionalDto {
     other?: string;
   };
 
-  @ApiPropertyOptional({ example: 'Médico cardiologista com 10 anos de experiência.', description: 'Biografia (máx. 500 chars)', maxLength: 500 })
+  @ApiPropertyOptional({
+    example: 'Médico cardiologista com 10 anos de experiência.',
+    description: 'Biografia (máx. 500 chars)',
+    maxLength: 500,
+  })
   @IsOptional()
   @IsString({ message: 'Biografia deve ser texto' })
   @MaxLength(500, { message: 'Biografia deve ter no máximo 500 caracteres' })
   bio?: string;
 
-  @ApiProperty({ example: '12345678900', description: 'CPF do profissional (somente números)' })
+  @ApiProperty({
+    example: '12345678900',
+    description: 'CPF do profissional (somente números)',
+  })
   @IsString({ message: 'CPF deve ser texto' })
   @IsNotEmpty({ message: 'CPF é obrigatório' })
   cpf!: string;

@@ -12,14 +12,18 @@ import {
 import { Type } from 'class-transformer';
 
 export class RegisterDto {
-  @ApiProperty({ example: 'paciente@email.com', description: 'E-mail do usuário' })
+  @ApiProperty({
+    example: 'paciente@email.com',
+    description: 'E-mail do usuário',
+  })
   @IsEmail({}, { message: 'Email inválido' })
   @IsNotEmpty({ message: 'Email é obrigatório' })
   email!: string;
 
   @ApiProperty({
     example: 'Senha@123',
-    description: 'Senha forte (mín. 8, máx. 64 chars; deve ter maiúscula, minúscula, número e especial)',
+    description:
+      'Senha forte (mín. 8, máx. 64 chars; deve ter maiúscula, minúscula, número e especial)',
     minLength: 8,
     maxLength: 64,
   })
@@ -41,7 +45,12 @@ export class RegisterDto {
   })
   password!: string;
 
-  @ApiProperty({ example: 'João da Silva', description: 'Nome completo (mín. 2, máx. 100 chars)', minLength: 2, maxLength: 100 })
+  @ApiProperty({
+    example: 'João da Silva',
+    description: 'Nome completo (mín. 2, máx. 100 chars)',
+    minLength: 2,
+    maxLength: 100,
+  })
   @IsString({ message: 'Nome deve ser texto' })
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   @MinLength(2, { message: 'Nome deve ter no mínimo 2 caracteres' })
@@ -51,7 +60,10 @@ export class RegisterDto {
   })
   name!: string;
 
-  @ApiProperty({ example: '+5571999999999', description: 'Telefone no formato internacional' })
+  @ApiProperty({
+    example: '+5571999999999',
+    description: 'Telefone no formato internacional',
+  })
   @IsString({ message: 'Telefone deve ser texto' })
   @IsNotEmpty({ message: 'Telefone é obrigatório' })
   @Matches(/^\+[1-9]\d{6,14}$/, {
@@ -60,12 +72,18 @@ export class RegisterDto {
   })
   phone!: string;
 
-  @ApiProperty({ example: '12345678900', description: 'CPF do usuário (somente números)' })
+  @ApiProperty({
+    example: '12345678900',
+    description: 'CPF do usuário (somente números)',
+  })
   @IsString({ message: 'CPF deve ser texto' })
   @IsNotEmpty({ message: 'CPF é obrigatório' })
   cpf!: string;
 
-  @ApiProperty({ example: '1990-05-20', description: 'Data de nascimento (ISO 8601)' })
+  @ApiProperty({
+    example: '1990-05-20',
+    description: 'Data de nascimento (ISO 8601)',
+  })
   @Type(() => Date)
   @IsDate({ message: 'Data de nascimento inválida' })
   @IsNotEmpty({ message: 'Data de nascimento é obrigatória' })

@@ -4,7 +4,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from './mail.service';
 
 const VERIFICATION_TOKEN_TTL_HOURS = 24;
-const getFrontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3000';
+const getFrontendUrl = () =>
+  process.env.FRONTEND_URL || 'http://localhost:3000';
 
 @Injectable()
 export class EmailVerificationService {
@@ -13,7 +14,11 @@ export class EmailVerificationService {
     private readonly mailService: MailService,
   ) {}
 
-  async sendVerification(user: { id: string; name: string; email: string }): Promise<void> {
+  async sendVerification(user: {
+    id: string;
+    name: string;
+    email: string;
+  }): Promise<void> {
     const token = randomUUID();
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + VERIFICATION_TOKEN_TTL_HOURS);
@@ -37,9 +42,12 @@ export class EmailVerificationService {
     });
 
     if (!verification) throw new BadRequestException('Token inválido');
-    if (verification.expiresAt < new Date()) throw new BadRequestException('Token expirado');
+    if (verification.expiresAt < new Date())
+      throw new BadRequestException('Token expirado');
 
-    await this.prisma.emailVerification.delete({ where: { id: verification.id } });
+    await this.prisma.emailVerification.delete({
+      where: { id: verification.id },
+    });
 
     return verification.user;
   }
@@ -48,12 +56,20 @@ export class EmailVerificationService {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user || user.emailVerified) {
-      return { message: 'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.' };
+      return {
+        message:
+          'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.',
+      };
     }
 
-    await this.prisma.emailVerification.deleteMany({ where: { userId: user.id } });
+    await this.prisma.emailVerification.deleteMany({
+      where: { userId: user.id },
+    });
     await this.sendVerification(user);
 
-    return { message: 'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.' };
+    return {
+      message:
+        'Se o e-mail estiver cadastrado e pendente, enviaremos um novo link.',
+    };
   }
 }

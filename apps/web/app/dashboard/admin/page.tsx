@@ -1,64 +1,42 @@
 "use client";
 
-import { usersService } from "../../../services/users-service";
+import Link from "next/link";
+import { Stethoscope } from "lucide-react";
+import { adminService } from "../../../services/admin-service";
 import { toast } from "sonner";
 import { UsersTable } from "./components/UsersTable";
-import { LoadingPage } from "@/components/shared/LoadingPage";
-import { usePatientsQuery } from "@/queries/usePatientsQuery";
-import { useAllProfessionalsQuery } from "@/queries/useAllProfessionalsQuery";
 import { useQueryClient } from "@tanstack/react-query";
-import { SpecialitiesTable } from "./components/SpecialityTable";
-import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
 
 const AdminDashboard = () => {
   const queryClient = useQueryClient();
-  const { data: patients = [], isLoading: loadingPatients } = usePatientsQuery();
-  const { data: professionals = [], isLoading: loadingProfessionals } = useAllProfessionalsQuery();
-  const { data: specialities = [], isLoading: loadingSpecialities } = useSpecialitiesQuery();
 
   const handleStatusChange = async (
     userId: string,
     newStatus: "VERIFIED" | "BLOCKED",
-    listType: "patient" | "professional",
   ) => {
     try {
-      await usersService.updateUserStatus(userId, newStatus);
-      toast.success(`Status atualizado`);
-      queryClient.invalidateQueries({ queryKey: [listType === "patient" ? "patients" : "admin-professionals"] });
+      await adminService.updateUser(userId, { status: newStatus });
+      toast.success("Status atualizado");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (error) {
       console.error(error);
       toast.error("Erro ao atualizar status");
     }
   };
 
-  if (loadingPatients || loadingProfessionals) {
-    return <LoadingPage />;
-  }
+  const manageSpecialitiesLink = (
+    <Link
+      href="/dashboard/admin/specialidades"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+    >
+      <Stethoscope className="h-3.5 w-3.5" />
+      Gerenciar Especialidades
+    </Link>
+  );
 
   return (
-    <section className="min-h-screen mx-auto px-8 py-8 flex flex-col items-center bg-gray-100">
-      <div className="mb-10">
-        <h1 className="text-4xl text-center font-bold tracking-tight text-gray-900">Painel Administrativo</h1>
-        <p className="mt-2 text-base text-gray-500">Gerencie permissões e visualize usuários do sistema.</p>
-      </div>
-
-      <UsersTable
-        users={patients}
-        listType="patient"
-        title="Pacientes"
-        emptyMessage="Nenhum paciente encontrado."
-        onStatusChange={handleStatusChange}
-      />
-
-      <UsersTable
-        users={professionals}
-        listType="professional"
-        title="Profissionais"
-        emptyMessage="Nenhum profissional encontrado."
-        onStatusChange={handleStatusChange}
-      />
-
-      <SpecialitiesTable specialities={specialities} />
+    <section className="px-4 py-4 sm:px-6 sm:py-6">
+      <UsersTable onStatusChange={handleStatusChange} actions={manageSpecialitiesLink} />
     </section>
   );
 };
