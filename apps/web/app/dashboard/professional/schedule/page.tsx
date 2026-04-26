@@ -45,8 +45,8 @@ const SchedulePage = () => {
         appointments: [] as Appointment[],
         timeSlots: [] as string[],
         isAvailableToday: true,
-      };
-
+      };  
+  
     const appts = scheduleData.appointments as Appointment[];
 
     if (!scheduleData.availability)
@@ -83,7 +83,7 @@ const SchedulePage = () => {
       parseInt(slotHourStr || "0", 10) * 60 +
       parseInt(slotMinuteStr || "0", 10);
 
-    return appointments.find((apt) => {
+    const overlappingApts = appointments.filter((apt) => {
       const aptDate = new Date(apt.dateTime);
 
       if (!isSameDay(aptDate, selectedDate)) return false;
@@ -95,6 +95,12 @@ const SchedulePage = () => {
         slotTotalMinutes >= aptTotalMinutes && slotTotalMinutes < aptEndMinutes
       );
     });
+
+    if (overlappingApts.length === 0) return undefined;
+
+    const activeApt = overlappingApts.find((apt) => apt.status !== "CANCELLED");
+
+    return activeApt || overlappingApts[0];
   };
 
   const handleStatusChange = (

@@ -38,6 +38,11 @@ interface BookingModalProps {
   } | null;
 }
 
+const timeToMins = (time: string) => {
+  const [h, m] = time.split(":");
+  return parseInt(h || "0", 10) * 60 + parseInt(m || "0", 10);
+};
+
 export function BookingModal({
   isOpen,
   onOpenChange,
@@ -135,7 +140,26 @@ export function BookingModal({
 
   if (!professional) return null;
 
-  const availableSlots = slots.filter((s) => s.available);
+  const APPOINTMENT_DURATION = 60;
+
+  const bookedMins = slots
+    .filter((s) => !s.available)
+    .map((s) => timeToMins(s.time));
+
+  const availableSlots = slots.filter((slot) => {
+    if (!slot.available) return false;
+
+    const slotStart = timeToMins(slot.time);
+    const slotEnd = slotStart + APPOINTMENT_DURATION;
+
+    const hasOverlap = bookedMins.some((bookedStart) => {
+      const bookedEnd = bookedStart + APPOINTMENT_DURATION;
+      return slotStart < bookedEnd && slotEnd > bookedStart;
+    });
+
+    return !hasOverlap;
+  });
+
   const price = professional.professionalProfile?.price;
 
   return (
