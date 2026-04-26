@@ -64,9 +64,12 @@ const SchedulePage = () => {
       scheduleData.availability.endTime.split(":")[0],
       10,
     );
+
     const slots: string[] = [];
     for (let i = startHour; i < endHour; i++) {
-      slots.push(`${i.toString().padStart(2, "0")}:00`);
+      const hourStr = i.toString().padStart(2, "0");
+      slots.push(`${hourStr}:00`);
+      slots.push(`${hourStr}:30`);
     }
 
     return { appointments: appts, timeSlots: slots, isAvailableToday: true };
@@ -74,11 +77,22 @@ const SchedulePage = () => {
 
   const getAppointmentForSlot = (slotTime: string) => {
     if (!selectedDate) return undefined;
+
+    const [slotHourStr, slotMinuteStr] = slotTime.split(":");
+    const slotTotalMinutes =
+      parseInt(slotHourStr || "0", 10) * 60 +
+      parseInt(slotMinuteStr || "0", 10);
+
     return appointments.find((apt) => {
       const aptDate = new Date(apt.dateTime);
+
+      if (!isSameDay(aptDate, selectedDate)) return false;
+
+      const aptTotalMinutes = aptDate.getHours() * 60 + aptDate.getMinutes();
+      const aptEndMinutes = aptTotalMinutes + 60;
+
       return (
-        isSameDay(aptDate, selectedDate) &&
-        aptDate.getHours().toString().padStart(2, "0") + ":00" === slotTime
+        slotTotalMinutes >= aptTotalMinutes && slotTotalMinutes < aptEndMinutes
       );
     });
   };
@@ -137,6 +151,7 @@ const SchedulePage = () => {
               timeSlots={timeSlots}
               getAppointmentForSlot={getAppointmentForSlot}
               onStatusChange={handleStatusChange}
+              selectedDate={selectedDate}
             />
           </div>
         </main>
