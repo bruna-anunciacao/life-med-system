@@ -10,7 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 import { useProfessionalSettingsQuery } from "@/queries/useProfessionalAppointments";
 import { useScheduleModalForm } from "./useScheduleModalForm";
 
@@ -35,6 +36,93 @@ const paymentMethods = [
   { value: "cash", label: "Dinheiro" },
   { value: "free", label: "Gratuito" },
 ];
+
+// ---------------------------------------------------------------------------
+// Sub-components — each accepts only primitive props (low coupling)
+// ---------------------------------------------------------------------------
+
+type SectionLabelProps = { title: string; description?: string };
+
+const SectionLabel = ({ title, description }: SectionLabelProps) => (
+  <div className="mb-3">
+    <h3 className="text-sm font-semibold text-gray-800 tracking-wide uppercase">
+      {title}
+    </h3>
+    {description && (
+      <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+    )}
+  </div>
+);
+
+type ModalityCardProps = {
+  label: string;
+  description: string;
+  selected: boolean;
+  onClick: () => void;
+};
+
+const ModalityCard = ({ label, description, selected, onClick }: ModalityCardProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "flex flex-col gap-1 p-4 rounded-lg border-2 text-left w-full transition-colors duration-150 cursor-pointer",
+      selected
+        ? "border-gray-900 bg-gray-50"
+        : "border-gray-200 bg-white hover:border-gray-300"
+    )}
+  >
+    <span className={cn("text-sm font-semibold", selected ? "text-gray-900" : "text-gray-700")}>
+      {label}
+    </span>
+    <span className={cn("text-xs leading-tight", selected ? "text-gray-600" : "text-gray-400")}>
+      {description}
+    </span>
+  </button>
+);
+
+type PaymentChipProps = { label: string; selected: boolean; onClick: () => void };
+
+const PaymentChip = ({ label, selected, onClick }: PaymentChipProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={cn(
+      "px-4 py-2 rounded-md border text-sm font-medium transition-colors duration-150 cursor-pointer",
+      selected
+        ? "border-gray-900 bg-gray-900 text-white"
+        : "border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-800"
+    )}
+  >
+    {label}
+  </button>
+);
+
+type ToggleSwitchProps = { checked: boolean; onChange: () => void };
+
+const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    onClick={onChange}
+    className={cn(
+      "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2",
+      checked ? "bg-gray-900" : "bg-gray-200"
+    )}
+  >
+    <span
+      className={cn(
+        "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform duration-150",
+        checked ? "translate-x-4" : "translate-x-0"
+      )}
+    />
+  </button>
+);
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 
 const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
   const [localAvailability, setLocalAvailability] = useState(defaultAvailability);
@@ -125,165 +213,230 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="w-full max-w-[850px] p-6 flex flex-col overflow-auto rounded-2xl bg-white text-black">
-          <DialogHeader className="flex flex-col items-center text-center mb-4">
-            <h2 className="text-2xl font-semibold">Gerenciar Atendimento</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Defina sua disponibilidade e informações de consulta.
-            </p>
-          </DialogHeader>
+      <DialogContent className="max-w-2xl w-full max-h-[92vh] overflow-y-auto p-0 sm:max-w-2xl">
+        {/* Header */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100">
+          <h2 className="text-lg font-semibold text-gray-900">Gerenciar Atendimento</h2>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Defina sua disponibilidade e informações de consulta.
+          </p>
+        </DialogHeader>
 
-          <div className="gap-6 pb-6">
-            {isLoadingData ? (
-              <div className="flex justify-center items-center py-10">
-                <Spinner size="lg" />
-              </div>
-            ) : (
-              <>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Detalhes da Consulta</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-[0.35rem] w-full">
-                      <label htmlFor="modality">Modalidade de atendimento</label>
-                      <select
-                        id="modality"
-                        className="w-full h-[42px] px-3 rounded-lg border border-gray-300 text-[0.9rem] transition-colors duration-200 focus:outline-none focus:border-blue-600"
-                        {...register("modality")}
-                      >
-                        <option value="VIRTUAL">Virtual</option>
-                        <option value="HOME_VISIT">Domiciliar</option>
-                        <option value="CLINIC">Clínica</option>
-                      </select>
-                      {errors.modality && (
-                        <span className="text-red-500 text-xs mt-1">{errors.modality.message}</span>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-[0.35rem] w-full">
-                      <label htmlFor="price">Valor da Consulta</label>
+        {/* Body */}
+        <div className="px-6 py-5">
+          {isLoadingData ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Spinner size="lg" />
+              <p className="text-sm text-gray-400">Carregando configurações...</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+
+              {/* Section 1 — Detalhes da Consulta */}
+              <div>
+                <SectionLabel title="Detalhes da Consulta" />
+                <input type="hidden" {...register("modality")} />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <ModalityCard
+                    label="Virtual"
+                    description="Atendimento por videochamada"
+                    selected={currentModality === "VIRTUAL"}
+                    onClick={() => setValue("modality", "VIRTUAL", { shouldValidate: true })}
+                  />
+                  <ModalityCard
+                    label="Domiciliar"
+                    description="Atendimento na residência do paciente"
+                    selected={currentModality === "HOME_VISIT"}
+                    onClick={() => setValue("modality", "HOME_VISIT", { shouldValidate: true })}
+                  />
+                  <ModalityCard
+                    label="Clínica"
+                    description="Atendimento em consultório físico"
+                    selected={currentModality === "CLINIC"}
+                    onClick={() => setValue("modality", "CLINIC", { shouldValidate: true })}
+                  />
+                </div>
+                {errors.modality && (
+                  <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.modality.message}
+                  </p>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  {/* Price */}
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="price" className="text-xs font-medium text-gray-600">
+                      Valor da Consulta
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none select-none">
+                        R$
+                      </span>
                       <input
                         type="text"
                         id="price"
-                        placeholder="R$ 0,00"
-                        value={priceDisplay}
+                        placeholder="0,00"
+                        value={priceDisplay.replace(/^R\$\s*/, "")}
                         onChange={handlePriceChange}
-                        className="w-full h-[42px] px-3 rounded-lg border border-gray-300 text-[0.9rem] transition-colors duration-200 focus:outline-none focus:border-blue-600"
+                        className="w-full h-9 pl-9 pr-3 rounded-md border border-gray-200 text-sm transition-colors focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
                       />
-                      {errors.price ? (
-                        <span className="text-red-500 text-xs mt-1">{errors.price.message}</span>
-                      ) : (
-                        <span className="pl-4 text-xs text-red-600">* Pagamentos externos ao sistema.</span>
-                      )}
                     </div>
-                    {currentModality === "CLINIC" && (
-                      <div className="flex flex-col gap-[0.35rem] w-full col-span-1 md:col-span-2">
-                        <label htmlFor="address">Endereço da Clínica</label>
-                        <input
-                          type="text"
-                          id="address"
-                          placeholder="Ex: Rua das Flores, 123 - Sala 4"
-                          className="w-full h-[42px] px-3 rounded-lg border border-gray-300 text-[0.9rem] transition-colors duration-200 focus:outline-none focus:border-blue-600"
-                          {...register("address")}
-                        />
-                        {errors.address && (
-                          <span className="text-red-500 text-xs mt-1">{errors.address.message}</span>
-                        )}
-                      </div>
+                    {errors.price ? (
+                      <p className="text-xs text-red-500 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.price.message}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-amber-700 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        Pagamentos externos ao sistema.
+                      </p>
                     )}
                   </div>
-                </div>
 
-                <Separator className="my-4" />
-
-                <div className="w-1/2 flex flex-col gap-[0.6rem]">
-                  <label className="text-lg font-semibold mb-2">Métodos de pagamento aceitos</label>
-                  {errors.payments && (
-                    <span className="text-red-500 text-xs mb-2 block">{errors.payments.message}</span>
-                  )}
-                  <div className="flex flex-wrap gap-4 mt-2">
-                    {paymentMethods.map((option) => (
-                      <label key={option.value} className="flex items-center gap-2 text-[0.9rem] cursor-pointer">
-                        <input
-                          type="checkbox"
-                          value={option.value}
-                          checked={localPayments.includes(option.value)}
-                          onChange={(e) => handleTogglePayment(option.value, e.target.checked)}
-                        />
-                        <span>{option.label}</span>
+                  {/* Address — shown only for CLINIC */}
+                  {currentModality === "CLINIC" && (
+                    <div className="flex flex-col gap-1.5 sm:col-span-1">
+                      <label htmlFor="address" className="text-xs font-medium text-gray-600">
+                        Endereço da Clínica
                       </label>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator className="my-4" />
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Horários de Disponibilidade</h3>
-                  <p className="text-[0.85rem] text-[#8a91a0] mb-4">
-                    Selecione os dias da semana e a janela de horário que você atende.
-                  </p>
-                  {errors.availability && (
-                    <span className="text-red-500 text-xs mb-2 block">{errors.availability.message}</span>
+                      <input
+                        type="text"
+                        id="address"
+                        placeholder="Ex: Rua das Flores, 123 — Sala 4"
+                        className="w-full h-9 px-3 rounded-md border border-gray-200 text-sm transition-colors focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                        {...register("address")}
+                      />
+                      {errors.address && (
+                        <p className="text-xs text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.address.message}
+                        </p>
+                      )}
+                    </div>
                   )}
-                  <div className="flex flex-col gap-4 mt-4">
-                    {localAvailability.map((day) => (
-                      <div key={day.id} className="w-full px-2 flex justify-between gap-4 bg-gray-100 rounded-lg">
-                        <div className="flex items-center gap-3 w-40">
-                          <label className="flex gap-2">
-                            <input
-                              type="checkbox"
-                              checked={day.active}
-                              onChange={() => handleToggleDay(day.id)}
-                            />
-                            <span></span>
-                            <span className={`text-sm transition-colors duration-200 ${day.active ? "text-gray-900 font-medium" : "text-gray-400"}`}>
-                              {day.label}
-                            </span>
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="time"
-                            value={day.start}
-                            disabled={!day.active}
-                            onChange={(e) => handleTimeChange(day.id, "start", e.target.value)}
-                            className="w-28"
-                          />
-                          <span className="text-gray-400">até</span>
-                          <Input
-                            type="time"
-                            value={day.end}
-                            disabled={!day.active}
-                            onChange={(e) => handleTimeChange(day.id, "end", e.target.value)}
-                            className="w-28"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
-              </>
-            )}
-          </div>
+              </div>
 
-          <DialogFooter className="flex justify-end gap-3 mt-4">
-            <Button
-              variant="destructive"
-              size="lg"
-              onClick={closeModal}
-              disabled={isSaving || isLoadingData}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="lg"
-              onClick={() => handleSubmit(onSubmit)()}
-              disabled={isSaving || isLoadingData}
-            >
-              {isSaving ? "Salvando..." : "Salvar Configurações"}
-            </Button>
-          </DialogFooter>
+              {/* Divider */}
+              <div className="border-t border-gray-100" />
+
+              {/* Section 2 — Métodos de Pagamento */}
+              <div>
+                <SectionLabel title="Métodos de Pagamento Aceitos" />
+                {errors.payments && (
+                  <p className="text-xs text-red-500 mb-3 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.payments.message}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {paymentMethods.map((option) => (
+                    <PaymentChip
+                      key={option.value}
+                      label={option.label}
+                      selected={localPayments.includes(option.value)}
+                      onClick={() => handleTogglePayment(option.value, !localPayments.includes(option.value))}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-gray-100" />
+
+              {/* Section 3 — Horários de Disponibilidade */}
+              <div>
+                <SectionLabel
+                  title="Horários de Disponibilidade"
+                  description="Selecione os dias da semana e a janela de horário que você atende."
+                />
+                {errors.availability && (
+                  <p className="text-xs text-red-500 mb-3 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.availability.message}
+                  </p>
+                )}
+                <div className="flex flex-col gap-1.5">
+                  {localAvailability.map((day) => (
+                    <div
+                      key={day.id}
+                      className={cn(
+                        "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 px-3 py-2.5 rounded-md border transition-colors duration-150",
+                        day.active ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50"
+                      )}
+                    >
+                      {/* Left: toggle + day name */}
+                      <div className="flex items-center gap-3 min-w-[160px]">
+                        <ToggleSwitch
+                          checked={day.active}
+                          onChange={() => handleToggleDay(day.id)}
+                        />
+                        <span className={cn(
+                          "text-sm font-medium transition-colors duration-150",
+                          day.active ? "text-gray-900" : "text-gray-400"
+                        )}>
+                          {day.label}
+                        </span>
+                      </div>
+
+                      {/* Right: time range */}
+                      <div className={cn(
+                        "flex items-center gap-2 w-full sm:w-auto transition-opacity duration-150",
+                        !day.active && "opacity-40 pointer-events-none"
+                      )}>
+                        <Input
+                          type="time"
+                          value={day.start}
+                          disabled={!day.active}
+                          onChange={(e) => handleTimeChange(day.id, "start", e.target.value)}
+                          className="h-8 text-sm w-full sm:w-[110px]"
+                        />
+                        <span className="text-gray-300 text-sm flex-shrink-0">—</span>
+                        <Input
+                          type="time"
+                          value={day.end}
+                          disabled={!day.active}
+                          onChange={(e) => handleTimeChange(day.id, "end", e.target.value)}
+                          className="h-8 text-sm w-full sm:w-[110px]"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
         </div>
+
+        {/* Footer */}
+        <DialogFooter className="mx-0 mb-0 px-6 py-4 border-t border-gray-100 bg-white rounded-b-xl sticky bottom-0">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={closeModal}
+            disabled={isSaving || isLoadingData}
+          >
+            Cancelar
+          </Button>
+          <Button
+            size="lg"
+            onClick={() => handleSubmit(onSubmit)()}
+            disabled={isSaving || isLoadingData}
+            className="min-w-[160px]"
+          >
+            {isSaving ? (
+              <span className="flex items-center gap-2">
+                <Spinner size="sm" />
+                Salvando...
+              </span>
+            ) : (
+              "Salvar Configurações"
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

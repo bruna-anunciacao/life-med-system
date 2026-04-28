@@ -45,8 +45,8 @@ export function ScheduleTimeline({
       {timeSlots.map((slot) => {
         const appointment = getAppointmentForSlot(slot);
         return (
-          <div key={slot} className="flex gap-6 min-h-[90px]">
-            <div className="w-[60px] pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]">
+          <div key={slot} className="flex gap-3 sm:gap-6 min-h-[80px] sm:min-h-[90px]">
+            <div className="w-[48px] sm:w-[60px] pt-4 font-mono font-semibold text-gray-400 text-right text-xs sm:text-[0.9rem] shrink-0">
               {slot}
             </div>
             <div className="flex-1 relative pb-4 border-b border-dashed border-gray-200 last:border-b-0">
@@ -57,7 +57,7 @@ export function ScheduleTimeline({
                   onStatusChange={onStatusChange}
                 />
               ) : (
-                <div className="h-full flex items-center justify-between px-4 rounded-xl border border-transparent transition-all duration-200 cursor-pointer bg-[#fafafa] hover:bg-gray-100 hover:border-gray-200">
+                <div className="h-full flex items-center justify-between px-3 sm:px-4 rounded-xl border border-transparent transition-all duration-200 cursor-pointer bg-[#fafafa] hover:bg-gray-100 hover:border-gray-200">
                   <span className="text-gray-400 text-sm">Disponível</span>
                 </div>
               )}
