@@ -40,11 +40,6 @@ export const patientProfileSchema = z.object({
   gender: z.enum(["MALE", "FEMALE", "OTHER", "Masculino", "Feminino", "Outro", "Prefiro não informar", ""], {
     error: () => ({ message: "Selecione um gênero válido" }),
   }),
-  address: z
-    .string()
-    .max(200, "Endereço deve ter no máximo 200 caracteres")
-    .optional()
-    .or(z.literal("")),
 });
 
 export type PatientProfileSchema = z.infer<typeof patientProfileSchema>;

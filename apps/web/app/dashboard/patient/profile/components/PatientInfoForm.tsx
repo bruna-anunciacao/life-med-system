@@ -65,18 +65,6 @@ export function PatientInfoForm({ register, errors, email, isEditing }: PatientI
         </select>
         {errors.gender && <span className="text-xs text-red-600 mt-0.5">{errors.gender.message}</span>}
       </div>
-
-      <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold text-gray-700">Endereço</label>
-        <input
-          type="text"
-          className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
-          placeholder="Rua, número, bairro, cidade"
-          disabled={!isEditing}
-          {...register("address")}
-        />
-        {errors.address && <span className="text-xs text-red-600 mt-0.5">{errors.address.message}</span>}
-      </div>
     </div>
   );
 }

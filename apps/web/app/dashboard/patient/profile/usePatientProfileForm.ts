@@ -16,7 +16,6 @@ type UserProfile = {
     phone?: string;
     dateOfBirth?: string;
     gender?: string;
-    address?: string;
   };
 };
 
@@ -33,7 +32,6 @@ export function usePatientProfileForm() {
       phone: "",
       dateOfBirth: "",
       gender: "",
-      address: "",
     },
   });
 
@@ -48,8 +46,7 @@ export function usePatientProfileForm() {
         dateOfBirth: data.patientProfile?.dateOfBirth
           ? (data.patientProfile.dateOfBirth.split("T")[0] ?? "")
           : "",
-        gender: (data.patientProfile?.gender as PatientProfileSchema["gender"]) || "",
-        address: data.patientProfile?.address || "",
+        gender: (data.patientProfile?.gender as PatientProfileSchema["gender"]) || "", 
       });
     } catch {
       toast.error("Erro ao carregar perfil.");
@@ -71,7 +68,6 @@ export function usePatientProfileForm() {
           ? (String(user.patientProfile.dateOfBirth).split("T")[0] ?? "")
           : "",
         gender: (user.patientProfile?.gender as PatientProfileSchema["gender"]) || "",
-        address: user.patientProfile?.address || "",
       });
     }
     setIsEditing(false);
