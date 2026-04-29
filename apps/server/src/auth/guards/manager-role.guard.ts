@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { UserRole} from '@prisma/client';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class ManagerRoleGuard implements CanActivate {

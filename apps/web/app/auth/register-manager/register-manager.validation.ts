@@ -9,7 +9,7 @@ export const registerManagerSchema = z.object({
     .regex(/(?=.*[a-z])/, 'Senha deve conter pelo menos uma letra minúscula')
     .regex(/(?=.*[A-Z])/, 'Senha deve conter pelo menos uma letra maiúscula')
     .regex(/(?=.*\d)/, 'Senha deve conter pelo menos um número')
-    .regex(/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/, 'Senha deve conter pelo menos um caractere especial'),
+    .regex(/(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?])/, 'Senha deve conter pelo menos um caractere especial'),
   phone: z
     .string()
     .regex(/^\+[1-9]\d{6,14}$/, 'Telefone deve estar no formato internacional (ex: +5571999999999)'),

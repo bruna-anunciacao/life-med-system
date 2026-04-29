@@ -9,7 +9,10 @@ import {
 } from 'class-validator';
 
 export class RegisterAdminDto {
-  @ApiProperty({ example: 'admin@lifemedical.com', description: 'E-mail do administrador' })
+  @ApiProperty({
+    example: 'admin@lifemedical.com',
+    description: 'E-mail do administrador',
+  })
   @IsEmail({}, { message: 'Email inválido' })
   @IsNotEmpty({ message: 'Email é obrigatório' })
   email!: string;
@@ -38,14 +41,22 @@ export class RegisterAdminDto {
   })
   password!: string;
 
-  @ApiProperty({ example: 'Admin Master', description: 'Nome do administrador', minLength: 2, maxLength: 100 })
+  @ApiProperty({
+    example: 'Admin Master',
+    description: 'Nome do administrador',
+    minLength: 2,
+    maxLength: 100,
+  })
   @IsString({ message: 'Nome deve ser texto' })
   @IsNotEmpty({ message: 'Nome é obrigatório' })
   @MinLength(2, { message: 'Nome deve ter no mínimo 2 caracteres' })
   @MaxLength(100, { message: 'Nome deve ter no máximo 100 caracteres' })
   name!: string;
 
-  @ApiProperty({ example: '12345678900', description: 'CPF do administrador (somente números)' })
+  @ApiProperty({
+    example: '12345678900',
+    description: 'CPF do administrador (somente números)',
+  })
   @IsString({ message: 'CPF deve ser texto' })
   @IsNotEmpty({ message: 'CPF é obrigatório' })
   cpf!: string;

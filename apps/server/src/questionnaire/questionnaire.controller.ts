@@ -25,7 +25,7 @@ import {
 } from './dto/questionnaire-response.dto';
 import { RolesGuard } from '../auth/guards/roles-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRoleEnum } from '../auth/enums/user-role-enum';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('Questionnaire')
 @ApiBearerAuth('access-token')
@@ -35,7 +35,9 @@ export class QuestionnaireController {
 
   @Get('questionnaire/questions')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Listar definição do questionário de vulnerabilidade' })
+  @ApiOperation({
+    summary: 'Listar definição do questionário de vulnerabilidade',
+  })
   @ApiResponse({
     status: 200,
     type: QuestionnaireDefinitionResponseDto,
@@ -57,7 +59,7 @@ export class QuestionnaireController {
 
   @Post('manager/patients/:patientId/questionnaire')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRoleEnum.MANAGER)
+  @Roles(UserRole.MANAGER)
   @ApiOperation({ summary: 'Gestor cria questionário para um paciente' })
   @ApiParam({ name: 'patientId', description: 'ID do usuário paciente' })
   @ApiResponse({
@@ -78,8 +80,10 @@ export class QuestionnaireController {
 
   @Put('manager/patients/:patientId/questionnaire')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRoleEnum.MANAGER)
-  @ApiOperation({ summary: 'Gestor atualiza questionário existente de um paciente' })
+  @Roles(UserRole.MANAGER)
+  @ApiOperation({
+    summary: 'Gestor atualiza questionário existente de um paciente',
+  })
   @ApiParam({ name: 'patientId', description: 'ID do usuário paciente' })
   @ApiResponse({
     status: 200,

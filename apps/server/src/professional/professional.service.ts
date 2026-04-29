@@ -94,6 +94,96 @@ export class ProfessionalService {
     };
   }
 
+  async getPatients(userId: string) {
+    const appointments = await this.prisma.appointment.findMany({
+      where: { professionalId: userId },
+      orderBy: { dateTime: 'desc' },
+      select: {
+        dateTime: true,
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    const uniquePatients = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        email: string;
+        phone: string;
+        lastVisit: string;
+      }
+    >();
+
+    for (const appt of appointments) {
+      if (!uniquePatients.has(appt.patient.id)) {
+        uniquePatients.set(appt.patient.id, {
+          id: appt.patient.id,
+          name: appt.patient.name,
+          email: appt.patient.email,
+          phone: (appt.patient as any).phone || 'Não informado',
+          lastVisit: appt.dateTime.toISOString(),
+        });
+      }
+    }
+
+    return Array.from(uniquePatients.values());
+  }
+
+  async getPatientDetail(professionalId: string, patientId: string) {
+    const patient = await this.prisma.user.findFirst({
+      where: { id: patientId, role: 'PATIENT' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    if (!patient) {
+      throw new NotFoundException('Paciente não encontrado');
+    }
+
+    const appointments = await this.prisma.appointment.findMany({
+      where: { professionalId, patientId },
+      orderBy: { dateTime: 'desc' },
+    });
+
+    return {
+      id: patient.id,
+      name: patient.name,
+      email: patient.email,
+      phone: (patient as any).phone || 'Não informado',
+      history: appointments.map((apt) => ({
+        id: apt.id,
+        dateTime: apt.dateTime,
+        status: apt.status,
+        notes: apt.notes,
+      })),
+    };
+  }
+
+  async listAll() {
+    return this.prisma.user.findMany({
+      where: { role: 'PROFESSIONAL' },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        status: true,
+        professionalProfile: {
+          include: { specialities: true },
+        },
+      },
+    });
+  }
+
   async updateSettings(userId: string, dto: UpdateProfessionalSettingsDto) {
     const { modality, availability, address, payments, price } = dto;
 

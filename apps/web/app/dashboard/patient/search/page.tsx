@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { usersService } from "../../../../services/users-service";
+import { professionalsService } from "../../../../services/professionals-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { SearchBar } from "./components/SearchBar";
@@ -17,14 +17,14 @@ type Professional = {
   email: string;
   status: string;
   professionalProfile?: {
-    id: string;
-    specialty: string;
-    professionalLicense: string;
+    id?: string;
+    specialities?: { id: string; name: string }[];
+    professionalLicense?: string;
     modality?: string;
     bio?: string;
     photoUrl?: string;
     address?: string;
-  };
+  } | null;
 };
 
 const SearchDoctorsPage = () => {
@@ -44,7 +44,7 @@ const SearchDoctorsPage = () => {
     const load = async () => {
       try {
         setIsLoading(true);
-        const data = await usersService.getAllProfessionals();
+        const data = await professionalsService.listAll();
         setProfessionals(data);
       } catch {
         toast.error("Erro ao carregar profissionais.");
@@ -61,11 +61,11 @@ const SearchDoctorsPage = () => {
       const term = search.toLowerCase();
       const matchesSearch =
         p.name.toLowerCase().includes(term) ||
-        (p.professionalProfile?.specialty || "").toLowerCase().includes(term);
+        (p.professionalProfile?.specialities?.[0]?.name || "").toLowerCase().includes(term);
 
       const matchesSpecialty =
         selectedSpecialty === "Todas" ||
-        (p.professionalProfile?.specialty || "")
+        (p.professionalProfile?.specialities?.[0]?.name || "")
           .toLowerCase()
           .includes(selectedSpecialty.toLowerCase());
 
@@ -133,7 +133,7 @@ const SearchDoctorsPage = () => {
         onOpenChange={(open) => {
           if (!open) setSelectedProfessional(null);
         }}
-        professional={selectedProfessional as ProfessionalData}
+        professional={selectedProfessional as unknown as ProfessionalData}
       />
 
       <BookingModal
@@ -141,7 +141,7 @@ const SearchDoctorsPage = () => {
         onOpenChange={(open) => {
           if (!open) setBookingProfessional(null);
         }}
-        professional={bookingProfessional}
+        professional={bookingProfessional as unknown as Professional}
       />
     </section>
   );

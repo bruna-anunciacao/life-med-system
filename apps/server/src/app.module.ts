@@ -17,9 +17,14 @@ import { ManagerModule } from './manager/manager.module';
 import { SpecialityModule } from './speciality/speciality.module';
 import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 import { AddressesModule } from './addresses/addresses.module';
+import { AdminModule } from './admin/admin.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -32,9 +37,6 @@ import { AddressesModule } from './addresses/addresses.module';
     ProfessionalModule,
     PrismaModule,
     MailModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     PatientsModule,
     ReportsModule,
     AppointmentsModule,
@@ -42,8 +44,9 @@ import { AddressesModule } from './addresses/addresses.module';
     SpecialityModule,
     QuestionnaireModule,
     AddressesModule,
+    AdminModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [AppService, PrismaService, AdminSeederService],
 })
 export class AppModule {}

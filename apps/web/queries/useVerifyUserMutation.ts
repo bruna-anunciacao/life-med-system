@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { usersService } from "../services/users-service";
+import { adminService } from "../services/admin-service";
 
 export function useVerifyUserMutation() {
   const queryClient = useQueryClient();
@@ -11,9 +11,9 @@ export function useVerifyUserMutation() {
     }: {
       userId: string;
       emailVerified: boolean;
-    }) => usersService.verifyUser(userId, emailVerified),
+    }) => adminService.verifyUser(userId, emailVerified),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["patients"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-patients"] });
       queryClient.invalidateQueries({ queryKey: ["professionals"] });
     },
   });

@@ -21,6 +21,7 @@ const AdminUserProfilePage = () => {
     router,
     patientForm,
     professionalForm,
+    specialities,
     handleCancel,
     onSubmitPatient,
     onSubmitProfessional,
@@ -73,7 +74,7 @@ const AdminUserProfilePage = () => {
             name={user.name}
             email={user.email}
             role={user.role}
-            specialty={user.professionalProfile?.specialty}
+            specialty={user.professionalProfile?.specialities?.[0]?.name}
             photoUrl={fullPhotoUrl}
           />
 
@@ -95,6 +96,7 @@ const AdminUserProfilePage = () => {
                 register={professionalForm.register}
                 errors={professionalForm.formState.errors}
                 isEditing={isEditing}
+                specialities={specialities}
               />
             </form>
           )}

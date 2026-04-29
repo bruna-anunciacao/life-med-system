@@ -215,6 +215,49 @@ export class AppointmentsService {
     };
   }
 
+  async listProfessionalAppointments(
+    professionalId: string,
+    query: ListAppointmentsQueryDto,
+  ) {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      professionalId,
+      ...(query.status && { status: query.status }),
+      ...(query.startDate || query.endDate
+        ? {
+            dateTime: {
+              ...(query.startDate && { gte: new Date(query.startDate) }),
+              ...(query.endDate && { lte: new Date(query.endDate) }),
+            },
+          }
+        : {}),
+    };
+
+    const [appointments, total] = await Promise.all([
+      this.prisma.appointment.findMany({
+        where,
+        include: {
+          patient: true,
+          professional: true,
+        },
+        orderBy: { dateTime: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.appointment.count({ where }),
+    ]);
+
+    return {
+      data: appointments.map((a) => this.mapToResponseDto(a)),
+      page,
+      limit,
+      total,
+    };
+  }
+
   async cancelAppointment(
     appointmentId: string,
     dto: CancelAppointmentDto,
@@ -240,7 +283,7 @@ export class AppointmentsService {
       );
     }
 
-    const cancelNote = dto.reason ? `[CANCELADO] ${dto.reason}` : '[CANCELADO]';
+    const cancelNote = dto.reason ? `${dto.reason}` : '[CANCELADO]';
 
     const updatedNotes = appointment.notes
       ? `${appointment.notes}\n${cancelNote}`
@@ -317,7 +360,10 @@ export class AppointmentsService {
 
     const updated = await this.prisma.appointment.update({
       where: { id: appointmentId },
-      data: { status: dto.status },
+      data: {
+        status: dto.status,
+        notes: dto.notes,
+      },
       include: {
         patient: true,
         professional: true,

@@ -1,5 +1,7 @@
+import React, { useState, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { AppointmentCard } from "./AppointmentCard";
+import { isSameDay } from "date-fns";
 
 type Appointment = {
   id: string;
@@ -13,15 +15,26 @@ type ScheduleTimelineProps = {
   isLoading: boolean;
   isAvailableToday: boolean;
   timeSlots: string[];
+  selectedDate: Date | undefined;
   getAppointmentForSlot: (slot: string) => Appointment | undefined;
+  onStatusChange: (id: string, newStatus: string, notes?: string) => void;
 };
 
 export function ScheduleTimeline({
   isLoading,
   isAvailableToday,
   timeSlots,
+  selectedDate,
   getAppointmentForSlot,
+  onStatusChange,
 }: ScheduleTimelineProps) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-10">
@@ -38,25 +51,96 @@ export function ScheduleTimeline({
     );
   }
 
-  return (
-    <>
-      {timeSlots.map((slot) => {
-        const appointment = getAppointmentForSlot(slot);
-        return (
-          <div key={slot} className="flex gap-6 min-h-[90px]">
-            <div className="w-[60px] pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]">{slot}</div>
-            <div className="flex-1 relative pb-4 border-b border-dashed border-gray-200 last:border-b-0">
-              {appointment ? (
-                <AppointmentCard appointment={appointment} slot={slot} />
-              ) : (
-                <div className="h-full flex items-center justify-between px-4 rounded-xl border border-transparent transition-all duration-200 cursor-pointer bg-[#fafafa] hover:bg-gray-100 hover:border-gray-200">
-                  <span className="text-gray-400 text-sm">Disponível</span>
-                </div>
-              )}
+  const renderCurrentTimeLine = (startMins: number, span: number = 1) => {
+    if (!selectedDate || !isSameDay(now, selectedDate)) return null;
+
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    if (nowMins >= startMins && nowMins < startMins + span * 30) {
+      const topOffset = 26 + (nowMins - startMins) * 3;
+
+      return (
+        <div
+          className="absolute -left-3 right-0 flex items-center z-50 pointer-events-none"
+          style={{ top: `${topOffset}px` }}
+        >
+          <div className="w-2.5 h-2.5 rounded-full bg-blue-600 shadow-sm" />
+          <div className="flex-1 h-0.5 bg-blue-600 shadow-sm opacity-80" />
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const timelineRows = [];
+
+  for (let i = 0; i < timeSlots.length; i++) {
+    const slot = timeSlots[i];
+    if (!slot) continue;
+
+    const appointment = getAppointmentForSlot(slot);
+    const slotMins =
+      parseInt(slot.split(":")[0] || "0") * 60 +
+      parseInt(slot.split(":")[1] || "0");
+
+    if (appointment) {
+      let span = 1;
+
+      for (let j = i + 1; j < timeSlots.length; j++) {
+        const nextSlot = timeSlots[j];
+        if (!nextSlot) break;
+
+        if (getAppointmentForSlot(nextSlot)?.id === appointment.id) {
+          span++;
+        } else {
+          break;
+        }
+      }
+
+      const spannedSlots = timeSlots.slice(i, i + span);
+
+      timelineRows.push(
+        <div key={slot} className="flex gap-6 relative">
+          <div className="w-15 flex flex-col">
+            {spannedSlots.map((spannedSlot) => (
+              <div
+                key={spannedSlot}
+                className="h-22.5 pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]"
+              >
+                {spannedSlot}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex-1 relative pb-4 border-b border-dashed border-gray-200 last:border-b-0">
+            {renderCurrentTimeLine(slotMins, span)}
+            <div className="h-full w-full">
+              <AppointmentCard
+                appointment={appointment}
+                slot={slot}
+                onStatusChange={onStatusChange}
+              />
             </div>
           </div>
-        );
-      })}
-    </>
-  );
+        </div>,
+      );
+
+      i += span - 1;
+    } else {
+      timelineRows.push(
+        <div key={slot} className="flex gap-6 relative">
+          <div className="w-15 h-22.5 pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]">
+            {slot}
+          </div>
+          <div className="flex-1 relative pb-4 border-b border-dashed border-gray-200 last:border-b-0">
+            {renderCurrentTimeLine(slotMins, 1)}
+            <div className="h-full flex items-center justify-between px-4 rounded-xl border border-transparent transition-all duration-200 cursor-pointer bg-[#fafafa] hover:bg-gray-100 hover:border-gray-200">
+              <span className="text-gray-400 text-sm">Disponível</span>
+            </div>
+          </div>
+        </div>,
+      );
+    }
+  }
+
+  return <>{timelineRows}</>;
 }

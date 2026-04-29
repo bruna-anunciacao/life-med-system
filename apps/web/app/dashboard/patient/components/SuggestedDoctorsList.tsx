@@ -47,7 +47,7 @@ export function SuggestedDoctorsList({
                     {doc.name}
                   </p>
                   <p className="text-xs text-gray-400">
-                    {doc.professionalProfile?.specialty || ""}
+                    {doc.professionalProfile?.specialities?.[0]?.name || ""}
                   </p>
                 </div>
                 <Button

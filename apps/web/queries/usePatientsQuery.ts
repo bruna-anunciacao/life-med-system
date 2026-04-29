@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { usersService } from '../services/users-service';
+import { useQuery } from "@tanstack/react-query";
+import { adminService } from "../services/admin-service";
 
 export function usePatientsQuery() {
   return useQuery({
-    queryKey: ['patients'],
-    queryFn: usersService.getAllPatients,
+    queryKey: ["admin-users", { role: "PATIENT" }],
+    queryFn: () => adminService.listUsers({ role: "PATIENT" }),
   });
 }

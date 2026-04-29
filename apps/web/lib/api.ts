@@ -36,6 +36,7 @@ api.interceptors.response.use(
 
     const raw = error.response?.data?.message ?? error.message;
     const message = Array.isArray(raw) ? raw.join(", ") : String(raw);
-    return Promise.reject(new Error(message));
+    error.message = message;
+    return Promise.reject(error);
   },
 );

@@ -84,7 +84,7 @@ export default function NewPatientPage() {
         router.push(`/dashboard/manager/patients/${patient.id}/questionnaire`);
       },
       onError: (error: Error) => {
-        toast.error(error.message || 'Erro ao cadastrar paciente');
+        toast.error(error?.message || 'Erro ao cadastrar paciente');
       },
     });
   };
