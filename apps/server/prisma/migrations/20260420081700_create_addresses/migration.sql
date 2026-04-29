@@ -10,7 +10,6 @@ CREATE TABLE "addresses" (
     "district" TEXT NOT NULL,
     "city" TEXT NOT NULL,
     "state" TEXT NOT NULL,
-    "country" TEXT NOT NULL DEFAULT 'BR',
     
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
