@@ -175,12 +175,25 @@ export class PatientsService {
             phone: dto.phone,
             dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
             gender: dto.gender,
-            address: dto.address,
           },
         },
+        ...(dto.address && {
+          address: {
+            create: {
+              zipCode: dto.address.zipCode,
+              street: dto.address.street,
+              number: dto.address.number,
+              complement: dto.address.complement,
+              district: dto.address.district,
+              city: dto.address.city,
+              state: dto.address.state,
+            },
+          },
+        }),
       },
       include: {
         patientProfile: true,
+        address: true,
       },
     });
 
@@ -194,6 +207,7 @@ export class PatientsService {
       name: user.name,
       role: user.role,
       patientProfile: user.patientProfile,
+      address: user.address,
     };
   }
 

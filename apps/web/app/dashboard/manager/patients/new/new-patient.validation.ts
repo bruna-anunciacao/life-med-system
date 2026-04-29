@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { addressSchema } from '@/components/address/address.validation';
 
 export const newPatientSchema = z.object({
   name: z
@@ -20,7 +21,7 @@ export const newPatientSchema = z.object({
     .optional()
     .or(z.literal('')),
   gender: z.enum(['M', 'F', 'O', '']).optional(),
-  address: z.string().max(200, 'Endereço deve ter no máximo 200 caracteres').optional().or(z.literal('')),
+  address: addressSchema,
 });
 
 export type NewPatientSchema = z.infer<typeof newPatientSchema>;
