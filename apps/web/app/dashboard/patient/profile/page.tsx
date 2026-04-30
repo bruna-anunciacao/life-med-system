@@ -51,6 +51,7 @@ const PatientProfilePage = () => {
           <form id="patient-profile-form" onSubmit={form.handleSubmit(onSubmit)}>
             <PatientInfoForm
               register={form.register}
+              control={form.control}
               errors={form.formState.errors}
               email={user?.email || ""}
               isEditing={isEditing}
