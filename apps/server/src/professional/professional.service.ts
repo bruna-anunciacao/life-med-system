@@ -5,10 +5,15 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfessionalSettingsDto } from './dto/update-setting.dto';
+import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class ProfessionalService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async getSettings(userId: string) {
     const profile = await this.prisma.professionalProfile.findUnique({
@@ -80,8 +85,16 @@ export class ProfessionalService {
       },
     });
 
+    const scheduleBlocks = await this.prisma.scheduleBlock.findMany({
+      where: {
+        professionalId: userId,
+        date: dateString,
+      },
+    });
+
     return {
       availability,
+      scheduleBlocks,
       appointments: appointments.map((apt) => ({
         id: apt.id,
         dateTime: apt.dateTime,
@@ -278,5 +291,108 @@ export class ProfessionalService {
     });
 
     return result;
+  }
+
+  async createScheduleBlock(userId: string, dto: CreateScheduleBlockDto) {
+    const { date, startTime, endTime } = dto;
+    
+    if (startTime && endTime && startTime >= endTime) {
+      throw new BadRequestException('startTime deve ser anterior a endTime');
+    }
+
+    const block = await this.prisma.scheduleBlock.create({
+      data: {
+        professionalId: userId,
+        date,
+        startTime,
+        endTime,
+      },
+    });
+
+    // Cancel appointments overlapping with this block
+    // Usando offset -03:00 (Brasil) para pegar o início e fim do dia corretamente no fuso local
+    const dayStart = new Date(`${date}T00:00:00.000-03:00`);
+    const dayEnd = new Date(`${date}T23:59:59.999-03:00`);
+    
+    // Convert DB date field (String) to check overlapping appointments
+    const overlappingAppointments = await this.prisma.appointment.findMany({
+      where: {
+        professionalId: userId,
+        status: { notIn: ['CANCELLED', 'COMPLETED'] },
+        dateTime: {
+          gte: dayStart,
+          lte: dayEnd,
+        },
+      },
+      include: {
+        patient: true,
+        professional: true,
+      },
+    });
+
+    const appointmentsToCancel = overlappingAppointments.filter(apt => {
+      if (!startTime || !endTime) return true; // Full day block
+      
+      const aptLocalTimeStr = new Intl.DateTimeFormat('pt-BR', {
+        timeZone: 'America/Bahia',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).format(apt.dateTime);
+      
+      return aptLocalTimeStr >= startTime && aptLocalTimeStr < endTime;
+    });
+
+    if (appointmentsToCancel.length > 0) {
+      const aptIds = appointmentsToCancel.map(a => a.id);
+      
+      await this.prisma.appointment.updateMany({
+        where: { id: { in: aptIds } },
+        data: {
+          status: 'CANCELLED',
+          notes: 'Cancelado pelo profissional por motivo de força maior/imprevisto.',
+        },
+      });
+
+      // Send emails
+      for (const apt of appointmentsToCancel) {
+        this.mailService.sendMassCancellationEmail(
+          { name: apt.patient.name, email: apt.patient.email },
+          { professionalName: apt.professional.name, dateTime: apt.dateTime }
+        ).catch(err => console.error(`Failed to send mass cancellation email to ${apt.patient.email}:`, err));
+      }
+    }
+
+    return block;
+  }
+
+  async getScheduleBlocks(userId: string) {
+    return this.prisma.scheduleBlock.findMany({
+      where: { professionalId: userId },
+      orderBy: [
+        { date: 'asc' },
+        { startTime: 'asc' }
+      ]
+    });
+  }
+
+  async deleteScheduleBlock(userId: string, blockId: string) {
+    const block = await this.prisma.scheduleBlock.findUnique({
+      where: { id: blockId },
+    });
+
+    if (!block) {
+      throw new NotFoundException('Bloqueio não encontrado');
+    }
+
+    if (block.professionalId !== userId) {
+      throw new BadRequestException('Sem permissão para remover este bloqueio');
+    }
+
+    await this.prisma.scheduleBlock.delete({
+      where: { id: blockId },
+    });
+
+    return { message: 'Bloqueio removido com sucesso' };
   }
 }

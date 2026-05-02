@@ -11,6 +11,7 @@ import { useDailyScheduleQuery } from "@/queries/useDailyScheduleQuery";
 import { useUpdateAppointmentStatusMutation } from "@/queries/useProfessionalAppointments";
 import { ScheduleTimeline } from "./components/ScheduleTimeline";
 import ScheduleModal from "./scheduleModal";
+import { BlockScheduleModal } from "./components/BlockScheduleModal";
 
 type Appointment = {
   id: string;
@@ -22,6 +23,7 @@ type Appointment = {
 
 const SchedulePage = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
     new Date(),
   );
@@ -39,21 +41,24 @@ const SchedulePage = () => {
     if (isError) toast.error("Erro ao carregar a agenda do dia.");
   }, [isError]);
 
-  const { appointments, timeSlots, isAvailableToday } = useMemo(() => {
+  const { appointments, timeSlots, isAvailableToday, scheduleBlocks } = useMemo(() => {
     if (!scheduleData)
       return {
         appointments: [] as Appointment[],
         timeSlots: [] as string[],
         isAvailableToday: true,
+        scheduleBlocks: [],
       };  
   
     const appts = scheduleData.appointments as Appointment[];
+    const blocks = scheduleData.scheduleBlocks || [];
 
     if (!scheduleData.availability)
       return {
         appointments: appts,
         timeSlots: [] as string[],
         isAvailableToday: false,
+        scheduleBlocks: blocks,
       };
 
     const startHour = parseInt(
@@ -72,7 +77,7 @@ const SchedulePage = () => {
       slots.push(`${hourStr}:30`);
     }
 
-    return { appointments: appts, timeSlots: slots, isAvailableToday: true };
+    return { appointments: appts, timeSlots: slots, isAvailableToday: true, scheduleBlocks: blocks };
   }, [scheduleData]);
 
   const getAppointmentForSlot = (slotTime: string) => {
@@ -122,9 +127,14 @@ const SchedulePage = () => {
             Visualize e gerencie seus horários.
           </p>
         </div>
-        <Button size="lg" onClick={() => setIsOpen(true)} className="w-full sm:w-auto">
-          Gerenciar Horários
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <Button variant="outline" size="lg" onClick={() => setIsBlockModalOpen(true)} className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
+            Cancelar Agenda
+          </Button>
+          <Button size="lg" onClick={() => setIsOpen(true)} className="w-full sm:w-auto">
+            Gerenciar Horários
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-6">
@@ -155,6 +165,7 @@ const SchedulePage = () => {
               isLoading={isLoading}
               isAvailableToday={isAvailableToday}
               timeSlots={timeSlots}
+              scheduleBlocks={scheduleBlocks}
               getAppointmentForSlot={getAppointmentForSlot}
               onStatusChange={handleStatusChange}
               selectedDate={selectedDate}
@@ -164,6 +175,11 @@ const SchedulePage = () => {
       </div>
 
       <ScheduleModal isOpen={isOpen} onOpenChange={(open) => setIsOpen(open)} />
+      <BlockScheduleModal 
+        isOpen={isBlockModalOpen} 
+        onOpenChange={setIsBlockModalOpen} 
+        selectedDate={selectedDate} 
+      />
     </section>
   );
 };

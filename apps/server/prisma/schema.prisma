@@ -71,6 +71,7 @@ model User {
   passwordResets     PasswordReset[]
   sessions           Session[]
   answeredQuestionnaires VulnerabilityQuestionnaire[]
+  scheduleBlocks     ScheduleBlock[]
 
   @@map("users")
 }
@@ -213,4 +214,18 @@ model EmailVerification {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("email_verifications")
+}
+
+model ScheduleBlock {
+  id             String   @id @default(uuid())
+  professionalId String   @map("professional_id")
+  professional   User     @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  
+  date           String   // Formato YYYY-MM-DD
+  startTime      String?  @map("start_time") // HH:MM, nulo se for dia inteiro
+  endTime        String?  @map("end_time")   // HH:MM, nulo se for dia inteiro
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("schedule_blocks")
 }
