@@ -367,8 +367,19 @@ export class ProfessionalService {
   }
 
   async getScheduleBlocks(userId: string) {
+    // Pegar a data de hoje no fuso do Brasil (YYYY-MM-DD)
+    const todayStr = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Bahia',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).format(new Date()).split('/').reverse().join('-'); // converte DD/MM/YYYY para YYYY-MM-DD
+
     return this.prisma.scheduleBlock.findMany({
-      where: { professionalId: userId },
+      where: { 
+        professionalId: userId,
+        date: { gte: todayStr } // Traz apenas bloqueios de hoje em diante
+      },
       orderBy: [
         { date: 'asc' },
         { startTime: 'asc' }
