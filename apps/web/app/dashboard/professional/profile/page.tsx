@@ -63,7 +63,7 @@ export default function PerfilPage() {
               <h2 className="text-xl font-semibold text-gray-900">{user?.name}</h2>
               <p className="text-[0.9rem] text-gray-500">{user?.email}</p>
               <p className="mt-1 px-[0.6rem] py-[0.15rem] inline-block rounded-2xl bg-[rgba(0,111,238,0.08)] text-xs font-semibold text-[#006fee]">
-                {user?.professionalProfile?.specialty}
+                {user?.professionalProfile?.specialities?.[0]?.name || "Especialidade não informada"}
               </p>
             </div>
           </div>

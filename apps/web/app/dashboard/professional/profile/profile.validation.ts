@@ -11,12 +11,8 @@ export const profileSchema = z.object({
     .string()
     .min(1, "Registro profissional é obrigatório")
     .max(20, "Registro profissional deve ter no máximo 20 caracteres"),
-  specialty: z
-    .string()
-    .min(2, "Especialidade deve ter no mínimo 2 caracteres")
-    .max(100, "Especialidade deve ter no máximo 100 caracteres")
-    .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, "Especialidade deve conter apenas letras, espaços, hífens e apóstrofos"),
-  subspecialty: z.string().optional(),
+  primarySpecialty: z.string().min(1, "A especialidade principal é obrigatória"),
+  secondarySpecialty: z.string().optional(),
   modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"]),
   bio: z.string().optional(),
   photoUrl: z.string().optional(),
