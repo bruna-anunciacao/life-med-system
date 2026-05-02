@@ -146,7 +146,6 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
               <thead>
                 <tr className="border-b border-border bg-muted/30 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   <th className="px-6 py-3 text-left">Nome da especialidade</th>
-                  <th className="px-4 py-3 text-center">ID do sistema</th>
                   <th className="px-6 py-3 text-center">Ações</th>
                 </tr>
               </thead>
@@ -160,11 +159,6 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                         </div>
                         <span className="font-medium text-foreground">{spec.name}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-center">
-                      <code className="rounded bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground">
-                        {spec.id.split("-")[0]}…
-                      </code>
                     </td>
                     <td className="px-6 py-3.5">
                       <div className="flex items-center justify-center gap-1">
