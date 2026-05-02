@@ -142,7 +142,7 @@ export class UpdateUserDto {
     description: 'URL da foto de perfil',
   })
   @IsOptional()
-  @IsUrl({}, { message: 'URL da foto deve ser uma URL válida' })
+  @IsString({ message: 'URL da foto deve ser um texto válido' })
   photoUrl?: string;
 
   @ApiPropertyOptional({
