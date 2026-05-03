@@ -29,9 +29,18 @@ export function ProfessionalProfileForm({ register, errors, isEditing, specialit
           <input className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("professionalLicense")} />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-gray-700">Especialidade</label>
-          <select className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("specialityId")}>
+          <label className="text-sm font-semibold text-gray-700">Especialidade Principal</label>
+          <select className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("primarySpecialtyId")}>
             <option value="">Selecione uma especialidade</option>
+            {specialities.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-gray-700">Subespecialidade <span className="text-gray-400 font-normal">(Opcional)</span></label>
+          <select className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" disabled={!isEditing} {...register("secondarySpecialtyId")}>
+            <option value="">Nenhuma</option>
             {specialities.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}

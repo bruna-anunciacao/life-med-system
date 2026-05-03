@@ -4,11 +4,7 @@ export const patientProfileSchema = z.object({
   name: z
     .string()
     .min(2, "Nome deve ter no mínimo 2 caracteres")
-    .max(100, "Nome deve ter no máximo 100 caracteres")
-    .regex(
-      /^[a-zA-ZÀ-ÿ\s'-]+$/,
-      "Nome deve conter apenas letras, espaços, hífens e apóstrofos",
-    ),
+    .max(100, "Nome deve ter no máximo 100 caracteres"),
   phone: z
     .string()
     .regex(

@@ -16,8 +16,7 @@ type ProfessionalProfile = {
   professionalProfile?: {
     id: string;
     professionalLicense?: string;
-    specialty?: string;
-    subspecialty?: string;
+    specialities?: { id: string; name: string }[];
     modality?: string;
     bio?: string;
     photoUrl?: string;
@@ -39,8 +38,8 @@ export function useProfileForm() {
       name: "",
       email: "",
       professionalLicense: "",
-      specialty: "",
-      subspecialty: "",
+      primarySpecialty: "",
+      secondarySpecialty: "",
       modality: "VIRTUAL",
       bio: "",
       photoUrl: "",
@@ -65,8 +64,8 @@ export function useProfileForm() {
         name: response.name,
         email: response.email,
         professionalLicense: response.professionalProfile?.professionalLicense || "",
-        specialty: response.professionalProfile?.specialty || "",
-        subspecialty: response.professionalProfile?.subspecialty || "",
+        primarySpecialty: response.professionalProfile?.specialities?.[0]?.id || "",
+        secondarySpecialty: response.professionalProfile?.specialities?.[1]?.id || "",
         modality: (response.professionalProfile?.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC") || "VIRTUAL",
         bio: response.professionalProfile?.bio || "",
         photoUrl: response.professionalProfile?.photoUrl || "",
@@ -84,7 +83,7 @@ export function useProfileForm() {
       setIsSaving(true);
       await usersService.updateProfile({
         ...data,
-        specialty: data.specialty ? [data.specialty] : undefined,
+        specialty: [data.primarySpecialty, data.secondarySpecialty].filter((val): val is string => Boolean(val)),
         modality: data.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
         socialLinks: {
           linkedin: data.socialLinks.referenceLink,
@@ -109,8 +108,8 @@ export function useProfileForm() {
         name: user.name,
         email: user.email,
         professionalLicense: user.professionalProfile?.professionalLicense || "",
-        specialty: user.professionalProfile?.specialty || "",
-        subspecialty: user.professionalProfile?.subspecialty || "",
+        primarySpecialty: user.professionalProfile?.specialities?.[0]?.id || "",
+        secondarySpecialty: user.professionalProfile?.specialities?.[1]?.id || "",
         modality: (user.professionalProfile?.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC") || "VIRTUAL",
         bio: user.professionalProfile?.bio || "",
         photoUrl: user.professionalProfile?.photoUrl || "",
