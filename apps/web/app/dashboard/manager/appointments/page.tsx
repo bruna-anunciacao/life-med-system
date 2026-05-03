@@ -71,12 +71,13 @@ export default function AppointmentsPage() {
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Paciente</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Profissional</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Data/Hora</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Agendado por</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {appointments.map((appointment: { id: string; patient?: { name?: string; email?: string }; professional?: { name?: string; email?: string }; dateTime: string; status?: string }) => (
+                {appointments.map((appointment: any) => (
                   <tr key={appointment.id} className="border-b hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {appointment.patient?.name || appointment.patient?.email || '-'}
@@ -86,6 +87,18 @@ export default function AppointmentsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {new Date(appointment.dateTime).toLocaleString('pt-BR')}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <div className="flex flex-col gap-1">
+                        <span>
+                          {appointment.scheduledByManager?.user?.name || '-'}
+                        </span>
+                        {appointment.cancelledByManager && (
+                          <span className="text-xs text-red-600">
+                            Cancelado por: {appointment.cancelledByManager.user?.name}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <StatusBadge status={appointment.status || 'PENDING'} type="appointment" />
