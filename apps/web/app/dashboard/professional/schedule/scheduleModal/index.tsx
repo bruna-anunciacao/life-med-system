@@ -37,10 +37,6 @@ const paymentMethods = [
   { value: "free", label: "Gratuito" },
 ];
 
-// ---------------------------------------------------------------------------
-// Sub-components — each accepts only primitive props (low coupling)
-// ---------------------------------------------------------------------------
-
 type SectionLabelProps = { title: string; description?: string };
 
 const SectionLabel = ({ title, description }: SectionLabelProps) => (
@@ -59,95 +55,138 @@ type ModalityCardProps = {
   description: string;
   selected: boolean;
   onClick: () => void;
+  title?: string;
 };
 
-const ModalityCard = ({ label, description, selected, onClick }: ModalityCardProps) => (
+const ModalityCard = ({
+  label,
+  description,
+  selected,
+  onClick,
+  title,
+}: ModalityCardProps) => (
   <button
     type="button"
     onClick={onClick}
+    title={title}
     className={cn(
       "flex flex-col gap-1 p-4 rounded-lg border-2 text-left w-full transition-colors duration-150 cursor-pointer",
       selected
         ? "border-gray-900 bg-gray-50"
-        : "border-gray-200 bg-white hover:border-gray-300"
+        : "border-gray-200 bg-white hover:border-gray-300",
     )}
   >
-    <span className={cn("text-sm font-semibold", selected ? "text-gray-900" : "text-gray-700")}>
+    <span
+      className={cn(
+        "text-sm font-semibold",
+        selected ? "text-gray-900" : "text-gray-700",
+      )}
+    >
       {label}
     </span>
-    <span className={cn("text-xs leading-tight", selected ? "text-gray-600" : "text-gray-400")}>
+    <span
+      className={cn(
+        "text-xs leading-tight",
+        selected ? "text-gray-600" : "text-gray-400",
+      )}
+    >
       {description}
     </span>
   </button>
 );
 
-type PaymentChipProps = { label: string; selected: boolean; onClick: () => void };
+type PaymentChipProps = {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+  title?: string;
+};
 
-const PaymentChip = ({ label, selected, onClick }: PaymentChipProps) => (
+const PaymentChip = ({ label, selected, onClick, title }: PaymentChipProps) => (
   <button
     type="button"
     onClick={onClick}
+    title={title}
     className={cn(
       "px-4 py-2 rounded-md border text-sm font-medium transition-colors duration-150 cursor-pointer",
       selected
         ? "border-gray-900 bg-gray-900 text-white"
-        : "border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-800"
+        : "border-gray-200 bg-white text-gray-600 hover:border-gray-400 hover:text-gray-800",
     )}
   >
     {label}
   </button>
 );
 
-type ToggleSwitchProps = { checked: boolean; onChange: () => void };
+type ToggleSwitchProps = {
+  checked: boolean;
+  onChange: () => void;
+  title?: string;
+};
 
-const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => (
+const ToggleSwitch = ({ checked, onChange, title }: ToggleSwitchProps) => (
   <button
     type="button"
     role="switch"
     aria-checked={checked}
     onClick={onChange}
+    title={title}
     className={cn(
       "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2",
-      checked ? "bg-gray-900" : "bg-gray-200"
+      checked ? "bg-gray-900" : "bg-gray-200",
     )}
   >
     <span
       className={cn(
         "pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow-sm transform transition-transform duration-150",
-        checked ? "translate-x-4" : "translate-x-0"
+        checked ? "translate-x-4" : "translate-x-0",
       )}
     />
   </button>
 );
 
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
-
 const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
-  const [localAvailability, setLocalAvailability] = useState(defaultAvailability);
+  const [localAvailability, setLocalAvailability] =
+    useState(defaultAvailability);
   const [localPayments, setLocalPayments] = useState<string[]>(["pix"]);
   const [priceDisplay, setPriceDisplay] = useState("");
 
   const closeModal = () => onOpenChange(false);
 
-  const { form, onSubmit, isLoading: isSaving } = useScheduleModalForm(closeModal);
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = form;
+  const {
+    form,
+    onSubmit,
+    isLoading: isSaving,
+  } = useScheduleModalForm(closeModal);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = form;
 
   const currentModality = watch("modality");
 
-  const { data: settingsData, isLoading: isLoadingData } = useProfessionalSettingsQuery({ enabled: isOpen });
+  const { data: settingsData, isLoading: isLoadingData } =
+    useProfessionalSettingsQuery({ enabled: isOpen });
 
   useEffect(() => {
     if (settingsData && isOpen) {
-      const initialPayments = settingsData.payments?.length ? settingsData.payments : ["pix"];
+      const initialPayments = settingsData.payments?.length
+        ? settingsData.payments
+        : ["pix"];
       const numericPrice = Number(settingsData.price) || 0;
 
       const mergedAvailability = defaultAvailability.map((day) => {
         const match = settingsData.availability?.find(
-          (a: { dayOfWeek: number; start: string; end: string }) => a.dayOfWeek === day.id
+          (a: { dayOfWeek: number; start: string; end: string }) =>
+            a.dayOfWeek === day.id,
         );
-        return match ? { ...day, active: true, start: match.start, end: match.end } : { ...day, active: false };
+        return match
+          ? { ...day, active: true, start: match.start, end: match.end }
+          : { ...day, active: false };
       });
 
       reset({
@@ -162,7 +201,12 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
 
       setLocalPayments(initialPayments);
       setLocalAvailability(mergedAvailability);
-      setPriceDisplay(numericPrice.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
+      setPriceDisplay(
+        numericPrice.toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL",
+        }),
+      );
     }
   }, [settingsData, isOpen, reset]);
 
@@ -176,21 +220,31 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
   }, [isOpen, reset]);
 
   const updateFormAvailability = (avail: typeof defaultAvailability) => {
-    const filtered = avail.filter((d) => d.active).map((d) => ({ dayOfWeek: d.id, start: d.start, end: d.end }));
+    const filtered = avail
+      .filter((d) => d.active)
+      .map((d) => ({ dayOfWeek: d.id, start: d.start, end: d.end }));
     setValue("availability", filtered, { shouldValidate: true });
   };
 
   const handleToggleDay = (id: number) => {
     setLocalAvailability((prev) => {
-      const next = prev.map((day) => day.id === id ? { ...day, active: !day.active } : day);
+      const next = prev.map((day) =>
+        day.id === id ? { ...day, active: !day.active } : day,
+      );
       updateFormAvailability(next);
       return next;
     });
   };
 
-  const handleTimeChange = (id: number, field: "start" | "end", value: string) => {
+  const handleTimeChange = (
+    id: number,
+    field: "start" | "end",
+    value: string,
+  ) => {
     setLocalAvailability((prev) => {
-      const next = prev.map((day) => day.id === id ? { ...day, [field]: value } : day);
+      const next = prev.map((day) =>
+        day.id === id ? { ...day, [field]: value } : day,
+      );
       updateFormAvailability(next);
       return next;
     });
@@ -199,7 +253,9 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "");
     const numeric = Number(value) / 100;
-    setPriceDisplay(numeric.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }));
+    setPriceDisplay(
+      numeric.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+    );
     setValue("price", numeric, { shouldValidate: true });
   };
 
@@ -214,25 +270,25 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl w-full max-h-[92vh] overflow-y-auto p-0 sm:max-w-2xl">
-        {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900">Gerenciar Atendimento</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Gerenciar Atendimento
+          </h2>
           <p className="text-sm text-gray-500 mt-0.5">
             Defina sua disponibilidade e informações de consulta.
           </p>
         </DialogHeader>
 
-        {/* Body */}
         <div className="px-6 py-5">
           {isLoadingData ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Spinner size="lg" />
-              <p className="text-sm text-gray-400">Carregando configurações...</p>
+              <p className="text-sm text-gray-400">
+                Carregando configurações...
+              </p>
             </div>
           ) : (
             <div className="flex flex-col gap-6">
-
-              {/* Section 1 — Detalhes da Consulta */}
               <div>
                 <SectionLabel title="Detalhes da Consulta" />
                 <input type="hidden" {...register("modality")} />
@@ -241,19 +297,30 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                     label="Virtual"
                     description="Atendimento por videochamada"
                     selected={currentModality === "VIRTUAL"}
-                    onClick={() => setValue("modality", "VIRTUAL", { shouldValidate: true })}
+                    onClick={() =>
+                      setValue("modality", "VIRTUAL", { shouldValidate: true })
+                    }
+                    title="Configurar atendimento online"
                   />
                   <ModalityCard
                     label="Domiciliar"
                     description="Atendimento na residência do paciente"
                     selected={currentModality === "HOME_VISIT"}
-                    onClick={() => setValue("modality", "HOME_VISIT", { shouldValidate: true })}
+                    onClick={() =>
+                      setValue("modality", "HOME_VISIT", {
+                        shouldValidate: true,
+                      })
+                    }
+                    title="Configurar atendimento a domicílio"
                   />
                   <ModalityCard
                     label="Clínica"
                     description="Atendimento em consultório físico"
                     selected={currentModality === "CLINIC"}
-                    onClick={() => setValue("modality", "CLINIC", { shouldValidate: true })}
+                    onClick={() =>
+                      setValue("modality", "CLINIC", { shouldValidate: true })
+                    }
+                    title="Configurar atendimento presencial em clínica"
                   />
                 </div>
                 {errors.modality && (
@@ -264,9 +331,11 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                  {/* Price */}
                   <div className="flex flex-col gap-1.5">
-                    <label htmlFor="price" className="text-xs font-medium text-gray-600">
+                    <label
+                      htmlFor="price"
+                      className="text-xs font-medium text-gray-600"
+                    >
                       Valor da Consulta
                     </label>
                     <div className="relative">
@@ -277,6 +346,7 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                         type="text"
                         id="price"
                         placeholder="0,00"
+                        title="Valor cobrado por consulta em Reais"
                         value={priceDisplay.replace(/^R\$\s*/, "")}
                         onChange={handlePriceChange}
                         className="w-full h-9 pl-9 pr-3 rounded-md border border-gray-200 text-sm transition-colors focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
@@ -295,16 +365,19 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                     )}
                   </div>
 
-                  {/* Address — shown only for CLINIC */}
                   {currentModality === "CLINIC" && (
                     <div className="flex flex-col gap-1.5 sm:col-span-1">
-                      <label htmlFor="address" className="text-xs font-medium text-gray-600">
+                      <label
+                        htmlFor="address"
+                        className="text-xs font-medium text-gray-600"
+                      >
                         Endereço da Clínica
                       </label>
                       <input
                         type="text"
                         id="address"
                         placeholder="Ex: Rua das Flores, 123 — Sala 4"
+                        title="Endereço completo de onde o atendimento será realizado"
                         className="w-full h-9 px-3 rounded-md border border-gray-200 text-sm transition-colors focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
                         {...register("address")}
                       />
@@ -319,10 +392,8 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                 </div>
               </div>
 
-              {/* Divider */}
               <div className="border-t border-gray-100" />
 
-              {/* Section 2 — Métodos de Pagamento */}
               <div>
                 <SectionLabel title="Métodos de Pagamento Aceitos" />
                 {errors.payments && (
@@ -332,21 +403,29 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                   </p>
                 )}
                 <div className="flex flex-wrap gap-2">
-                  {paymentMethods.map((option) => (
-                    <PaymentChip
-                      key={option.value}
-                      label={option.label}
-                      selected={localPayments.includes(option.value)}
-                      onClick={() => handleTogglePayment(option.value, !localPayments.includes(option.value))}
-                    />
-                  ))}
+                  {paymentMethods.map((option) => {
+                    const isSelected = localPayments.includes(option.value);
+                    return (
+                      <PaymentChip
+                        key={option.value}
+                        label={option.label}
+                        selected={isSelected}
+                        title={
+                          isSelected
+                            ? `Remover pagamento via ${option.label}`
+                            : `Aceitar pagamento via ${option.label}`
+                        }
+                        onClick={() =>
+                          handleTogglePayment(option.value, !isSelected)
+                        }
+                      />
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Divider */}
               <div className="border-t border-gray-100" />
 
-              {/* Section 3 — Horários de Disponibilidade */}
               <div>
                 <SectionLabel
                   title="Horários de Disponibilidade"
@@ -364,41 +443,59 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                       key={day.id}
                       className={cn(
                         "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 px-3 py-2.5 rounded-md border transition-colors duration-150",
-                        day.active ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50"
+                        day.active
+                          ? "border-gray-200 bg-white"
+                          : "border-gray-100 bg-gray-50",
                       )}
                     >
-                      {/* Left: toggle + day name */}
+
                       <div className="flex items-center gap-3 min-w-[160px]">
                         <ToggleSwitch
                           checked={day.active}
                           onChange={() => handleToggleDay(day.id)}
+                          title={
+                            day.active
+                              ? `Desativar atendimentos na ${day.label}`
+                              : `Ativar atendimentos na ${day.label}`
+                          }
                         />
-                        <span className={cn(
-                          "text-sm font-medium transition-colors duration-150",
-                          day.active ? "text-gray-900" : "text-gray-400"
-                        )}>
+                        <span
+                          className={cn(
+                            "text-sm font-medium transition-colors duration-150",
+                            day.active ? "text-gray-900" : "text-gray-400",
+                          )}
+                        >
                           {day.label}
                         </span>
                       </div>
 
-                      {/* Right: time range */}
-                      <div className={cn(
-                        "flex items-center gap-2 w-full sm:w-auto transition-opacity duration-150",
-                        !day.active && "opacity-40 pointer-events-none"
-                      )}>
+                      <div
+                        className={cn(
+                          "flex items-center gap-2 w-full sm:w-auto transition-opacity duration-150",
+                          !day.active && "opacity-40 pointer-events-none",
+                        )}
+                      >
                         <Input
                           type="time"
                           value={day.start}
                           disabled={!day.active}
-                          onChange={(e) => handleTimeChange(day.id, "start", e.target.value)}
+                          title={`Horário de início dos atendimentos na ${day.label}`}
+                          onChange={(e) =>
+                            handleTimeChange(day.id, "start", e.target.value)
+                          }
                           className="h-8 text-sm w-full sm:w-[110px]"
                         />
-                        <span className="text-gray-300 text-sm flex-shrink-0">—</span>
+                        <span className="text-gray-300 text-sm flex-shrink-0">
+                          —
+                        </span>
                         <Input
                           type="time"
                           value={day.end}
                           disabled={!day.active}
-                          onChange={(e) => handleTimeChange(day.id, "end", e.target.value)}
+                          title={`Horário de término dos atendimentos na ${day.label}`}
+                          onChange={(e) =>
+                            handleTimeChange(day.id, "end", e.target.value)
+                          }
                           className="h-8 text-sm w-full sm:w-[110px]"
                         />
                       </div>
@@ -406,18 +503,17 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                   ))}
                 </div>
               </div>
-
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <DialogFooter className="mx-0 mb-0 px-6 py-4 border-t border-gray-100 bg-white rounded-b-xl sticky bottom-0">
           <Button
             variant="outline"
             size="lg"
             onClick={closeModal}
             disabled={isSaving || isLoadingData}
+            title="Descartar alterações e fechar janela"
           >
             Cancelar
           </Button>
@@ -425,6 +521,7 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
             size="lg"
             onClick={() => handleSubmit(onSubmit)()}
             disabled={isSaving || isLoadingData}
+            title="Salvar todas as configurações da agenda"
             className="min-w-[160px]"
           >
             {isSaving ? (

@@ -71,6 +71,7 @@ export function ScheduleTimeline({
         <div
           className="absolute -left-3 right-0 flex items-center z-50 pointer-events-none"
           style={{ top: `${topOffset}px` }}
+          title="Horário atual"
         >
           <div className="w-2.5 h-2.5 rounded-full bg-blue-600 shadow-sm" />
           <div className="flex-1 h-0.5 bg-blue-600 shadow-sm opacity-80" />
@@ -121,6 +122,7 @@ export function ScheduleTimeline({
               <div
                 key={spannedSlot}
                 className="h-22.5 pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]"
+                title={`Horário: ${spannedSlot}`}
               >
                 {spannedSlot}
               </div>
@@ -146,12 +148,18 @@ export function ScheduleTimeline({
 
       timelineRows.push(
         <div key={slot} className="flex gap-6 relative">
-          <div className="w-15 h-22.5 pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]">
+          <div
+            className="w-15 h-22.5 pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]"
+            title={`Horário: ${slot}`}
+          >
             {slot}
           </div>
           <div className="flex-1 relative pb-4 border-b border-dashed border-gray-200 last:border-b-0">
             {renderCurrentTimeLine(slotMins, 1)}
-            <div className={`h-full flex items-center justify-between px-4 rounded-xl border transition-all duration-200 cursor-pointer ${blocked ? 'bg-red-50 border-red-100 cursor-not-allowed' : 'bg-[#fafafa] border-transparent hover:bg-gray-100 hover:border-gray-200'}`}>
+            <div
+              className={`h-full flex items-center justify-between px-4 rounded-xl border transition-all duration-200 cursor-pointer ${blocked ? 'bg-red-50 border-red-100 cursor-not-allowed' : 'bg-[#fafafa] border-transparent hover:bg-gray-100 hover:border-gray-200'}`}
+              title={`Horário das ${slot} está ${blocked ? 'Cancelado / Bloqueado' : 'Disponível'} na sua agenda`}
+            >
               <span className={`text-sm ${blocked ? 'text-red-400 font-medium' : 'text-gray-400'}`}>
                 {blocked ? 'Cancelado / Bloqueado' : 'Disponível'}
               </span>
