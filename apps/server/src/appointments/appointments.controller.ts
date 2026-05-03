@@ -85,6 +85,7 @@ export class AppointmentsController {
     summary: 'Agendar consulta pelo gestor',
     description: 'Cria um novo agendamento de consulta em nome de um paciente. Requer autenticação do gestor.',
   })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
   @ApiBody({ type: CreateAppointmentPatientForManagerDto })
   @ApiResponse({
     status: 201,
