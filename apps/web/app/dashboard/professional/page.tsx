@@ -171,6 +171,7 @@ const ProfessionalDashboard = () => {
         <Button
           size="lg"
           className="w-full sm:w-auto"
+          title="Acessar calendário completo da agenda"
           onClick={handleCalendarClick}
         >
           <CalendarIcon />
@@ -232,11 +233,16 @@ const ProfessionalDashboard = () => {
                     <Button
                       size="lg"
                       variant="outline"
+                      title="Acessar prontuário detalhado do paciente"
                       className="flex-1 sm:flex-none"
                     >
                       Ver Prontuário
                     </Button>
-                    <Button size="lg" className="flex-1 sm:flex-none">
+                    <Button
+                      size="lg"
+                      title="Iniciar videochamada da consulta"
+                      className="flex-1 sm:flex-none"
+                    >
                       <VideoIcon />
                       Iniciar Vídeo
                     </Button>
@@ -327,6 +333,7 @@ const ProfessionalDashboard = () => {
                     <div className="w-full flex gap-2 items-center justify-end">
                       <Button
                         size="sm"
+                        title="Aprovar esta solicitação de agendamento"
                         className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white"
                         onClick={() => handleOpenConfirm(req.id, "CONFIRMED")}
                         disabled={isUpdating}
@@ -336,6 +343,7 @@ const ProfessionalDashboard = () => {
                       </Button>
                       <Button
                         size="sm"
+                        title="Recusar esta solicitação de agendamento"
                         className="flex-1 bg-red-500 hover:bg-red-700 text-white"
                         onClick={() => handleOpenConfirm(req.id, "CANCELLED")}
                         disabled={isUpdating}

@@ -12,8 +12,10 @@ import Link from "next/link";
 
 const ManagerDashboard = () => {
   const { data: user, isLoading: loadingUser } = useUserQuery();
-  const { data: patients = [], isLoading: loadingPatients } = useListPatientsQuery();
-  const { data: appointments = [], isLoading: loadingAppointments } = useListAppointmentsQuery();
+  const { data: patients = [], isLoading: loadingPatients } =
+    useListPatientsQuery();
+  const { data: appointments = [], isLoading: loadingAppointments } =
+    useListAppointmentsQuery();
 
   const stats = [
     {
@@ -21,18 +23,21 @@ const ManagerDashboard = () => {
       value: loadingPatients ? "..." : String(patients.length),
       icon: <Users size={24} />,
       colorClass: "bg-blue-50 text-blue-500",
+      hint: "Total de pacientes cadastrados no sistema",
     },
     {
       title: "Consultas",
       value: loadingAppointments ? "..." : String(appointments.length),
       icon: <Calendar size={24} />,
       colorClass: "bg-green-50 text-green-500",
+      hint: "Total de consultas agendadas",
     },
     {
       title: "Relatórios",
       value: "0",
       icon: <FileText size={24} />,
       colorClass: "bg-purple-50 text-purple-500",
+      hint: "Relatórios gerais gerados pelo sistema",
     },
   ];
 
@@ -42,18 +47,21 @@ const ManagerDashboard = () => {
       href: "/dashboard/manager/patients/new",
       icon: <Plus size={20} />,
       color: "bg-green-600 hover:bg-green-700",
+      hint: "Abrir formulário para registrar um novo paciente",
     },
     {
       label: "Agendar Consulta",
       href: "/dashboard/manager/appointments/new",
       icon: <Calendar size={20} />,
       color: "bg-blue-600 hover:bg-blue-700",
+      hint: "Ir para a tela de agendamento de consultas",
     },
     {
       label: "Ver Pacientes",
       href: "/dashboard/manager/patients",
       icon: <Users size={20} />,
       color: "bg-purple-600 hover:bg-purple-700",
+      hint: "Visualizar a lista completa de pacientes cadastrados",
     },
   ];
 
@@ -65,7 +73,6 @@ const ManagerDashboard = () => {
 
   return (
     <section className="min-h-screen w-full bg-slate-50 p-8">
-      {/* Header */}
       <div className="mb-10">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900">
           Bem-vindo, {userName}!
@@ -75,12 +82,13 @@ const ManagerDashboard = () => {
         </p>
       </div>
 
-      {/* Stats */}
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.title} className="bg-white">
+          <Card key={stat.title} className="bg-white" title={stat.hint}>
             <CardContent className="p-6">
-              <div className={`mb-4 inline-flex rounded-lg p-3 ${stat.colorClass}`}>
+              <div
+                className={`mb-4 inline-flex rounded-lg p-3 ${stat.colorClass}`}
+              >
                 {stat.icon}
               </div>
               <p className="text-sm font-medium text-slate-600">{stat.title}</p>
@@ -92,15 +100,16 @@ const ManagerDashboard = () => {
         ))}
       </div>
 
-      {/* Quick Actions */}
       <div className="mb-10">
         <h2 className="mb-6 text-xl font-semibold text-gray-900">
           Ações Rápidas
         </h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {quickActions.map((action) => (
-            <Link key={action.label} href={action.href}>
-              <Button className={`w-full h-24 text-lg font-semibold text-white ${action.color}`}>
+            <Link key={action.label} href={action.href} title={action.hint}>
+              <Button
+                className={`w-full h-24 text-lg font-semibold text-white ${action.color}`}
+              >
                 <div className="flex flex-col items-center gap-2">
                   {action.icon}
                   {action.label}
@@ -111,7 +120,6 @@ const ManagerDashboard = () => {
         </div>
       </div>
 
-      {/* Info Section */}
       <Card className="bg-white">
         <CardContent className="p-6 md:p-8">
           <h2 className="mb-4 text-lg font-semibold text-gray-900">
