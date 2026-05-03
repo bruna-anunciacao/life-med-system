@@ -1,13 +1,39 @@
 'use client';
 
+import { useState } from 'react';
 import { useListAppointmentsQuery } from '@/queries/useListAppointmentsQuery';
+import { useCancelAppointmentManagerMutation } from '@/queries/useCancelAppointmentManagerMutation';
 import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { CancelConfirmDialog } from '@/app/dashboard/patient/appointments/components/CancelConfirmDialog';
 
 export default function AppointmentsPage() {
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+
   const { data: appointments = [], isLoading, error } = useListAppointmentsQuery();
+  const cancelMutation = useCancelAppointmentManagerMutation();
+
+  const handleCancelClick = (appointmentId: string) => {
+    setSelectedAppointmentId(appointmentId);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelConfirm = (reason?: string) => {
+    if (!selectedAppointmentId) return;
+
+    cancelMutation.mutate(
+      { id: selectedAppointmentId, reason },
+      {
+        onSuccess: () => {
+          setCancelDialogOpen(false);
+          setSelectedAppointmentId(null);
+        },
+      },
+    );
+  };
 
   if (isLoading) {
     return <LoadingPage message="Carregando consultas..." />;
@@ -46,6 +72,7 @@ export default function AppointmentsPage() {
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Profissional</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Data/Hora</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -63,6 +90,17 @@ export default function AppointmentsPage() {
                     <td className="px-6 py-4 text-sm">
                       <StatusBadge status={appointment.status || 'PENDING'} type="appointment" />
                     </td>
+                    <td className="px-6 py-4 text-sm">
+                      {appointment.status !== 'CANCELLED' && (
+                        <button
+                          onClick={() => handleCancelClick(appointment.id)}
+                          disabled={cancelMutation.isPending}
+                          className="px-3 py-1 text-white bg-red-600 hover:bg-red-700 rounded text-xs font-medium disabled:opacity-50"
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -70,6 +108,13 @@ export default function AppointmentsPage() {
           </div>
         )}
       </div>
+
+      <CancelConfirmDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        onConfirm={handleCancelConfirm}
+        isLoading={cancelMutation.isPending}
+      />
     </div>
   );
 }
