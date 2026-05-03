@@ -66,6 +66,7 @@ export class ManagerService {
       include: {
         patient: { include: { patientProfile: true } },
         professional: { include: { professionalProfile: true } },
+        scheduledByManager: { include: { user: true } },
       },
     });
 
@@ -112,6 +113,8 @@ export class ManagerService {
       include: {
         patient: { include: { patientProfile: true } },
         professional: { include: { professionalProfile: true } },
+        scheduledByManager: { include: { user: true } },
+        cancelledByManager: { include: { user: true } },
       },
     });
   }
@@ -121,6 +124,8 @@ export class ManagerService {
       include: {
         patient: { include: { patientProfile: true } },
         professional: { include: { professionalProfile: true } },
+        scheduledByManager: { include: { user: true } },
+        cancelledByManager: { include: { user: true } },
       },
       orderBy: { dateTime: 'desc' },
     });
