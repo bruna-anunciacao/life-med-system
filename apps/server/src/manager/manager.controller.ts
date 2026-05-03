@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   Query,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -103,8 +104,8 @@ export class ManagerController {
   @ApiResponse({ status: 400, description: 'Dados inválidos.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
-  async createAppointment(@Body() dto: CreateAppointmentDto) {
-    return this.managerService.createAppointment(dto);
+  async createAppointment(@Request() req, @Body() dto: CreateAppointmentDto) {
+    return this.managerService.createAppointment(req.user.id as string, dto);
   }
 
   @Get('appointments')

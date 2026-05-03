@@ -11,7 +11,7 @@ import { UserRole } from '@prisma/client';
 export class ManagerService {
   constructor(private prisma: PrismaService) {}
 
-  async createAppointment(dto: CreateAppointmentDto) {
+  async createAppointment(managerUserId: string, dto: CreateAppointmentDto) {
     const patient = await this.prisma.user.findUnique({
       where: { id: dto.patientId },
     });
@@ -46,6 +46,14 @@ export class ManagerService {
       );
     }
 
+    const manager = await this.prisma.managerProfile.findUnique({
+      where: { userId: managerUserId },
+    });
+
+    if (!manager) {
+      throw new NotFoundException('Perfil de gestor não encontrado');
+    }
+
     const appointment = await this.prisma.appointment.create({
       data: {
         patientId: dto.patientId,
@@ -53,6 +61,7 @@ export class ManagerService {
         dateTime: appointmentDate,
         status: 'PENDING',
         notes: dto.notes,
+        scheduledByManagerId: manager.id,
       },
       include: {
         patient: { include: { patientProfile: true } },
