@@ -26,6 +26,7 @@ type ScheduleTimelineProps = {
   selectedDate: Date | undefined;
   getAppointmentForSlot: (slot: string) => Appointment | undefined;
   onStatusChange: (id: string, newStatus: string, notes?: string) => void;
+  isReadOnly?: boolean;
 };
 
 export function ScheduleTimeline({
@@ -36,6 +37,7 @@ export function ScheduleTimeline({
   selectedDate,
   getAppointmentForSlot,
   onStatusChange,
+  isReadOnly = false,
 }: ScheduleTimelineProps) {
   const [now, setNow] = useState(new Date());
 
@@ -134,6 +136,7 @@ export function ScheduleTimeline({
                 appointment={appointment}
                 slot={slot}
                 onStatusChange={onStatusChange}
+                isReadOnly={isReadOnly}
               />
             </div>
           </div>
