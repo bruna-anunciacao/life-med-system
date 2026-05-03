@@ -20,10 +20,13 @@ import {
   CalendarDots,
   Clock,
   NotePencil,
+  User,
+  Stethoscope,
+  CheckCircle,
+  X,
 } from "@phosphor-icons/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 interface ManagerBookingModalProps {
   isOpen: boolean;
@@ -61,12 +64,15 @@ export function ManagerBookingModal({
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [patientSearchTerm, setPatientSearchTerm] = useState("");
+  const [showPatientDropdown, setShowPatientDropdown] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
 
   const filteredPatients = patients.filter((p) =>
     (p.name || p.email).toLowerCase().includes(patientSearchTerm.toLowerCase())
   );
+
+  const selectedPatientData = patients.find((p) => p.id === selectedPatient);
 
   const handleDateChange = async (date: string) => {
     setSelectedDate(date);
@@ -139,6 +145,7 @@ export function ManagerBookingModal({
     setNotes("");
     setSlots([]);
     setPatientSearchTerm("");
+    setShowPatientDropdown(false);
     onOpenChange(false);
   };
 
@@ -165,129 +172,254 @@ export function ManagerBookingModal({
     return true;
   });
 
+  const isFormComplete = selectedPatient && selectedDate && selectedSlot;
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`${isMobile ? "w-full" : "max-w-md"}`}>
-        <DialogHeader>
-          <h2 className="text-lg font-semibold">
-            Agendar consulta para {professional.name}
-          </h2>
-          {professional.professionalProfile?.specialty && (
-            <p className="text-sm text-gray-500">
-              {professional.professionalProfile.specialty}
-            </p>
-          )}
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="patient-search">Paciente *</Label>
-            <div className="relative">
-              <Input
-                id="patient-search"
-                type="text"
-                placeholder="Buscar paciente..."
-                value={patientSearchTerm}
-                onChange={(e) => setPatientSearchTerm(e.target.value)}
-                className="w-full"
-              />
-              {patientSearchTerm && filteredPatients.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                  {filteredPatients.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => {
-                        setSelectedPatient(p.id);
-                        setPatientSearchTerm(p.name || p.email);
-                      }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b last:border-b-0 text-sm"
-                    >
-                      <div className="font-medium">{p.name || p.email}</div>
-                      <div className="text-xs text-gray-500">{p.email}</div>
-                    </button>
-                  ))}
-                </div>
-              )}
+      <DialogContent className={`${isMobile ? "w-full max-w-full" : "max-w-2xl"} p-0 overflow-hidden`}>
+        {/* Header com gradient */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-white">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+              <Stethoscope size={24} />
             </div>
-            {selectedPatient && (
-              <p className="text-xs text-green-600 mt-1">
-                ✓ Paciente selecionado
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Label htmlFor="date-input" className="flex items-center gap-2">
-              <CalendarDots size={16} />
-              Data *
-            </Label>
-            <Input
-              id="date-input"
-              type="date"
-              min={today}
-              value={selectedDate}
-              onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full"
-            />
-          </div>
-
-          {selectedDate && (
             <div>
-              <Label className="flex items-center gap-2">
-                <Clock size={16} />
-                Horário *
-              </Label>
-              {isLoadingSlots ? (
-                <div className="flex justify-center py-4">
-                  <Spinner size="sm" />
-                </div>
-              ) : availableSlots.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                  {availableSlots.map((slot) => (
-                    <button
-                      key={slot.time}
-                      onClick={() => setSelectedSlot(slot.time)}
-                      className={`p-2 rounded-lg text-sm font-medium transition-all ${
-                        selectedSlot === slot.time
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                    >
-                      {slot.time}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-4">
-                  Nenhum horário disponível
+              <h2 className="text-2xl font-bold">{professional.name}</h2>
+              {professional.professionalProfile?.specialty && (
+                <p className="text-blue-100 text-sm">
+                  {professional.professionalProfile.specialty}
                 </p>
               )}
             </div>
-          )}
-
-          <div>
-            <Label htmlFor="notes" className="flex items-center gap-2">
-              <NotePencil size={16} />
-              Observações
-            </Label>
-            <Textarea
-              id="notes"
-              placeholder="Adicione observações sobre a consulta..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full"
-              rows={3}
-            />
           </div>
+          <p className="text-blue-50">Preencha os dados para agendar uma consulta</p>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+        {/* Content */}
+        <div className="px-6 py-6 space-y-6">
+          {/* Step 1: Patient Selection */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                  1
+                </div>
+              </div>
+              <Label className="text-base font-semibold text-gray-900">
+                Selecione o Paciente
+              </Label>
+            </div>
+
+            {selectedPatientData ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CheckCircle size={20} className="text-green-600" />
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {selectedPatientData.name || selectedPatientData.email}
+                    </p>
+                    <p className="text-xs text-gray-500">{selectedPatientData.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setSelectedPatient("");
+                    setPatientSearchTerm("");
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="relative">
+                  <User size={18} className="absolute left-3 top-3 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por nome ou email..."
+                    value={patientSearchTerm}
+                    onChange={(e) => {
+                      setPatientSearchTerm(e.target.value);
+                      setShowPatientDropdown(true);
+                    }}
+                    onFocus={() => setShowPatientDropdown(true)}
+                    className="pl-10 w-full border-gray-300 focus:ring-blue-500"
+                  />
+                </div>
+
+                {showPatientDropdown && patientSearchTerm && filteredPatients.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                    {filteredPatients.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          setSelectedPatient(p.id);
+                          setPatientSearchTerm("");
+                          setShowPatientDropdown(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b last:border-b-0 transition-colors"
+                      >
+                        <div className="font-medium text-gray-900">
+                          {p.name || p.email}
+                        </div>
+                        <div className="text-xs text-gray-500">{p.email}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {patientSearchTerm && filteredPatients.length === 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg p-4 text-center text-gray-500 text-sm">
+                    Nenhum paciente encontrado
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {selectedPatient && (
+            <>
+              {/* Step 2: Date Selection */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                      2
+                    </div>
+                  </div>
+                  <Label className="text-base font-semibold text-gray-900">
+                    Escolha a Data
+                  </Label>
+                </div>
+
+                <div className="relative">
+                  <CalendarDots
+                    size={18}
+                    className="absolute left-3 top-3 text-gray-400"
+                  />
+                  <Input
+                    type="date"
+                    min={today}
+                    value={selectedDate}
+                    onChange={(e) => handleDateChange(e.target.value)}
+                    className="pl-10 w-full border-gray-300 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Step 3: Time Selection */}
+              {selectedDate && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-blue-100 text-blue-600 font-semibold text-sm">
+                        3
+                      </div>
+                    </div>
+                    <Label className="text-base font-semibold text-gray-900">
+                      Selecione o Horário
+                    </Label>
+                  </div>
+
+                  {isLoadingSlots ? (
+                    <div className="flex justify-center py-8">
+                      <Spinner size="lg" />
+                    </div>
+                  ) : availableSlots.length > 0 ? (
+                    <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto p-2 bg-gray-50 rounded-lg">
+                      {availableSlots.map((slot) => (
+                        <button
+                          key={slot.time}
+                          onClick={() => setSelectedSlot(slot.time)}
+                          className={`p-3 rounded-lg text-sm font-semibold transition-all border-2 ${
+                            selectedSlot === slot.time
+                              ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200"
+                              : "bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:bg-blue-50"
+                          }`}
+                        >
+                          <Clock size={14} className="mx-auto mb-1" />
+                          {slot.time}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded-lg">
+                      <p className="text-gray-500">Nenhum horário disponível nesta data</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Step 4: Notes */}
+              {selectedSlot && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 text-gray-600 font-semibold text-sm">
+                        4
+                      </div>
+                    </div>
+                    <Label className="text-base font-semibold text-gray-900">
+                      Observações (Opcional)
+                    </Label>
+                  </div>
+
+                  <textarea
+                    placeholder="Adicione qualquer observação relevante para a consulta..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm"
+                    rows={3}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Summary */}
+          {isFormComplete && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
+              <p className="font-semibold text-gray-900 text-sm">Resumo da Consulta</p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-600">Paciente</p>
+                  <p className="font-medium text-gray-900">
+                    {selectedPatientData?.name || selectedPatientData?.email}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Profissional</p>
+                  <p className="font-medium text-gray-900">{professional.name}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Data</p>
+                  <p className="font-medium text-gray-900">
+                    {new Date(selectedDate).toLocaleDateString("pt-BR")}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Horário</p>
+                  <p className="font-medium text-gray-900">{selectedSlot}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <DialogFooter className="bg-gray-50 px-6 py-4 border-t border-gray-200">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            className="border-gray-300"
+          >
             Cancelar
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!selectedPatient || !selectedDate || !selectedSlot || isSubmitting}
+            disabled={!isFormComplete || isSubmitting}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
           >
             {isSubmitting ? (
               <>
@@ -295,7 +427,10 @@ export function ManagerBookingModal({
                 Agendando...
               </>
             ) : (
-              "Agendar Consulta"
+              <>
+                <CheckCircle size={18} className="mr-2" />
+                Agendar Consulta
+              </>
             )}
           </Button>
         </DialogFooter>
