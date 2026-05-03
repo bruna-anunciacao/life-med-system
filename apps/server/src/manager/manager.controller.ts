@@ -5,6 +5,7 @@ import {
   Patch,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -72,12 +73,12 @@ export class ManagerController {
   }
 
   @Get('patients')
-  @ApiOperation({ summary: 'Listar todos os pacientes' })
+  @ApiOperation({ summary: 'Listar pacientes com busca opcional por nome ou CPF' })
   @ApiResponse({ status: 200, description: 'Lista de pacientes.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
-  async listPatients() {
-    return this.patientsService.listPatients();
+  async listPatients(@Query('search') search?: string) {
+    return this.patientsService.listPatients(search);
   }
 
   @Get('patients/:patientId')
