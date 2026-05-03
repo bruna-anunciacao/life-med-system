@@ -109,4 +109,40 @@ export const professionalService = {
       throw new Error("Erro de conexão com o servidor.");
     }
   },
+
+  async createScheduleBlock(data: { date: string; startTime?: string; endTime?: string }) {
+    try {
+      const response = await api.post("/professional/schedule-blocks", data);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(error.response.data.message || "Erro ao criar bloqueio.");
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async getScheduleBlocks() {
+    try {
+      const response = await api.get("/professional/schedule-blocks");
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(error.response.data.message || "Erro ao buscar bloqueios.");
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
+  async deleteScheduleBlock(id: string) {
+    try {
+      const response = await api.delete(`/professional/schedule-blocks/${id}`);
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        throw new Error(error.response.data.message || "Erro ao remover bloqueio.");
+      }
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
 };

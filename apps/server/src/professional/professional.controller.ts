@@ -7,6 +7,8 @@ import {
   Req,
   Query,
   Param,
+  Delete,
+  Post,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,6 +21,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ProfessionalService } from './professional.service';
 import { UpdateProfessionalSettingsDto } from './dto/update-setting.dto';
+import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
 import { ProfessionalRoleGuard } from './guards/professional-role.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 
@@ -136,5 +139,39 @@ export class ProfessionalController {
   })
   updateSettings(@Req() req, @Body() dto: UpdateProfessionalSettingsDto) {
     return this.professionalService.updateSettings(req.user.id as string, dto);
+  }
+
+  @Post('schedule-blocks')
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
+  @ApiOperation({
+    summary: 'Criar um bloqueio na agenda',
+    description: 'Bloqueia a agenda para o dia inteiro ou um intervalo de horas e cancela consultas afetadas.',
+  })
+  @ApiBody({ type: CreateScheduleBlockDto })
+  @ApiResponse({ status: 201, description: 'Bloqueio criado com sucesso.' })
+  createScheduleBlock(@Req() req, @Body() dto: CreateScheduleBlockDto) {
+    return this.professionalService.createScheduleBlock(req.user.id as string, dto);
+  }
+
+  @Get('schedule-blocks')
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
+  @ApiOperation({
+    summary: 'Listar bloqueios na agenda',
+    description: 'Lista todos os bloqueios ativos do profissional.',
+  })
+  @ApiResponse({ status: 200, description: 'Lista de bloqueios.' })
+  getScheduleBlocks(@Req() req) {
+    return this.professionalService.getScheduleBlocks(req.user.id as string);
+  }
+
+  @Delete('schedule-blocks/:id')
+  @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
+  @ApiOperation({
+    summary: 'Remover um bloqueio na agenda',
+    description: 'Remove um bloqueio existente, liberando o horário.',
+  })
+  @ApiResponse({ status: 200, description: 'Bloqueio removido com sucesso.' })
+  deleteScheduleBlock(@Req() req, @Param('id') id: string) {
+    return this.professionalService.deleteScheduleBlock(req.user.id as string, id);
   }
 }

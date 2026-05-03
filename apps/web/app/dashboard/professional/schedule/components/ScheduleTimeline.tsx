@@ -11,10 +11,18 @@ type Appointment = {
   patient: { name: string };
 };
 
+type ScheduleBlock = {
+  id: string;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+};
+
 type ScheduleTimelineProps = {
   isLoading: boolean;
   isAvailableToday: boolean;
   timeSlots: string[];
+  scheduleBlocks?: ScheduleBlock[];
   selectedDate: Date | undefined;
   getAppointmentForSlot: (slot: string) => Appointment | undefined;
   onStatusChange: (id: string, newStatus: string, notes?: string) => void;
@@ -24,6 +32,7 @@ export function ScheduleTimeline({
   isLoading,
   isAvailableToday,
   timeSlots,
+  scheduleBlocks = [],
   selectedDate,
   getAppointmentForSlot,
   onStatusChange,
@@ -69,6 +78,13 @@ export function ScheduleTimeline({
       );
     }
     return null;
+  };
+
+  const isSlotBlocked = (slot: string) => {
+    return scheduleBlocks.some((block) => {
+      if (!block.startTime || !block.endTime) return true; // Dia inteiro
+      return slot >= block.startTime && slot < block.endTime;
+    });
   };
 
   const timelineRows = [];
@@ -126,6 +142,8 @@ export function ScheduleTimeline({
 
       i += span - 1;
     } else {
+      const blocked = isSlotBlocked(slot);
+
       timelineRows.push(
         <div key={slot} className="flex gap-6 relative">
           <div className="w-15 h-22.5 pt-4 font-mono font-semibold text-gray-400 text-right text-[0.9rem]">
@@ -133,8 +151,10 @@ export function ScheduleTimeline({
           </div>
           <div className="flex-1 relative pb-4 border-b border-dashed border-gray-200 last:border-b-0">
             {renderCurrentTimeLine(slotMins, 1)}
-            <div className="h-full flex items-center justify-between px-4 rounded-xl border border-transparent transition-all duration-200 cursor-pointer bg-[#fafafa] hover:bg-gray-100 hover:border-gray-200">
-              <span className="text-gray-400 text-sm">Disponível</span>
+            <div className={`h-full flex items-center justify-between px-4 rounded-xl border transition-all duration-200 cursor-pointer ${blocked ? 'bg-red-50 border-red-100 cursor-not-allowed' : 'bg-[#fafafa] border-transparent hover:bg-gray-100 hover:border-gray-200'}`}>
+              <span className={`text-sm ${blocked ? 'text-red-400 font-medium' : 'text-gray-400'}`}>
+                {blocked ? 'Cancelado / Bloqueado' : 'Disponível'}
+              </span>
             </div>
           </div>
         </div>,
