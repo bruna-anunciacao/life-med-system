@@ -26,6 +26,7 @@ import { PatientsService } from '../patients/patients.service';
 import { CreatePatientDto } from '../patients/dto/create-patient.dto';
 import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
+import { CancelAppointmentDto } from '../appointments/dto/cancel-appointment-patient.dto';
 
 @ApiTags('Manager')
 @ApiBearerAuth('access-token')
@@ -106,6 +107,30 @@ export class ManagerController {
   @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
   async createAppointment(@Request() req, @Body() dto: CreateAppointmentDto) {
     return this.managerService.createAppointment(req.user.id as string, dto);
+  }
+
+  @Patch('appointments/:appointmentId/cancel')
+  @ApiOperation({
+    summary: 'Cancelar consulta',
+    description: 'Cancela uma consulta registrando o gestor que realizou o cancelamento.',
+  })
+  @ApiParam({ name: 'appointmentId', description: 'ID da consulta (UUID)' })
+  @ApiBody({ type: CancelAppointmentDto })
+  @ApiResponse({ status: 200, description: 'Consulta cancelada com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Consulta já cancelada.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
+  @ApiResponse({ status: 404, description: 'Consulta não encontrada.' })
+  async cancelAppointment(
+    @Request() req,
+    @Param('appointmentId') appointmentId: string,
+    @Body() dto: CancelAppointmentDto,
+  ) {
+    return this.managerService.cancelAppointment(
+      req.user.id as string,
+      appointmentId,
+      dto.reason,
+    );
   }
 
   @Get('appointments')

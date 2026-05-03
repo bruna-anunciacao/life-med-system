@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
-import { UserRole } from '@prisma/client';
+import { AppointmentStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class ManagerService {
@@ -70,6 +70,50 @@ export class ManagerService {
     });
 
     return appointment;
+  }
+
+  async cancelAppointment(
+    managerUserId: string,
+    appointmentId: string,
+    reason?: string,
+  ) {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException('Consulta não encontrada');
+    }
+
+    if (appointment.status === AppointmentStatus.CANCELLED) {
+      throw new BadRequestException('Consulta já está cancelada');
+    }
+
+    const manager = await this.prisma.managerProfile.findUnique({
+      where: { userId: managerUserId },
+    });
+
+    if (!manager) {
+      throw new NotFoundException('Perfil de gestor não encontrado');
+    }
+
+    const notes = reason
+      ? `[CANCELADO PELO GESTOR] ${reason}`
+      : '[CANCELADO PELO GESTOR]';
+
+    return this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        status: AppointmentStatus.CANCELLED,
+        cancelledByManagerId: manager.id,
+        cancelledAt: new Date(),
+        notes,
+      },
+      include: {
+        patient: { include: { patientProfile: true } },
+        professional: { include: { professionalProfile: true } },
+      },
+    });
   }
 
   async getAppointmentsByManager() {
