@@ -25,7 +25,6 @@ import { ManagerService } from './manager.service';
 import { PatientsService } from '../patients/patients.service';
 import { CreatePatientDto } from '../patients/dto/create-patient.dto';
 import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
-import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { CancelAppointmentDto } from '../appointments/dto/cancel-appointment-patient.dto';
 
 @ApiTags('Manager')
@@ -94,20 +93,6 @@ export class ManagerController {
     return this.patientsService.getPatient(patientId);
   }
 
-  @Post('appointments')
-  @ApiOperation({
-    summary: 'Agendar consulta',
-    description:
-      'Cria uma nova consulta entre um paciente e um profissional de saúde.',
-  })
-  @ApiBody({ type: CreateAppointmentDto })
-  @ApiResponse({ status: 201, description: 'Consulta agendada com sucesso.' })
-  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
-  @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
-  async createAppointment(@Request() req, @Body() dto: CreateAppointmentDto) {
-    return this.managerService.createAppointment(req.user.id as string, dto);
-  }
 
   @Patch('appointments/:appointmentId/cancel')
   @ApiOperation({
