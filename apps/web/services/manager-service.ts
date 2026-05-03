@@ -179,7 +179,7 @@ export const managerService = {
 
   async listProfessionals() {
     try {
-      const response = await api.get("/admin/professionals");
+      const response = await api.get("/professional");
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

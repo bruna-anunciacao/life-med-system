@@ -4,7 +4,7 @@ import { useForm, Controller} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { adminService } from "../../../../../services/admin-service";
+import { managerService } from "../../../../../services/manager-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { SearchBar } from "../../../patient/search/components/SearchBar";
@@ -63,7 +63,7 @@ const NewApointmentPage = () => {
     const load = async () => {
       try {
         setIsLoading(true);
-        const data = await adminService.listProfessionals();
+        const data = await managerService.listProfessionals();
         setProfessionals(data);
       } catch {
         toast.error("Erro ao carregar profissionais.");
