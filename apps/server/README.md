@@ -57,6 +57,41 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Google Calendar / Meet integration
+
+Virtual appointments create a Google Meet room via the Google Calendar API and
+attach both parties as attendees so the event lands in the patient's Google
+Calendar. The integration uses an OAuth2 refresh token issued to a single
+dedicated LifeMed Google account.
+
+**One-time setup:**
+
+1. In Google Cloud Console, create an OAuth 2.0 Client (type "Web application")
+   and add `http://localhost:53682/oauth2callback` to the authorized redirect
+   URIs. Copy the client id and secret.
+2. From `apps/server`, run the bootstrap script with the credentials in env:
+
+   ```bash
+   GOOGLE_CALENDAR_CLIENT_ID=... \
+   GOOGLE_CALENDAR_CLIENT_SECRET=... \
+   npx ts-node scripts/google-oauth-bootstrap.ts
+   ```
+
+3. Open the printed URL, sign in with the dedicated LifeMed Google account,
+   and grant calendar access. The script prints a `refresh_token`.
+4. Populate `apps/server/.env`:
+
+   ```
+   GOOGLE_CALENDAR_CLIENT_ID=...
+   GOOGLE_CALENDAR_CLIENT_SECRET=...
+   GOOGLE_CALENDAR_REFRESH_TOKEN=...
+   GOOGLE_CALENDAR_ID=primary
+   ```
+
+If the refresh token is missing or invalid, virtual bookings still succeed —
+the server logs the failure and the LifeMed confirmation email is sent without
+a Meet link (graceful degradation).
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
