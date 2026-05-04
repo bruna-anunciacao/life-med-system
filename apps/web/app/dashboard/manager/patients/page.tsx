@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { formatPhoneNumber } from '@/app/utils/formatPhone';
 
 export default function PatientsPage() {
   const { data: patients = [], isLoading, error } = useListPatientsQuery();
@@ -56,7 +57,7 @@ export default function PatientsPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">{patient.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{patient.email}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {patient.patientProfile?.phone || '-'}
+                      {formatPhoneNumber(patient.patientProfile?.phone) || '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {patient.patientProfile?.dateOfBirth

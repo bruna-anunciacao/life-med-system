@@ -84,6 +84,7 @@ const AdminUserProfilePage = () => {
               <PatientProfileForm
                 register={patientForm.register}
                 errors={patientForm.formState.errors}
+                control={patientForm.control}
                 isEditing={isEditing}
               />
             </form>

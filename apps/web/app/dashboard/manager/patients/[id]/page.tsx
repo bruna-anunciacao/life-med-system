@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetPatientQuery } from "@/queries/useGetPatientQuery";
 import { useRouter, useParams } from "next/navigation";
@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { editPatientSchema, type EditPatientSchema } from "./edit-patient.validation";
+import ptBr from "react-phone-number-input/locale/pt-BR";
+import PhoneInput from "react-phone-number-input";
 
 export default function PatientDetailsPage() {
   const router = useRouter();
@@ -26,6 +28,7 @@ export default function PatientDetailsPage() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<EditPatientSchema>({
     resolver: zodResolver(editPatientSchema),
@@ -140,13 +143,37 @@ export default function PatientDetailsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                  <input
-                    type="tel"
-                    disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                      isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
-                    }`}
-                    {...register("phone")}
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => {
+                      let safeValue = field.value
+                        ? field.value.replace(/[^\d+]/g, "")
+                        : "";
+
+                      if (safeValue && !safeValue.startsWith("+")) {
+                        safeValue = `+55${safeValue}`;
+                      }
+
+                      return (
+                        <PhoneInput
+                          id="phone"
+                          placeholder="(71) 99999-9999"
+                          international
+                          countryCallingCodeEditable={false}
+                          labels={ptBr}
+                          defaultCountry="BR"
+                          value={safeValue || undefined}
+                          onChange={(val) => field.onChange(val || "")}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                          disabled={!isEditing}
+                          className={`w-full flex items-center border border-gray-300 rounded-lg overflow-hidden transition-colors duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 ${
+                            !isEditing ? "bg-gray-50" : "bg-white"
+                          } [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-300 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:px-4 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-base [&_.PhoneInputInput]:text-gray-700 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput:disabled]:text-gray-500 [&_.PhoneInputInput:disabled]:cursor-not-allowed`}
+                        />
+                      );
+                    }}
                   />
                   {errors.phone && (
                     <p className="text-xs text-red-600 mt-1">{errors.phone.message}</p>
