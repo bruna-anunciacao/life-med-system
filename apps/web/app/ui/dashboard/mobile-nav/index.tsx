@@ -12,6 +12,7 @@ import {
   MagnifyingGlass,
   Stethoscope,
   SignOut,
+  Plus,
 } from "@phosphor-icons/react";
 
 type NavItem = {
@@ -69,6 +70,12 @@ const MobileNav = ({ role }: { role: string }) => {
             href: "/dashboard/manager/patients",
             icon: <Users size={22} />,
             activeIcon: <Users size={22} weight="fill" />,
+          },
+          {
+            name: "Agendar",
+            href: "/dashboard/manager/appointments/new",
+            icon: <Plus size={22} />,
+            activeIcon: <Plus size={22} weight="fill" />,
           },
           {
             name: "Consultas",
