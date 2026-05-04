@@ -127,4 +127,20 @@ export class AddressesService {
       where: { userId },
     });
   }
+
+  async getCities() {
+    const addresses = await this.prisma.address.findMany({
+      select: {
+        city: true,
+        state: true,
+      },
+      distinct: ['city', 'state'],
+      orderBy: [
+        { state: 'asc' },
+        { city: 'asc' },
+      ],
+    });
+
+    return addresses;
+  }
 }

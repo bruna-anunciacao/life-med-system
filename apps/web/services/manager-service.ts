@@ -53,7 +53,6 @@ export interface ManagerPatientResponse {
     phone?: string;
     dateOfBirth?: string;
     gender?: string;
-    address?: string;
     questionnaireCompleted?: boolean;
   };
   questionnaire?: QuestionnaireSummary | null;

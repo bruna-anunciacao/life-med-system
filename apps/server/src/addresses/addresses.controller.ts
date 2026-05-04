@@ -87,6 +87,28 @@ export class AddressesController {
     return this.addressesService.update(userId, dto);
   }
 
+  @Get('cities')
+  @UseGuards(JwtAuthGuard, EmailVerifiedGuard)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({
+    summary: 'Listar cidades e estados únicos',
+    description: 'Retorna lista de cidades e estados únicos dos endereços cadastrados',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Lista de cidades e estados',
+    schema: {
+      example: [
+        { city: 'Salvador', state: 'BA' },
+        { city: 'São Paulo', state: 'SP' },
+      ],
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Não autenticado' })
+  getCities() {
+    return this.addressesService.getCities();
+  }
+
   @Delete('user/:id')
   @UseGuards(JwtAuthGuard)
   @UseGuards(EmailVerifiedGuard, ResourceOwnershipGuard)

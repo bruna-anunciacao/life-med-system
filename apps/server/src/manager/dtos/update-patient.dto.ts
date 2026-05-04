@@ -15,8 +15,4 @@ export class UpdatePatientDto {
     message: 'Gênero deve ser M, F ou O',
   })
   gender?: string;
-
-  @IsString({ message: 'Endereço deve ser texto' })
-  @IsOptional()
-  address?: string;
 }

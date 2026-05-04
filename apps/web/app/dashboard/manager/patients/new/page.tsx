@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreatePatientMutation } from '@/queries/useCreatePatientMutation';
 import { useRouter } from 'next/navigation';
@@ -8,9 +8,8 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
-import { useSearchCepQuery } from '@/queries/useAddressQueries';
-import { useEffect } from 'react';
+import { useAddressCep } from '@/hooks/useAddressCep';
+import { AddressFields } from '@/components/address';
 import { newPatientSchema, type NewPatientSchema } from './new-patient.validation';
 
 export default function NewPatientPage() {
@@ -29,40 +28,13 @@ export default function NewPatientPage() {
     resolver: zodResolver(newPatientSchema),
   });
 
-  const zipCodeValue = useWatch({ control, name: 'address.zipCode' });
-
-  const validZipCodeToSearch = zipCodeValue?.length === 8 ? zipCodeValue : '';
-
-  const {
-    data: zipCodeData,
-    isFetching: isFetchingZipCode,
-    error: zipCodeError,
-  } = useSearchCepQuery(validZipCodeToSearch);
-
-  useEffect(() => {
-
-    if (zipCodeValue?.length !== 8 || isFetchingZipCode) {
-      clearErrors('address.zipCode');
-      return;
-    }
-
-    if (zipCodeError) {
-      setError('address.zipCode', { type: 'manual', message: 'CEP não encontrado' });
-      setValue('address.street', '');
-      setValue('address.district', '');
-      setValue('address.city', '');
-      setValue('address.state', '');
-      return;
-    }
-
-    if (zipCodeData && zipCodeData.zipCode.replace(/\D/g, '') === zipCodeValue) {
-      clearErrors('address.zipCode');
-      setValue('address.street', zipCodeData.street);
-      setValue('address.district', zipCodeData.district);
-      setValue('address.city', zipCodeData.city);
-      setValue('address.state', zipCodeData.state);
-    }
-  }, [zipCodeData, zipCodeError, zipCodeValue, isFetchingZipCode, clearErrors, setError, setValue]);
+  const { isFetchingZipCode } = useAddressCep({
+    control,
+    setValue,
+    setError,
+    clearErrors,
+    fieldPrefix: 'address',
+  });
 
   const onSubmit = (data: NewPatientSchema) => {
     const formattedData = {
@@ -186,147 +158,12 @@ export default function NewPatientPage() {
               <p className="text-sm text-gray-500">Cadastre o endereço de localização do paciente.</p>
             </div>
             
-            <div className="space-y-5">
-              <div className="flex flex-col gap-[0.35rem]">
-                <Label htmlFor="address.zipCode" className="text-[0.85rem] font-semibold text-gray-700">
-                  CEP *
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="address.zipCode"
-                    type="text"
-                    placeholder="00000000"
-                    maxLength={8}
-                    inputMode="numeric"
-                    {...register('address.zipCode')}
-                  />
-                  {isFetchingZipCode && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <Spinner size="sm" />
-                    </div>
-                  )}
-                </div>
-                {errors.address?.zipCode && (
-                  <span className="text-[0.8rem] text-red-600 mt-[0.15rem]">
-                    {errors.address.zipCode.message}
-                  </span>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="flex flex-col gap-[0.35rem]">
-                  <Label htmlFor="address.street" className="text-[0.85rem] font-semibold text-gray-700">
-                    Rua *
-                  </Label>
-                  <Input
-                    id="address.street"
-                    type="text"
-                    placeholder="Rua, Avenida, etc"
-                    readOnly={isFetchingZipCode}
-                    {...register('address.street')}
-                  />
-                  {errors.address?.street && (
-                    <span className="text-[0.8rem] text-red-600 mt-[0.15rem]">
-                      {errors.address.street.message}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-[0.35rem]">
-                  <Label htmlFor="address.district" className="text-[0.85rem] font-semibold text-gray-700">
-                    Bairro *
-                  </Label>
-                  <Input
-                    id="address.district"
-                    type="text"
-                    placeholder="Nome do bairro"
-                    readOnly={isFetchingZipCode}
-                    {...register('address.district')}
-                  />
-                  {errors.address?.district && (
-                    <span className="text-[0.8rem] text-red-600 mt-[0.15rem]">
-                      {errors.address.district.message}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="flex flex-col gap-[0.35rem]">
-                  <Label htmlFor="address.number" className="text-[0.85rem] font-semibold text-gray-700">
-                    Número *
-                  </Label>
-                  <Input
-                    id="address.number"
-                    type="text"
-                    placeholder="Ex: 123"
-                    {...register('address.number')}
-                  />
-                  {errors.address?.number && (
-                    <span className="text-[0.8rem] text-red-600 mt-[0.15rem]">
-                      {errors.address.number.message}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-[0.35rem]">
-                  <Label htmlFor="address.complement" className="text-[0.85rem] font-semibold text-gray-700">
-                    Complemento
-                  </Label>
-                  <Input
-                    id="address.complement"
-                    type="text"
-                    placeholder="Ex: Apto 42, Sala 101"
-                    {...register('address.complement')}
-                  />
-                  {errors.address?.complement && (
-                    <span className="text-[0.8rem] text-red-600 mt-[0.15rem]">
-                      {errors.address.complement.message}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="flex flex-col gap-[0.35rem]">
-                  <Label htmlFor="address.city" className="text-[0.85rem] font-semibold text-gray-700">
-                    Cidade *
-                  </Label>
-                  <Input
-                    id="address.city"
-                    type="text"
-                    placeholder="Nome da cidade"
-                    readOnly={isFetchingZipCode}
-                    {...register('address.city')}
-                  />
-                  {errors.address?.city && (
-                    <span className="text-[0.8rem] text-red-600 mt-[0.15rem]">
-                      {errors.address.city.message}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-[0.35rem]">
-                  <Label htmlFor="address.state" className="text-[0.85rem] font-semibold text-gray-700">
-                    Estado *
-                  </Label>
-                  <Input
-                    id="address.state"
-                    type="text"
-                    placeholder="BA"
-                    maxLength={2}
-                    readOnly={isFetchingZipCode}
-                    className="uppercase"
-                    {...register('address.state')}
-                  />
-                  {errors.address?.state && (
-                    <span className="text-[0.8rem] text-red-600 mt-[0.15rem]">
-                      {errors.address.state.message}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
+            <AddressFields
+              register={register}
+              errors={errors}
+              isFetchingZipCode={isFetchingZipCode}
+              fieldPrefix="address"
+            />
           </div>
 
           <div className="flex gap-4">

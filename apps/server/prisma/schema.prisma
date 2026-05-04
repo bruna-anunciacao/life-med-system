@@ -86,7 +86,6 @@ model ProfessionalProfile {
   bio                 String?             @db.Text
   photoUrl            String?             @map("photo_url")
   socialLinks         Json?               @map("social_links")
-  address             String?
   price               Float?
   payments            Json?
 
@@ -110,7 +109,6 @@ model PatientProfile {
   phone                  String?
   dateOfBirth            DateTime?                   @map("date_of_birth")
   gender                 String?
-  address                String?
   questionnaireCompleted Boolean                     @default(false) @map("questionnaire_completed")
   questionnaire          VulnerabilityQuestionnaire?
   createdAt              DateTime                    @default(now()) @map("created_at")
@@ -141,7 +139,6 @@ model ManagerProfile {
   phone     String?
   bio       String?  @db.Text
   photoUrl  String?  @map("photo_url")
-  address   String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

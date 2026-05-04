@@ -32,7 +32,6 @@ export interface ProfessionalData {
     modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
     bio?: string | null;
     photoUrl?: string | null;
-    address?: string | null;
     price?: number | null;
     payments?: string[] | null;
     socialLinks?: {
@@ -191,11 +190,6 @@ export function SeeProfileModal({
                       <p className="font-semibold text-gray-900 text-[0.95rem]">
                         {modalityInfo.text}
                       </p>
-                      {profile.modality === "CLINIC" && profile.address && (
-                        <p className="mt-1 text-gray-500 text-[0.85rem] leading-snug">
-                          {profile.address}
-                        </p>
-                      )}
                     </div>
                   </div>
                 </div>

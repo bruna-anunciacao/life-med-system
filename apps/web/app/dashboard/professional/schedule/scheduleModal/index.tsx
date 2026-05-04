@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { AlertCircle } from "lucide-react";
 import { useProfessionalSettingsQuery } from "@/queries/useProfessionalAppointments";
 import { useScheduleModalForm } from "./useScheduleModalForm";
+import AddressSection from "./AddressSection";
 
 interface ScheduleModalProps {
   isOpen: boolean;
@@ -128,6 +129,7 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
   const [localAvailability, setLocalAvailability] = useState(defaultAvailability);
   const [localPayments, setLocalPayments] = useState<string[]>(["pix"]);
   const [priceDisplay, setPriceDisplay] = useState("");
+  const [isEditingAddress, setIsEditingAddress] = useState(false);
 
   const closeModal = () => onOpenChange(false);
 
@@ -152,7 +154,6 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
 
       reset({
         modality: settingsData.modality ?? "VIRTUAL",
-        address: settingsData.address ?? "",
         price: numericPrice,
         payments: initialPayments,
         availability: mergedAvailability
@@ -263,6 +264,16 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                   </p>
                 )}
 
+                {/* Endereço da Clínica */}
+                <div className="mt-6">
+                  <AddressSection
+                    isOpen={isOpen}
+                    currentModality={currentModality}
+                    isEditing={isEditingAddress}
+                    onEditingChange={setIsEditingAddress}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   {/* Price */}
                   <div className="flex flex-col gap-1.5">
@@ -294,28 +305,6 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
                       </p>
                     )}
                   </div>
-
-                  {/* Address — shown only for CLINIC */}
-                  {currentModality === "CLINIC" && (
-                    <div className="flex flex-col gap-1.5 sm:col-span-1">
-                      <label htmlFor="address" className="text-xs font-medium text-gray-600">
-                        Endereço da Clínica
-                      </label>
-                      <input
-                        type="text"
-                        id="address"
-                        placeholder="Ex: Rua das Flores, 123 — Sala 4"
-                        className="w-full h-9 px-3 rounded-md border border-gray-200 text-sm transition-colors focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
-                        {...register("address")}
-                      />
-                      {errors.address && (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          {errors.address.message}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -417,14 +406,14 @@ const ScheduleModal = ({ isOpen, onOpenChange }: ScheduleModalProps) => {
             variant="outline"
             size="lg"
             onClick={closeModal}
-            disabled={isSaving || isLoadingData}
+            disabled={isSaving || isLoadingData || isEditingAddress}
           >
             Cancelar
           </Button>
           <Button
             size="lg"
             onClick={() => handleSubmit(onSubmit)()}
-            disabled={isSaving || isLoadingData}
+            disabled={isSaving || isLoadingData || isEditingAddress}
             className="min-w-[160px]"
           >
             {isSaving ? (

@@ -3,7 +3,6 @@ import * as z from "zod";
 export const scheduleModalSchema = z
   .object({
     modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"] as const),
-    address: z.string().optional(),
     price: z.coerce
       .number("Insira um valor válido")
       .min(0, "O valor não pode ser negativo"),
@@ -20,17 +19,5 @@ export const scheduleModalSchema = z
       )
       .min(1, "Selecione pelo menos um dia de atendimento"),
   })
-  .refine(
-    (data) => {
-      if (data.modality === "CLINIC") {
-        return !!data.address && data.address.trim().length > 0;
-      }
-      return true;
-    },
-    {
-      message: "Endereço da clínica é obrigatório",
-      path: ["address"],
-    }
-  );
 
 export type ScheduleModalSchema = z.infer<typeof scheduleModalSchema>;

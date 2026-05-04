@@ -39,7 +39,6 @@ export interface RegisterManagerDto {
   email: string;
   password: string;
   phone: string;
-  address?: string;
   bio?: string;
 }
 

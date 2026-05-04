@@ -243,7 +243,6 @@ export class PatientsService {
           ? new Date(dto.dateOfBirth)
           : patient.patientProfile.dateOfBirth,
         gender: dto.gender ?? patient.patientProfile.gender,
-        address: dto.address ?? patient.patientProfile.address,
       },
       include: {
         user: true,
@@ -300,7 +299,6 @@ export class PatientsService {
       phone: patient.patientProfile?.phone,
       dateOfBirth: patient.patientProfile?.dateOfBirth,
       gender: patient.patientProfile?.gender,
-      address: patient.patientProfile?.address,
       patientProfile: patient.patientProfile,
       questionnaire: patient.patientProfile?.questionnaire ?? null,
     };

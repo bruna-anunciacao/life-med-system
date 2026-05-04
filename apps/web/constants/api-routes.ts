@@ -33,4 +33,7 @@ export const API_ROUTES = {
     CANCEL: (id: string) => `/appointments/${id}`,
     SLOTS: "/appointments/slots",
   },
+  LOCATIONS: {
+    CITIES: "/addresses/cities",
+  },
 };

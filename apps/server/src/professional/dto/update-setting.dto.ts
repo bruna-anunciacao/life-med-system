@@ -1,10 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { AppointmentModality } from '@prisma/client';
 import {
   IsInt,
   Matches,
   IsEnum,
-  IsOptional,
   IsString,
   IsArray,
   IsNumber,
@@ -36,14 +35,6 @@ export class UpdateProfessionalSettingsDto {
   })
   @IsEnum(AppointmentModality)
   modality!: AppointmentModality;
-
-  @ApiPropertyOptional({
-    example: 'Rua das Flores, 123, Salvador – BA',
-    description: 'Endereço do consultório',
-  })
-  @IsOptional()
-  @IsString()
-  address?: string;
 
   @ApiProperty({
     example: ['PIX', 'Cartão de Crédito'],

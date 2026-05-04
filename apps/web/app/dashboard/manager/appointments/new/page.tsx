@@ -4,9 +4,10 @@ import { useForm, Controller} from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
-import { adminService } from "../../../../../services/admin-service";
+import { professionalsService } from "../../../../../services/professionals-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useLocationsQuery } from "@/queries/useLocationsQuery";
 import { SearchBar } from "../../../patient/search/components/SearchBar";
 import { DoctorCard } from "../../../patient/search/components/DoctorCard";
 import { EmptySearch } from "../../../patient/search/components/EmptySearch";
@@ -29,13 +30,17 @@ type Professional = {
     modality?: string;
     bio?: string;
     photoUrl?: string;
-    address?: string;
     specialities?: { id: string; name: string }[];
+  } | null;
+  address?: {
+    city: string;
+    state: string;
   } | null;
 };
 
 const NewApointmentPage = () => {
   const isMobile = useIsMobile();
+  const { data: locations = [] } = useLocationsQuery();
   const { data: patients = [] } = useListPatientsQuery();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
@@ -63,7 +68,7 @@ const NewApointmentPage = () => {
     const load = async () => {
       try {
         setIsLoading(true);
-        const data = await adminService.listProfessionals();
+        const data = await professionalsService.listAll();
         setProfessionals(data);
       } catch {
         toast.error("Erro ao carregar profissionais.");
@@ -90,9 +95,9 @@ const NewApointmentPage = () => {
 
       const matchesLocation =
         selectedLocation === "Todas" ||
-        (p.professionalProfile?.address || "")
-          .toLowerCase()
-          .includes(selectedLocation.toLowerCase());
+        (p.address?.city && p.address?.state
+          ? `${p.address.city} - ${p.address.state}` === selectedLocation
+          : false);
 
       return matchesSearch && matchesSpecialty && matchesLocation;
     });
@@ -138,6 +143,7 @@ const NewApointmentPage = () => {
         search={search}
         selectedSpecialty={selectedSpecialty}
         selectedLocation={selectedLocation}
+        locations={locations}
         resultsCount={filtered.length}
         isLoading={isLoading}
         onSearchChange={setSearch}
