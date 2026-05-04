@@ -9,7 +9,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { CancelConfirmDialog } from '@/app/dashboard/patient/appointments/components/CancelConfirmDialog';
-import { Calendar, Clock, X } from 'lucide-react';
+import { Calendar, Clock, X, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 export default function AppointmentsPage() {
   const isMobile = useIsMobile();
@@ -24,6 +24,16 @@ export default function AppointmentsPage() {
     if (!statusFilter) return appointments;
     return appointments.filter((apt: any) => apt.status === statusFilter);
   }, [appointments, statusFilter]);
+
+  const appointmentStats = useMemo(() => {
+    return {
+      total: appointments.length,
+      pending: appointments.filter((apt: any) => apt.status === 'PENDING').length,
+      confirmed: appointments.filter((apt: any) => apt.status === 'CONFIRMED').length,
+      completed: appointments.filter((apt: any) => apt.status === 'COMPLETED').length,
+      cancelled: appointments.filter((apt: any) => apt.status === 'CANCELLED').length,
+    };
+  }, [appointments]);
 
   const handleCancelClick = (appointmentId: string) => {
     setSelectedAppointmentId(appointmentId);
@@ -61,8 +71,8 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className={`${isMobile ? 'p-4 pb-20' : 'py-12 px-8'}`}>
-      <div className="max-w-6xl mx-auto">
+    <div className={`${isMobile ? 'p-4 pb-20' : 'py-8 px-4'} bg-gradient-to-br from-slate-50 via-white to-slate-50 min-h-screen`}>
+      <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Agendamentos"
           action={{
@@ -81,20 +91,68 @@ export default function AppointmentsPage() {
         ) : (
           <>
             {!isMobile && (
-              <div className="mb-6 flex gap-2">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Todos os status</option>
-                  <option value="PENDING">Pendente</option>
-                  <option value="CONFIRMED">Confirmado</option>
-                  <option value="COMPLETED">Concluído</option>
-                  <option value="CANCELLED">Cancelado</option>
-                </select>
+              <div className="grid grid-cols-5 gap-4 mb-8">
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Total</p>
+                      <p className="text-2xl font-bold text-gray-900 mt-1">{appointmentStats.total}</p>
+                    </div>
+                    <Calendar className="w-8 h-8 text-blue-500 opacity-20" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Pendente</p>
+                      <p className="text-2xl font-bold text-yellow-600 mt-1">{appointmentStats.pending}</p>
+                    </div>
+                    <AlertCircle className="w-8 h-8 text-yellow-500 opacity-20" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Confirmado</p>
+                      <p className="text-2xl font-bold text-blue-600 mt-1">{appointmentStats.confirmed}</p>
+                    </div>
+                    <CheckCircle className="w-8 h-8 text-blue-500 opacity-20" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Concluído</p>
+                      <p className="text-2xl font-bold text-green-600 mt-1">{appointmentStats.completed}</p>
+                    </div>
+                    <CheckCircle className="w-8 h-8 text-green-500 opacity-20" />
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium">Cancelado</p>
+                      <p className="text-2xl font-bold text-red-600 mt-1">{appointmentStats.cancelled}</p>
+                    </div>
+                    <XCircle className="w-8 h-8 text-red-500 opacity-20" />
+                  </div>
+                </div>
               </div>
             )}
+
+            <div className="mb-6 flex gap-2">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="">Todos os status</option>
+                <option value="PENDING">Pendente</option>
+                <option value="CONFIRMED">Confirmado</option>
+                <option value="COMPLETED">Concluído</option>
+                <option value="CANCELLED">Cancelado</option>
+              </select>
+            </div>
 
             {filteredAppointments.length === 0 ? (
               <div className="text-center py-12">

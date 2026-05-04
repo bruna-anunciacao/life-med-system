@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Search, Users } from 'lucide-react';
+import { Search, Users, FileText, Clock } from 'lucide-react';
 
 type Patient = {
   id: string;
@@ -97,8 +97,8 @@ export default function PatientsPage() {
   }
 
   return (
-    <div className={`${isMobile ? 'p-4 pb-20' : 'py-12 px-8'}`}>
-      <div className="max-w-6xl mx-auto">
+    <div className={`${isMobile ? 'p-4 pb-20' : 'py-8 px-4'} bg-gradient-to-br from-slate-50 via-white to-slate-50 min-h-screen`}>
+      <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Pacientes"
           action={{
@@ -108,6 +108,48 @@ export default function PatientsPage() {
           }}
         />
 
+        {/* Info Cards */}
+        {!isMobile && filteredPatients.length > 0 && (
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Total de Pacientes</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{filteredPatients.length}</p>
+                </div>
+                <Users className="w-8 h-8 text-blue-500 opacity-20" />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Cadastrados</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{filteredPatients.length}</p>
+                </div>
+                <FileText className="w-8 h-8 text-green-500 opacity-20" />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Ativos</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{filteredPatients.length}</p>
+                </div>
+                <Clock className="w-8 h-8 text-purple-500 opacity-20" />
+              </div>
+            </div>
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 shadow-sm text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs opacity-90 font-medium">Resultados</p>
+                  <p className="text-2xl font-bold mt-1">{filteredPatients.length}</p>
+                </div>
+                <Search className="w-8 h-8 opacity-30" />
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -116,7 +158,7 @@ export default function PatientsPage() {
               placeholder="Buscar por nome ou CPF..."
               defaultValue={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
             />
           </div>
         </div>
