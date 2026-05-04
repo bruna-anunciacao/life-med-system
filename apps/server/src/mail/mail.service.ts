@@ -208,6 +208,7 @@ export class MailService implements OnModuleInit {
       date,
       time,
       modality: this.formatModality(appointment.modality),
+      meetLink: appointment.meetLink,
     });
     await this.sendEmail({
       to: patient.email,
@@ -241,6 +242,7 @@ export class MailService implements OnModuleInit {
       time,
       modality: this.formatModality(appointment.modality),
       notes: appointment.notes ?? undefined,
+      meetLink: appointment.meetLink,
     });
     await this.sendEmail({
       to: professional.email,
