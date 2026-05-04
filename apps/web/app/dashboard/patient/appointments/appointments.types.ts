@@ -6,6 +6,7 @@ export type Appointment = {
   dateTime: string;
   status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
   modality: "VIRTUAL" | "CLINIC" | "HOME_VISIT";
+  meetLink?: string | null;
   notes?: string;
 };
 

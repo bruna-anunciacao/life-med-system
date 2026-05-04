@@ -70,6 +70,19 @@ export function AppointmentCard({
             </p>
           )}
 
+          {(appt.status === "CONFIRMED" || appt.status === "PENDING") &&
+            appt.modality === "VIRTUAL" &&
+            appt.meetLink && (
+              <a
+                href={appt.meetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center px-3 py-2 rounded-lg text-xs font-semibold bg-[#006fee] text-white hover:bg-[#005ec8] transition-colors"
+              >
+                Entrar na videoconsulta
+              </a>
+            )}
+
           <div className="flex gap-2">
             {(appt.status === "CONFIRMED" || appt.status === "PENDING") && (
               <>
@@ -148,6 +161,18 @@ export function AppointmentCard({
           )}
         </div>
         <div className="flex flex-col gap-2 flex-shrink-0">
+          {(appt.status === "CONFIRMED" || appt.status === "PENDING") &&
+            appt.modality === "VIRTUAL" &&
+            appt.meetLink && (
+              <a
+                href={appt.meetLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center h-9 px-3 rounded-md text-sm font-semibold bg-[#006fee] text-white hover:bg-[#005ec8] transition-colors"
+              >
+                Entrar na videoconsulta
+              </a>
+            )}
           {(appt.status === "CONFIRMED" || appt.status === "PENDING") && (
             <>
               <Button size="sm">Detalhes</Button>

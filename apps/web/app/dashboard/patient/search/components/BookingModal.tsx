@@ -96,25 +96,29 @@ export function BookingModal({
 
     setIsSubmitting(true);
     try {
-      if (pacienteId) {
-        await appointmentsService.createForManager({
-          patientId: pacienteId,
-          professionalId: professional.id,
-          dateTime,
-          notes: notes || undefined,
-        });
-      } else {
-        await appointmentsService.create({
-          professionalId: professional.id,
-          dateTime,
-          notes: notes || undefined,
-        });
-      }
+      const created = pacienteId
+        ? await appointmentsService.createForManager({
+            patientId: pacienteId,
+            professionalId: professional.id,
+            dateTime,
+            notes: notes || undefined,
+          })
+        : await appointmentsService.create({
+            professionalId: professional.id,
+            dateTime,
+            notes: notes || undefined,
+          });
 
       void queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
       void queryClient.invalidateQueries({ queryKey: ["appointments"] });
 
-      toast.success("Consulta agendada com sucesso!");
+      if (created?.modality === "VIRTUAL") {
+        toast.success(
+          "Consulta agendada! Você receberá o link da videochamada por e-mail e no Google Calendar.",
+        );
+      } else {
+        toast.success("Consulta agendada com sucesso!");
+      }
 
       if (onSuccess) {
         onSuccess();

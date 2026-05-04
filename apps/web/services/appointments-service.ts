@@ -27,6 +27,8 @@ export interface AppointmentResponse {
   id: string;
   dateTime: string;
   status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+  meetLink?: string | null;
   notes?: string;
   createdAt: string;
   professional: {
