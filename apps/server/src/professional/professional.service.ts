@@ -2,17 +2,21 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  Inject,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfessionalSettingsDto } from './dto/update-setting.dto';
 import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
 import { MailService } from '../mail/mail.service';
+import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
+import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
 
 @Injectable()
 export class ProfessionalService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
+    @Inject(MEET_SERVICE) private meetService: MeetService,
   ) {}
 
   async getSettings(userId: string) {
@@ -345,7 +349,7 @@ export class ProfessionalService {
 
     if (appointmentsToCancel.length > 0) {
       const aptIds = appointmentsToCancel.map(a => a.id);
-      
+
       await this.prisma.appointment.updateMany({
         where: { id: { in: aptIds } },
         data: {
@@ -354,8 +358,18 @@ export class ProfessionalService {
         },
       });
 
-      // Send emails
       for (const apt of appointmentsToCancel) {
+        if (apt.googleEventId) {
+          this.meetService
+            .cancelMeetEvent(apt.googleEventId)
+            .catch((err) =>
+              console.error(
+                `Failed to cancel Google Calendar event for appointment ${apt.id}:`,
+                err,
+              ),
+            );
+        }
+
         this.mailService.sendMassCancellationEmail(
           { name: apt.patient.name, email: apt.patient.email },
           { professionalName: apt.professional.name, dateTime: apt.dateTime }

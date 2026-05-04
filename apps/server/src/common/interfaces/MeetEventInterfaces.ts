@@ -17,3 +17,5 @@ export interface MeetService {
   createMeetEvent(input: CreateMeetEventInput): Promise<CreateMeetEventResult>;
   cancelMeetEvent(eventId: string): Promise<void>;
 }
+
+export const MEET_SERVICE = 'MEET_SERVICE';

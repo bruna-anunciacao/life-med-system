@@ -191,6 +191,7 @@ export class MailService implements OnModuleInit {
       professionalName: string;
       dateTime: Date;
       modality: string;
+      meetLink?: string | null;
     },
   ) {
     const date = appointment.dateTime.toLocaleDateString('pt-BR', {
@@ -222,6 +223,7 @@ export class MailService implements OnModuleInit {
       dateTime: Date;
       modality: string;
       notes?: string | null;
+      meetLink?: string | null;
     },
   ) {
     const date = appointment.dateTime.toLocaleDateString('pt-BR', {
