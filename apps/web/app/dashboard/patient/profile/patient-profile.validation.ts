@@ -33,7 +33,7 @@ export const patientProfileSchema = z.object({
       },
       { message: "Data de nascimento inválida" },
     ),
-  gender: z.enum(["MALE", "FEMALE", "OTHER", "Masculino", "Feminino", "Outro", "Prefiro não informar", ""], {
+  gender: z.enum(["MALE", "FEMALE", "OTHER", "UNDISCLOSED", "Masculino", "Feminino", "Outro", "Prefiro não informar", ""], {
     error: () => ({ message: "Selecione um gênero válido" }),
   }),
   address: z
