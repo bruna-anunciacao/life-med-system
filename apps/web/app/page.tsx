@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LifeMedLogo } from "./ui/life-med-logo";
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#f8fafc] text-[#0f172a] flex flex-col">
@@ -11,15 +12,15 @@ export default function Home() {
         </div>
         <nav>
           <Link href="/auth/login">
-            <Button variant="outline">Entrar</Button>
+            <Button variant="outline" title="Entrar na plataforma">
+              Entrar
+            </Button>
           </Link>
         </nav>
       </header>
 
       <main className="flex-1 flex flex-col px-6 max-w-7xl mx-auto w-full">
-        {/* Hero: duas colunas */}
         <section className="flex flex-col lg:flex-row items-center gap-12 py-16">
-          {/* Coluna esquerda: texto */}
           <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left">
             <h1 className="text-[3.2rem] font-extrabold mb-6 tracking-tight leading-[1.1] bg-linear-to-br from-[#2563eb] to-[#0ea5e9] bg-clip-text text-transparent lg:text-[2.6rem] md:text-[2.2rem]">
               Saúde conectada, <span className="text-[#0f172a]">simples</span> e
@@ -33,26 +34,29 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/auth/register">
-                <Button className="rounded-full px-8 py-3 font-semibold text-base leading-normal cursor-pointer transition-all inline-flex items-center justify-center border border-transparent bg-linear-to-br from-[#2563eb] to-[#0ea5e9] text-white shadow-[0_4px_6px_-1px_rgba(37,99,235,0.25)] hover:-translate-y-0.5 hover:shadow-[0_8px_12px_-2px_rgba(37,99,235,0.35)] hover:brightness-110">
+                <Button 
+                  className="rounded-full px-8 py-3 font-semibold text-base leading-normal cursor-pointer transition-all inline-flex items-center justify-center border border-transparent bg-linear-to-br from-[#2563eb] to-[#0ea5e9] text-white shadow-[0_4px_6px_-1px_rgba(37,99,235,0.25)] hover:-translate-y-0.5 hover:shadow-[0_8px_12px_-2px_rgba(37,99,235,0.35)] hover:brightness-110"
+                  title="Criar uma nova conta gratuita na Life Med"
+                >
                   Criar Conta Gratuita
                 </Button>
               </Link>
               <Link href="/auth/login">
-                <Button className="rounded-full px-8 py-3 font-semibold text-base leading-normal cursor-pointer transition-all inline-flex items-center justify-center border border-[#cbd5e1] bg-white text-[#0f172a] hover:bg-[#f1f5f9] hover:border-[#94a3b8]">
+                <Button 
+                  className="rounded-full px-8 py-3 font-semibold text-base leading-normal cursor-pointer transition-all inline-flex items-center justify-center border border-[#cbd5e1] bg-white text-[#0f172a] hover:bg-[#f1f5f9] hover:border-[#94a3b8]"
+                  title="Acessar minha conta existente"
+                >
                   Já tenho conta
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Coluna direita: ilustração */}
           <div className="w-full lg:w-1/2 flex items-center justify-center relative">
-            {/* Blob decorativo atrás da imagem */}
             <div
               className="absolute inset-0 m-auto w-[90%] h-[90%] rounded-[60%_40%_30%_70%/60%_30%_70%_40%] bg-linear-to-br from-[#dbeafe] to-[#e0f2fe] opacity-60"
               aria-hidden="true"
             />
-            {/* Círculo pontilhado decorativo */}
             <div
               className="absolute right-0 top-4 w-28 h-28 rounded-full border-2 border-dashed border-[#bfdbfe] opacity-70"
               aria-hidden="true"
@@ -73,9 +77,11 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Cards de features */}
         <section className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6 pb-20 md:pb-12">
-          <div className="bg-white p-8 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] transition-all hover:-translate-y-1 hover:shadow-[0_10px_15px_-3px_rgba(37,99,235,0.08)] hover:border-[#bfdbfe]">
+          <div 
+            className="bg-white p-8 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] transition-all hover:-translate-y-1 hover:shadow-[0_10px_15px_-3px_rgba(37,99,235,0.08)] hover:border-[#bfdbfe]"
+            title="Informações para Pacientes"
+          >
             <div className="w-11 h-11 rounded-xl bg-[#eff6ff] flex items-center justify-center mb-5">
               <svg
                 className="w-6 h-6 text-[#2563eb]"
@@ -98,7 +104,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] transition-all hover:-translate-y-1 hover:shadow-[0_10px_15px_-3px_rgba(37,99,235,0.08)] hover:border-[#bfdbfe]">
+          <div 
+            className="bg-white p-8 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] transition-all hover:-translate-y-1 hover:shadow-[0_10px_15px_-3px_rgba(37,99,235,0.08)] hover:border-[#bfdbfe]"
+            title="Informações para Profissionais de Saúde"
+          >
             <div className="w-11 h-11 rounded-xl bg-[#eff6ff] flex items-center justify-center mb-5">
               <svg
                 className="w-6 h-6 text-[#2563eb]"
@@ -123,7 +132,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white p-8 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] transition-all hover:-translate-y-1 hover:shadow-[0_10px_15px_-3px_rgba(37,99,235,0.08)] hover:border-[#bfdbfe]">
+          <div 
+            className="bg-white p-8 rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] border border-[#e2e8f0] transition-all hover:-translate-y-1 hover:shadow-[0_10px_15px_-3px_rgba(37,99,235,0.08)] hover:border-[#bfdbfe]"
+            title="Sobre nosso serviço de Telemedicina"
+          >
             <div className="w-11 h-11 rounded-xl bg-[#eff6ff] flex items-center justify-center mb-5">
               <svg
                 className="w-6 h-6 text-[#2563eb]"

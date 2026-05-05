@@ -34,7 +34,13 @@ export function ResetPasswordForm({ form, isLoading, onSubmit }: ResetPasswordFo
         errors={errors}
       />
 
-      <Button type="submit" size="lg" className="w-full mt-2" disabled={isLoading}>
+      <Button 
+        type="submit" 
+        size="lg" 
+        className="w-full mt-2" 
+        disabled={isLoading}
+        title="Redefinir minha senha de acesso"
+      >
         {isLoading ? <Spinner size="sm" /> : "Redefinir senha"}
       </Button>
     </form>

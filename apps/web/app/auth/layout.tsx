@@ -17,6 +17,7 @@ const AuthLayout = ({
           <Image
             src="/undraw_doctor_aum1-2.svg"
             alt="Cuidado médico Life Med"
+            title="Ilustração de cuidado médico Life Med"
             width={360}
             height={280}
             className="drop-shadow-xl"
