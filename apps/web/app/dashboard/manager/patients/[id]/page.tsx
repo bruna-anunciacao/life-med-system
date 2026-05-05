@@ -85,13 +85,18 @@ export default function PatientDetailsPage() {
     return (
       <section className="min-h-screen w-full bg-slate-50 p-8">
         <div className="max-w-4xl mx-auto">
-          <Button onClick={() => router.back()} variant="outline" className="mb-6">
+          <Button 
+            onClick={() => router.back()} 
+            variant="outline" 
+            className="mb-6"
+            title="Voltar para a página anterior"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
           <Card className="bg-white">
             <CardContent className="p-6">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800" role="alert">
                 {error instanceof Error ? error.message : "Erro ao carregar dados do paciente"}
               </div>
             </CardContent>
@@ -104,7 +109,12 @@ export default function PatientDetailsPage() {
   return (
     <section className="min-h-screen w-full bg-slate-50 p-8">
       <div className="max-w-4xl mx-auto">
-        <Button onClick={() => router.back()} variant="outline" className="mb-6">
+        <Button 
+          onClick={() => router.back()} 
+          variant="outline" 
+          className="mb-6"
+          title="Voltar para a lista de pacientes"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
@@ -121,6 +131,7 @@ export default function PatientDetailsPage() {
               <Button
                 onClick={() => setIsEditing(!isEditing)}
                 variant={isEditing ? "outline" : "default"}
+                title={isEditing ? "Cancelar alterações" : "Habilitar modo de edição"}
               >
                 {isEditing ? "Cancelar" : "Editar"}
               </Button>
@@ -134,17 +145,21 @@ export default function PatientDetailsPage() {
                     type="email"
                     value={patient.email || ""}
                     disabled
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                    title="O e-mail não pode ser alterado por este formulário"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
                   <input
+                    id="phone"
                     type="tel"
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                      isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
+                    placeholder="(00) 00000-0000"
+                    title="Insira o telefone de contato do paciente"
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
                     }`}
                     {...register("phone")}
                   />
@@ -154,14 +169,16 @@ export default function PatientDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
                     Data de Nascimento
                   </label>
                   <input
+                    id="dateOfBirth"
                     type="date"
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                      isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
+                    title="Selecione a data de nascimento do paciente"
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
                     }`}
                     {...register("dateOfBirth")}
                   />
@@ -171,11 +188,13 @@ export default function PatientDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gênero</label>
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">Gênero</label>
                   <select
+                    id="gender"
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                      isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
+                    title="Selecione o gênero do paciente"
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
                     }`}
                     {...register("gender")}
                   >
@@ -191,12 +210,15 @@ export default function PatientDetailsPage() {
               </div>
 
               <div className="mt-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
                 <textarea
+                  id="address"
                   disabled={!isEditing}
                   rows={4}
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                    isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
+                  placeholder="Rua, número, bairro..."
+                  title="Insira o endereço completo do paciente"
+                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors resize-none ${
+                    isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
                   }`}
                   {...register("address")}
                 />
@@ -211,6 +233,7 @@ export default function PatientDetailsPage() {
                     type="submit"
                     disabled={isSaving}
                     className="flex-1 bg-green-600 hover:bg-green-700"
+                    title="Confirmar e salvar as alterações realizadas"
                   >
                     {isSaving ? "Salvando..." : "Salvar Alterações"}
                   </Button>
@@ -219,6 +242,7 @@ export default function PatientDetailsPage() {
                     onClick={handleCancelEdit}
                     variant="outline"
                     className="flex-1"
+                    title="Descartar alterações e voltar para visualização"
                   >
                     Cancelar
                   </Button>
@@ -254,7 +278,10 @@ export default function PatientDetailsPage() {
                   )}
                 </div>
 
-                <Link href={`/dashboard/manager/patients/${patient.id}/questionnaire`}>
+                <Link 
+                  href={`/dashboard/manager/patients/${patient.id}/questionnaire`}
+                  title={patient.questionnaire ? "Editar as respostas do questionário" : "Iniciar preenchimento do questionário"}
+                >
                   <Button>
                     {patient.questionnaire ? "Editar questionário" : "Preencher questionário"}
                   </Button>

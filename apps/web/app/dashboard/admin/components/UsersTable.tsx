@@ -101,6 +101,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
           <button
             key={tab.value}
             onClick={() => setTypeFilter(tab.value)}
+            title={`Filtrar por ${tab.label}`}
             className={`px-3 py-1.5 font-medium transition-colors sm:px-4 ${
               typeFilter === tab.value
                 ? "bg-foreground text-background"
@@ -115,6 +116,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
         placeholder="Buscar usuário..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        title="Digite o nome ou e-mail para buscar"
         className="h-8 flex-1 min-w-[160px] max-w-xs text-sm bg-background"
       />
     </div>
@@ -178,6 +180,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                     size="icon"
                     variant="ghost"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    title={`Visualizar detalhes de ${user.name}`}
                     onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                   >
                     <Eye />
@@ -187,6 +190,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
+                      title={`Verificar/Aprovar usuário ${user.name}`}
                       onClick={() => onStatusChange(user.id, "VERIFIED")}
                     >
                       <Check />
@@ -197,6 +201,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50"
+                      title={`Bloquear usuário ${user.name}`}
                       onClick={() => onStatusChange(user.id, "BLOCKED")}
                     >
                       <Ban />
@@ -206,6 +211,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                     size="icon"
                     variant="ghost"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                    title={`Editar dados de ${user.name}`}
                     onClick={() => router.push(`/dashboard/admin/users/${user.id}?edit=1`)}
                   >
                     <Pencil />
@@ -223,6 +229,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
               <TableHead
                 className="pl-6 cursor-pointer select-none"
                 onClick={() => toggleSort("name")}
+                title="Ordenar por Nome"
               >
                 Usuário <SortIcon field="name" />
               </TableHead>
@@ -231,6 +238,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
               <TableHead
                 className="text-center cursor-pointer select-none"
                 onClick={() => toggleSort("status")}
+                title="Ordenar por Status"
               >
                 Status <SortIcon field="status" />
               </TableHead>
@@ -268,6 +276,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                         size="icon"
                         variant="ghost"
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        title={`Visualizar detalhes de ${user.name}`}
                         onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                       >
                         <Eye />
@@ -278,6 +287,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                           size="icon"
                           variant="ghost"
                           className="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
+                          title={`Verificar/Aprovar usuário ${user.name}`}
                           onClick={() => onStatusChange(user.id, "VERIFIED")}
                         >
                           <Check />
@@ -289,6 +299,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                           size="icon"
                           variant="ghost"
                           className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50"
+                          title={`Bloquear usuário ${user.name}`}
                           onClick={() => onStatusChange(user.id, "BLOCKED")}
                         >
                           <Ban />
@@ -299,6 +310,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                         size="icon"
                         variant="ghost"
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        title={`Editar dados de ${user.name}`}
                         onClick={() => router.push(`/dashboard/admin/users/${user.id}?edit=1`)}
                       >
                         <Pencil />
