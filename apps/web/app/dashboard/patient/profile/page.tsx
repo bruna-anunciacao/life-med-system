@@ -76,6 +76,7 @@ const PatientProfilePage = () => {
           >
             <PatientInfoForm
               register={form.register}
+              control={form.control}
               errors={form.formState.errors}
               email={user?.email || ""}
               isEditing={isEditing}

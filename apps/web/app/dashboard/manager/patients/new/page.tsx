@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreatePatientMutation } from '@/queries/useCreatePatientMutation';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { newPatientSchema, type NewPatientSchema } from './new-patient.validation';
+import ptBr from "react-phone-number-input/locale/pt-BR";
+import PhoneInput from "react-phone-number-input";
 
 export default function NewPatientPage() {
   const router = useRouter();
@@ -17,6 +19,7 @@ export default function NewPatientPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<NewPatientSchema>({
     resolver: zodResolver(newPatientSchema),
@@ -74,12 +77,34 @@ export default function NewPatientPage() {
 
             <div className="space-y-1">
               <Label htmlFor="phone">Telefone *</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+5571999999999"
-                title="Insira o número de telefone com DDD"
-                {...register('phone')}
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => {
+                  let safeValue = field.value
+                    ? field.value.replace(/[^\d+]/g, "")
+                    : "";
+
+                  if (safeValue && !safeValue.startsWith("+")) {
+                    safeValue = `+55${safeValue}`;
+                  }
+
+                  return (
+                    <PhoneInput
+                      id="phone"
+                      placeholder="(71) 99999-9999"
+                      international
+                      countryCallingCodeEditable={false}
+                      labels={ptBr}
+                      defaultCountry="BR"
+                      value={safeValue || undefined}
+                      onChange={(val) => field.onChange(val || "")}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                      className="w-full flex items-center border border-gray-300 rounded-md overflow-hidden transition-colors duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-300 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:px-3 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-sm [&_.PhoneInputInput]:text-gray-900 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none"
+                    />
+                  );
+                }}
               />
               {errors.phone && (
                 <p className="text-xs text-red-600">{errors.phone.message}</p>
