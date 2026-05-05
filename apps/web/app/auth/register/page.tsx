@@ -10,6 +10,7 @@ import { PatientFields } from "./components/PatientFields";
 import { ProfessionalFields } from "./components/ProfessionalFields";
 import { PasswordField } from "./components/PasswordField";
 import { LifeMedLogo } from "../../ui/life-med-logo";
+import { applyCpfMask } from "@/lib/cpf";
 
 const RegisterPage = () => {
   const { form, role, isLoading, handleRoleChange, onSubmit } =
@@ -24,11 +25,7 @@ const RegisterPage = () => {
   } = form;
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 11);
-    value = value.replace(/(\d{3})(\d)/, "$1.$2");
-    value = value.replace(/(\d{3})(\d)/, "$1.$2");
-    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    setValue("cpf", value, { shouldValidate: false });
+    setValue("cpf", applyCpfMask(e.target.value), { shouldValidate: false });
   };
 
   return (

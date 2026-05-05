@@ -1,5 +1,6 @@
 import { UseFormRegister, FieldErrors } from "react-hook-form";
 import { PatientProfileSchema } from "../patient-profile.validation";
+import { formatCpf } from "@/lib/cpf";
 
 type PatientInfoFormProps = {
   register: UseFormRegister<PatientProfileSchema>;
@@ -33,7 +34,7 @@ export function PatientInfoForm({ register, errors, email, cpf, isEditing }: Pat
         <input
           type="text"
           className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
-          value={cpf ?? ""}
+          value={formatCpf(cpf ?? "")}
           disabled
           readOnly
         />
