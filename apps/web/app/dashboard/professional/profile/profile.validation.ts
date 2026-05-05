@@ -12,7 +12,9 @@ export const profileSchema = z.object({
     .max(20, "Registro profissional deve ter no máximo 20 caracteres"),
   primarySpecialty: z.string().min(1, "A especialidade principal é obrigatória"),
   secondarySpecialty: z.string().optional(),
-  modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"]),
+  modality: z.enum(["VIRTUAL", "HOME_VISIT", "CLINIC"], {
+    error: () => ({ message: "Selecione uma modalidade válida" }),
+  }),
   bio: z.string().optional(),
   photoUrl: z.string().optional(),
   socialLinks: z.object({

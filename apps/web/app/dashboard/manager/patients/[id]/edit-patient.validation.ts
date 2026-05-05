@@ -10,12 +10,18 @@ export const editPatientSchema = z.object({
     .string()
     .refine((val) => {
       if (!val) return true;
+      return !Number.isNaN(new Date(val).getTime());
+    }, 'Data de nascimento inválida')
+    .refine((val) => {
+      if (!val) return true;
       const date = new Date(val);
-      return !isNaN(date.getTime()) && date <= new Date();
+      return date <= new Date();
     }, 'Data de nascimento não pode ser no futuro')
     .optional()
     .or(z.literal('')),
-  gender: z.enum(['M', 'F', 'O', '']).optional(),
+  gender: z.enum(['M', 'F', 'O', ''], {
+    error: () => ({ message: 'Selecione um gênero válido' }),
+  }).optional(),
   address: z.string().max(200, 'Endereço deve ter no máximo 200 caracteres').optional().or(z.literal('')),
 });
 
