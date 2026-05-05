@@ -140,6 +140,29 @@ export class AppointmentsService {
         `Horário fora da disponibilidade. Disponível entre ${availability.startTime} e ${availability.endTime}`,
       );
     }
+
+    const blocks = await tx.scheduleBlock.findMany({
+      where: {
+        professionalId,
+        date: appointmentDate.toISOString().split('T')[0],
+      }
+    });
+    
+    const aptTimeStr = new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Bahia',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(appointmentDate);
+
+    for (const b of blocks) {
+      if (!b.startTime || !b.endTime) {
+        throw new BadRequestException('Profissional não tem disponibilidade neste dia (agenda bloqueada)');
+      }
+      if (aptTimeStr >= b.startTime && aptTimeStr < b.endTime) {
+        throw new BadRequestException(`Horário bloqueado pelo profissional (das ${b.startTime} às ${b.endTime})`);
+      }
+    }
   }
 
   private async checkScheduleConflict(
@@ -428,15 +451,136 @@ export class AppointmentsService {
       }),
     );
 
+    const blocks = await this.prisma.scheduleBlock.findMany({
+      where: {
+        professionalId,
+        date: query.date,
+      }
+    });
+
     const slots: { time: string; available: boolean }[] = [];
     for (let hour = startHour; hour < endHour; hour++) {
       for (const minutes of [0, 30]) {
         const time = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-        slots.push({ time, available: !bookedTimes.has(time) });
+        
+        let isBlocked = false;
+        for (const b of blocks) {
+          if (!b.startTime || !b.endTime) {
+            isBlocked = true;
+            break;
+          }
+          if (time >= b.startTime && time < b.endTime) {
+            isBlocked = true;
+            break;
+          }
+        }
+        
+        slots.push({ time, available: !bookedTimes.has(time) && !isBlocked });
       }
     }
 
     return { professionalId, date: query.date, slots };
+  }
+
+  async createAppointmentByManager(
+    managerUserId: string,
+    dto: CreateAppointmentPatientDto & { patientId: string },
+  ): Promise<AppointmentResponseDto> {
+    const patientId = dto.patientId;
+    const appointmentDate = new Date(dto.dateTime);
+
+    const appointment = await this.prisma.$transaction(async (tx) => {
+      const patient = await tx.user.findUnique({
+        where: { id: patientId },
+      });
+
+      if (!patient) {
+        throw new NotFoundException('Paciente não encontrado');
+      }
+
+      const professional = await tx.user.findUnique({
+        where: { id: dto.professionalId },
+      });
+
+      if (!professional) {
+        throw new NotFoundException('Profissional não encontrado');
+      }
+
+      const manager = await tx.managerProfile.findUnique({
+        where: { userId: managerUserId },
+      });
+
+      if (!manager) {
+        throw new ForbiddenException('Perfil de gestor não encontrado');
+      }
+
+      await this.validateAvailability(tx, dto.professionalId, appointmentDate);
+
+      await this.checkScheduleConflict(
+        tx,
+        'professionalId',
+        dto.professionalId,
+        appointmentDate,
+        'Profissional não tem disponibilidade neste horário',
+      );
+
+      await this.checkScheduleConflict(
+        tx,
+        'patientId',
+        patientId,
+        appointmentDate,
+        'Paciente já possui um agendamento neste horário',
+      );
+
+      return tx.appointment.create({
+        data: {
+          patientId,
+          professionalId: dto.professionalId,
+          dateTime: appointmentDate,
+          notes: dto.notes,
+          status: 'PENDING',
+          scheduledByManagerId: manager.id,
+        },
+        include: {
+          patient: true,
+          professional: true,
+          scheduledByManager: { include: { user: true } },
+        },
+      });
+    });
+
+    this.logger.log(
+      `Agendamento criado pelo gestor ${managerUserId}: ${appointment.id}`,
+    );
+
+    await Promise.all([
+      this.mailService.sendAppointmentCreatedPatientEmail(
+        { name: appointment.patient.name, email: appointment.patient.email },
+        {
+          professionalName: appointment.professional.name,
+          dateTime: appointment.dateTime,
+          modality: appointment.modality,
+        },
+      ),
+      this.mailService.sendAppointmentCreatedProfessionalEmail(
+        {
+          name: appointment.professional.name,
+          email: appointment.professional.email,
+        },
+        {
+          patientName: appointment.patient.name,
+          dateTime: appointment.dateTime,
+          modality: appointment.modality,
+          notes: appointment.notes,
+        },
+      ),
+    ]).catch((err) =>
+      this.logger.error(
+        `Falha ao enviar emails de agendamento: ${err.message}`,
+      ),
+    );
+
+    return this.mapToResponseDto(appointment);
   }
 
   private mapToResponseDto(appointment: any): AppointmentResponseDto {

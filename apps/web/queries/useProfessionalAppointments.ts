@@ -48,3 +48,44 @@ export function useUpdateAppointmentStatusMutation() {
     },
   });
 }
+
+export function useScheduleBlocksQuery() {
+  return useQuery({
+    queryKey: ["scheduleBlocks"],
+    queryFn: () => professionalService.getScheduleBlocks(),
+  });
+}
+
+export function useCreateScheduleBlockMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { date: string; startTime?: string; endTime?: string }) =>
+      professionalService.createScheduleBlock(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduleBlocks"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-schedule"] });
+      queryClient.invalidateQueries({ queryKey: ["professionalAppointments"] });
+      toast.success("Agenda bloqueada e consultas afetadas canceladas.");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao bloquear agenda.");
+    },
+  });
+}
+
+export function useDeleteScheduleBlockMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => professionalService.deleteScheduleBlock(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["scheduleBlocks"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-schedule"] });
+      toast.success("Bloqueio removido com sucesso.");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Erro ao remover bloqueio.");
+    },
+  });
+}

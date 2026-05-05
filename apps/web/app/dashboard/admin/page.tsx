@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   const manageSpecialitiesLink = (
     <Link
       href="/dashboard/admin/specialidades"
+      title="Acessar painel de gerenciamento de especialidades médicas"
       className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
     >
       <Stethoscope className="h-3.5 w-3.5" />
@@ -36,7 +37,10 @@ const AdminDashboard = () => {
 
   return (
     <section className="px-4 py-4 sm:px-6 sm:py-6">
-      <UsersTable onStatusChange={handleStatusChange} actions={manageSpecialitiesLink} />
+      <UsersTable
+        onStatusChange={handleStatusChange}
+        actions={manageSpecialitiesLink}
+      />
     </section>
   );
 };

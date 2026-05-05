@@ -1,11 +1,13 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRegisterManagerMutation } from '@/queries/useRegisterManagerMutation';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { registerManagerSchema, type RegisterManagerSchema } from './register-manager.validation';
+import ptBr from "react-phone-number-input/locale/pt-BR";
+import PhoneInput from "react-phone-number-input";
 
 export default function RegisterManagerPage() {
   const router = useRouter();
@@ -14,6 +16,7 @@ export default function RegisterManagerPage() {
   const {
     register: field,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<RegisterManagerSchema>({
     resolver: zodResolver(registerManagerSchema),
@@ -42,6 +45,7 @@ export default function RegisterManagerPage() {
             <input
               type="email"
               placeholder="seu@email.com"
+              title="Insira o seu e-mail institucional"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('email')}
             />
@@ -57,6 +61,7 @@ export default function RegisterManagerPage() {
             <input
               type="password"
               placeholder="Senha segura"
+              title="Crie uma senha forte para sua conta"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('password')}
             />
@@ -69,11 +74,34 @@ export default function RegisterManagerPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Telefone
             </label>
-            <input
-              type="tel"
-              placeholder="+5571999999999"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              {...field('phone')}
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field }) => {
+                let safeValue = field.value
+                  ? field.value.replace(/[^\d+]/g, "")
+                  : "";
+                
+                if (safeValue && !safeValue.startsWith("+")) {
+                  safeValue = `+55${safeValue}`;
+                }
+
+                return (
+                  <PhoneInput
+                    id="phone"
+                    placeholder="(71) 99999-9999"
+                    international
+                    countryCallingCodeEditable={false}
+                    labels={ptBr}
+                    defaultCountry="BR"
+                    value={safeValue || undefined}
+                    onChange={(val) => field.onChange(val || "")}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                    className="w-full flex items-center border border-gray-300 rounded-md overflow-hidden transition-colors duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-300 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:px-3 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-sm [&_.PhoneInputInput]:text-gray-900 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none"
+                  />
+                );
+              }}
             />
             {errors.phone && (
               <p className="text-xs text-red-600 mt-1">{errors.phone.message}</p>
@@ -87,6 +115,7 @@ export default function RegisterManagerPage() {
             <input
               type="text"
               placeholder="Rua..., Número..."
+              title="Insira seu endereço completo (opcional)"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('address')}
             />
@@ -102,6 +131,7 @@ export default function RegisterManagerPage() {
             <textarea
               placeholder="Descreva-se brevemente"
               rows={3}
+              title="Escreva um pouco sobre sua atuação como gerente"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('bio')}
             />
@@ -113,6 +143,7 @@ export default function RegisterManagerPage() {
           <Button
             type="submit"
             disabled={isPending}
+            title="Clique para realizar o registro como gerente"
             className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isPending ? 'Registrando...' : 'Registrar como MANAGER'}
@@ -121,7 +152,11 @@ export default function RegisterManagerPage() {
 
         <div className="mt-4 text-center text-sm text-gray-600">
           Já tem uma conta?{' '}
-          <a href="/auth/login" className="text-blue-600 hover:underline">
+          <a 
+            href="/auth/login" 
+            className="text-blue-600 hover:underline"
+            title="Ir para a tela de login"
+          >
             Faça login
           </a>
         </div>

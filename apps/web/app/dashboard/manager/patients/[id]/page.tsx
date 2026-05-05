@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useGetPatientQuery } from "@/queries/useGetPatientQuery";
 import { useRouter, useParams } from "next/navigation";
@@ -13,6 +13,8 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { editPatientSchema, type EditPatientSchema } from "./edit-patient.validation";
 import { AddressForm } from "@/components/address/AddressForm";
+import ptBr from "react-phone-number-input/locale/pt-BR";
+import PhoneInput from "react-phone-number-input";
 
 export default function PatientDetailsPage() {
   const router = useRouter();
@@ -27,6 +29,7 @@ export default function PatientDetailsPage() {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
   } = useForm<EditPatientSchema>({
     resolver: zodResolver(editPatientSchema),
@@ -84,13 +87,18 @@ export default function PatientDetailsPage() {
     return (
       <section className="min-h-screen w-full bg-slate-50 p-8">
         <div className="max-w-4xl mx-auto">
-          <Button onClick={() => router.back()} variant="outline" className="mb-6">
+          <Button 
+            onClick={() => router.back()} 
+            variant="outline" 
+            className="mb-6"
+            title="Voltar para a página anterior"
+          >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
           <Card className="bg-white">
             <CardContent className="p-6">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800" role="alert">
                 {error instanceof Error ? error.message : "Erro ao carregar dados do paciente"}
               </div>
             </CardContent>
@@ -103,7 +111,12 @@ export default function PatientDetailsPage() {
   return (
     <section className="min-h-screen w-full bg-slate-50 p-8">
       <div className="max-w-4xl mx-auto">
-        <Button onClick={() => router.back()} variant="outline" className="mb-6">
+        <Button 
+          onClick={() => router.back()} 
+          variant="outline" 
+          className="mb-6"
+          title="Voltar para a lista de pacientes"
+        >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
@@ -120,6 +133,7 @@ export default function PatientDetailsPage() {
               <Button
                 onClick={() => setIsEditing(!isEditing)}
                 variant={isEditing ? "outline" : "default"}
+                title={isEditing ? "Cancelar alterações" : "Habilitar modo de edição"}
               >
                 {isEditing ? "Cancelar" : "Editar"}
               </Button>
@@ -133,19 +147,44 @@ export default function PatientDetailsPage() {
                     type="email"
                     value={patient.email || ""}
                     disabled
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700"
+                    title="O e-mail não pode ser alterado por este formulário"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                  <input
-                    type="tel"
-                    disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                      isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
-                    }`}
-                    {...register("phone")}
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => {
+                      let safeValue = field.value
+                        ? field.value.replace(/[^\d+]/g, "")
+                        : "";
+
+                      if (safeValue && !safeValue.startsWith("+")) {
+                        safeValue = `+55${safeValue}`;
+                      }
+
+                      return (
+                        <PhoneInput
+                          id="phone"
+                          placeholder="(71) 99999-9999"
+                          international
+                          countryCallingCodeEditable={false}
+                          labels={ptBr}
+                          defaultCountry="BR"
+                          value={safeValue || undefined}
+                          onChange={(val) => field.onChange(val || "")}
+                          onBlur={field.onBlur}
+                          ref={field.ref}
+                          disabled={!isEditing}
+                          className={`w-full flex items-center border border-gray-300 rounded-lg overflow-hidden transition-colors duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 ${
+                            !isEditing ? "bg-gray-50" : "bg-white"
+                          } [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-300 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:px-4 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-base [&_.PhoneInputInput]:text-gray-700 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput:disabled]:text-gray-500 [&_.PhoneInputInput:disabled]:cursor-not-allowed`}
+                        />
+                      );
+                    }}
                   />
                   {errors.phone && (
                     <p className="text-xs text-red-600 mt-1">{errors.phone.message}</p>
@@ -153,14 +192,16 @@ export default function PatientDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
                     Data de Nascimento
                   </label>
                   <input
+                    id="dateOfBirth"
                     type="date"
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                      isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
+                    title="Selecione a data de nascimento do paciente"
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
                     }`}
                     {...register("dateOfBirth")}
                   />
@@ -170,11 +211,13 @@ export default function PatientDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gênero</label>
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">Gênero</label>
                   <select
+                    id="gender"
                     disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg ${
-                      isEditing ? "bg-white text-gray-700" : "bg-gray-50 text-gray-700"
+                    title="Selecione o gênero do paciente"
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
                     }`}
                     {...register("gender")}
                   >
@@ -195,6 +238,7 @@ export default function PatientDetailsPage() {
                     type="submit"
                     disabled={isSaving}
                     className="flex-1 bg-green-600 hover:bg-green-700"
+                    title="Confirmar e salvar as alterações realizadas"
                   >
                     {isSaving ? "Salvando..." : "Salvar Alterações"}
                   </Button>
@@ -203,6 +247,7 @@ export default function PatientDetailsPage() {
                     onClick={handleCancelEdit}
                     variant="outline"
                     className="flex-1"
+                    title="Descartar alterações e voltar para visualização"
                   >
                     Cancelar
                   </Button>
@@ -244,7 +289,10 @@ export default function PatientDetailsPage() {
                   )}
                 </div>
 
-                <Link href={`/dashboard/manager/patients/${patient.id}/questionnaire`}>
+                <Link 
+                  href={`/dashboard/manager/patients/${patient.id}/questionnaire`}
+                  title={patient.questionnaire ? "Editar as respostas do questionário" : "Iniciar preenchimento do questionário"}
+                >
                   <Button>
                     {patient.questionnaire ? "Editar questionário" : "Preencher questionário"}
                   </Button>

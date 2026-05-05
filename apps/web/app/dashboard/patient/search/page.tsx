@@ -9,7 +9,10 @@ import { useLocationsQuery } from "@/queries/useLocationsQuery";
 import { SearchBar } from "./components/SearchBar";
 import { DoctorCard } from "./components/DoctorCard";
 import { EmptySearch } from "./components/EmptySearch";
-import { ProfessionalData, SeeProfileModal } from "./components/SeeProfileModal";
+import {
+  ProfessionalData,
+  SeeProfileModal,
+} from "./components/SeeProfileModal";
 import { BookingModal } from "./components/BookingModal";
 
 type Professional = {
@@ -66,7 +69,9 @@ const SearchDoctorsPage = () => {
       const term = search.toLowerCase();
       const matchesSearch =
         p.name.toLowerCase().includes(term) ||
-        (p.professionalProfile?.specialities?.[0]?.name || "").toLowerCase().includes(term);
+        (p.professionalProfile?.specialities?.[0]?.name || "")
+          .toLowerCase()
+          .includes(term);
 
       const matchesSpecialty =
         selectedSpecialty === "Todas" ||
@@ -94,24 +99,28 @@ const SearchDoctorsPage = () => {
           >
             Buscar Médicos
           </h1>
-          <p className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}>
+          <p
+            className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}
+          >
             Encontre profissionais de saúde voluntários e agende sua consulta
             gratuitamente.
           </p>
         </div>
       </div>
 
-      <SearchBar
-        search={search}
-        selectedSpecialty={selectedSpecialty}
-        selectedLocation={selectedLocation}
-        locations={locations}
-        resultsCount={filtered.length}
-        isLoading={isLoading}
-        onSearchChange={setSearch}
-        onSpecialtyChange={setSelectedSpecialty}
-        onLocationChange={setSelectedLocation}
-      />
+      <div title="Pesquisar e filtrar médicos por nome, especialidade ou localização">
+        <SearchBar
+          search={search}
+          selectedSpecialty={selectedSpecialty}
+          selectedLocation={selectedLocation}
+          locations={locations}
+          resultsCount={filtered.length}
+          isLoading={isLoading}
+          onSearchChange={setSearch}
+          onSpecialtyChange={setSelectedSpecialty}
+          onLocationChange={setSelectedLocation}
+        />
+      </div>
 
       {isLoading ? (
         <div className="py-16 px-8 flex justify-center items-center">
@@ -124,12 +133,16 @@ const SearchDoctorsPage = () => {
           className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"}`}
         >
           {filtered.map((prof) => (
-            <DoctorCard
+            <div
               key={prof.id}
-              professional={prof}
-              onViewProfile={() => setSelectedProfessional(prof)}
-              onBook={() => setBookingProfessional(prof)}
-            />
+              title={`Visualizar perfil ou agendar com ${prof.name}`}
+            >
+              <DoctorCard
+                professional={prof}
+                onViewProfile={() => setSelectedProfessional(prof)}
+                onBook={() => setBookingProfessional(prof)}
+              />
+            </div>
           ))}
         </div>
       )}

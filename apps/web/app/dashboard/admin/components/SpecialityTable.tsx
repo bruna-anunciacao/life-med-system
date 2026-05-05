@@ -74,7 +74,12 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
               {specialities.length}
             </span>
           </div>
-          <Button size="sm" onClick={openCreate} className="gap-1.5">
+          <Button 
+            size="sm" 
+            onClick={openCreate} 
+            className="gap-1.5"
+            title="Adicionar nova especialidade médica"
+          >
             <Plus className="h-3.5 w-3.5" />
             {isMobile ? "Nova" : "Nova Especialidade"}
           </Button>
@@ -92,7 +97,13 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                 Adicione a primeira especialidade médica.
               </p>
             </div>
-            <Button size="sm" variant="outline" onClick={openCreate} className="mt-1 gap-1.5">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={openCreate} 
+              className="mt-1 gap-1.5"
+              title="Adicionar especialidade"
+            >
               <Plus className="h-3.5 w-3.5" />
               Adicionar
             </Button>
@@ -119,6 +130,7 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                     variant="ghost"
                     className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => openEdit(spec)}
+                    title={`Editar especialidade ${spec.name}`}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
@@ -127,6 +139,7 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                     variant="ghost"
                     className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50"
                     onClick={() => handleDelete(spec.id, spec.name)}
+                    title={`Excluir especialidade ${spec.name}`}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -146,7 +159,6 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
               <thead>
                 <tr className="border-b border-border bg-muted/30 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   <th className="px-6 py-3 text-left">Nome da especialidade</th>
-                  <th className="px-4 py-3 text-center">ID do sistema</th>
                   <th className="px-6 py-3 text-center">Ações</th>
                 </tr>
               </thead>
@@ -161,11 +173,6 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                         <span className="font-medium text-foreground">{spec.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3.5 text-center">
-                      <code className="rounded bg-muted px-2 py-0.5 text-xs font-mono text-muted-foreground">
-                        {spec.id.split("-")[0]}…
-                      </code>
-                    </td>
                     <td className="px-6 py-3.5">
                       <div className="flex items-center justify-center gap-1">
                         <Button
@@ -173,6 +180,7 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                           variant="ghost"
                           className="h-8 w-8 text-muted-foreground hover:text-foreground"
                           onClick={() => openEdit(spec)}
+                          title={`Editar especialidade ${spec.name}`}
                         >
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -181,6 +189,7 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                           variant="ghost"
                           className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50"
                           onClick={() => handleDelete(spec.id, spec.name)}
+                          title={`Excluir especialidade ${spec.name}`}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -214,12 +223,23 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                 value={newSpecialityName}
                 onChange={(e) => setNewSpecialityName(e.target.value)}
                 disabled={isSaving}
+                title="Nome da especialidade médica"
               />
               <div className="flex gap-3 justify-end">
-                <Button type="button" variant="outline" onClick={closeModal} disabled={isSaving}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={closeModal} 
+                  disabled={isSaving}
+                  title="Cancelar operação"
+                >
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={isSaving || !newSpecialityName.trim()}>
+                <Button 
+                  type="submit" 
+                  disabled={isSaving || !newSpecialityName.trim()}
+                  title="Salvar alterações"
+                >
                   {isSaving ? "Salvando..." : "Salvar"}
                 </Button>
               </div>

@@ -19,6 +19,7 @@ export function RecentHistoryList({
         </h2>
         <button
           onClick={onViewAll}
+          title="Ver todo o histórico de consultas realizadas"
           className="text-xs font-medium text-blue-500 hover:text-blue-600"
         >
           Ver histórico
@@ -27,13 +28,17 @@ export function RecentHistoryList({
       <Card className="border border-gray-200 py-0 gap-0">
         <CardContent className="p-0">
           {appointments.length === 0 ? (
-            <div className="px-4 py-6 text-center text-sm text-gray-400">
+            <div
+              className="px-4 py-6 text-center text-sm text-gray-400"
+              title="Você ainda não possui consultas no seu histórico"
+            >
               Nenhuma consulta realizada ainda.
             </div>
           ) : (
             appointments.map((appt, i) => (
               <div
                 key={appt.id}
+                title={`Consulta com ${appt.professional.name} realizada em ${formatShortDate(appt.dateTime)}`}
                 className={`flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50 ${i < appointments.length - 1 ? "border-b border-gray-100" : ""}`}
               >
                 <p className="min-w-0 flex-1 truncate text-sm text-gray-600">

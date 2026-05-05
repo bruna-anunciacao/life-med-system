@@ -53,7 +53,10 @@ export function ConfirmModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-150 bg-white p-0 overflow-hidden border-0 shadow-2xl rounded-2xl">
+      <DialogContent 
+        className="sm:max-w-150 bg-white p-0 overflow-hidden border-0 shadow-2xl rounded-2xl"
+        aria-label="Modal de confirmação de alteração de status"
+      >
         <div className="p-6 pb-4">
           <DialogHeader className="mb-5">
             <DialogTitle className="text-xl font-semibold text-slate-900 tracking-tight">
@@ -84,6 +87,7 @@ export function ConfirmModal({
             <textarea
               id="notes"
               placeholder="Adicione um motivo ou anotação..."
+              title="Campo para adicionar observações opcionais sobre a mudança de status"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full min-h-30 p-4 resize-none rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-[14.5px] leading-relaxed placeholder:text-slate-400 shadow-sm transition-all duration-200 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20"
@@ -94,12 +98,14 @@ export function ConfirmModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
+            title="Cancelar e voltar sem alterar o status"
             className="rounded-xl h-10 border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors px-5 font-medium"
           >
             Voltar
           </Button>
           <Button
             onClick={handleConfirm}
+            title={`Confirmar a alteração do status para ${STATUS_TEXT[pendingStatus]}`}
             className="rounded-xl h-10 bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-all px-6 font-medium"
           >
             Confirmar

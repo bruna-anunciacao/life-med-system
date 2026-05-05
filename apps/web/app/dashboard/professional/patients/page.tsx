@@ -37,6 +37,7 @@ export default function PatientsPage() {
           placeholder="Buscar paciente..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          title="Digite o nome ou informação para filtrar os pacientes"
           className="h-12 w-full px-4 rounded-lg border border-slate-300 text-sm text-slate-700 bg-white outline-none transition-all duration-200 pl-10"
         />
       </div>
@@ -56,10 +57,9 @@ export default function PatientsPage() {
       ) : (
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
           {filtered.map((patient) => (
-            <PatientCard
-              key={patient.id}
-              patient={patient as PatientCardData}
-            />
+            <div key={patient.id} title="Visualizar detalhes do paciente">
+              <PatientCard patient={patient as PatientCardData} />
+            </div>
           ))}
         </div>
       )}

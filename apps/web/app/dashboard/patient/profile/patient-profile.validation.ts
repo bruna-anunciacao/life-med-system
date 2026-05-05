@@ -4,17 +4,21 @@ export const patientProfileSchema = z.object({
   name: z
     .string()
     .min(2, "Nome deve ter no mínimo 2 caracteres")
-    .max(100, "Nome deve ter no máximo 100 caracteres")
-    .regex(
-      /^[a-zA-ZÀ-ÿ\s'-]+$/,
-      "Nome deve conter apenas letras, espaços, hífens e apóstrofos",
-    ),
+    .max(100, "Nome deve ter no máximo 100 caracteres"),
   phone: z
     .string()
-    .regex(
-      /^\+[1-9]\d{6,14}$/,
-      "Telefone deve estar no formato internacional (ex: +5571999999999)",
-    )
+    .transform((val) => {
+      if (!val) return "";
+      let cleaned = val.replace(/[^\d+]/g, "");
+      if (cleaned && !cleaned.startsWith("+")) {
+        cleaned = `+55${cleaned}`;
+      }
+      return cleaned;
+    })
+    .refine((val) => val === "" || /^\+[1-9]\d{6,14}$/.test(val), {
+      message:
+        "Telefone deve estar no formato internacional (ex: +5571999999999)",
+    })
     .or(z.literal("")),
   dateOfBirth: z
     .string()
@@ -37,9 +41,21 @@ export const patientProfileSchema = z.object({
       },
       { message: "Data de nascimento inválida" },
     ),
-  gender: z.enum(["MALE", "FEMALE", "OTHER", "Masculino", "Feminino", "Outro", "Prefiro não informar", ""], {
-    error: () => ({ message: "Selecione um gênero válido" }),
-  }),
+  gender: z.enum(
+    [
+      "MALE",
+      "FEMALE",
+      "OTHER",
+      "Masculino",
+      "Feminino",
+      "Outro",
+      "Prefiro não informar",
+      "",
+    ],
+    {
+      error: () => ({ message: "Selecione um gênero válido" }),
+    },
+  ),
 });
 
 export type PatientProfileSchema = z.infer<typeof patientProfileSchema>;

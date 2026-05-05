@@ -256,9 +256,17 @@ export class PatientsService {
       patientProfile: updated,
     };
   }
-  async listPatients() {
+  async listPatients(search?: string) {
     return this.prisma.user.findMany({
-      where: { role: UserRole.PATIENT },
+      where: {
+        role: UserRole.PATIENT,
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { cpf: { contains: search } },
+          ],
+        }),
+      },
       include: {
         patientProfile: {
           include: {

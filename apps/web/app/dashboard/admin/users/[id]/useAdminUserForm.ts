@@ -55,7 +55,7 @@ export function useAdminUserForm() {
 
   const professionalForm = useForm<ProfessionalFormSchema>({
     resolver: zodResolver(professionalFormSchema),
-    defaultValues: { name: "", email: "", status: "", professionalLicense: "", specialityId: "", modality: "", bio: "", linkedin: "", instagram: "" },
+    defaultValues: { name: "", email: "", status: "", professionalLicense: "", primarySpecialtyId: "", secondarySpecialtyId: "", modality: "", bio: "", linkedin: "", instagram: "" },
   });
 
   const loadProfile = async () => {
@@ -83,7 +83,8 @@ export function useAdminUserForm() {
           email: data.email || "",
           status: data.status || "",
           professionalLicense: data.professionalProfile?.professionalLicense || "",
-          specialityId: data.professionalProfile?.specialities?.[0]?.id || "",
+          primarySpecialtyId: data.professionalProfile?.specialities?.[0]?.id || "",
+          secondarySpecialtyId: data.professionalProfile?.specialities?.[1]?.id || "",
           modality: data.professionalProfile?.modality || "",
           bio: data.professionalProfile?.bio || "",
           linkedin: data.professionalProfile?.socialLinks?.linkedin || "",
@@ -134,7 +135,7 @@ export function useAdminUserForm() {
         email: data.email,
         status: data.status as UpdateProfileDto["status"],
         professionalLicense: data.professionalLicense || undefined,
-        specialty: data.specialityId ? [data.specialityId] : undefined,
+        specialty: [data.primarySpecialtyId, data.secondarySpecialtyId].filter((val): val is string => Boolean(val)),
         modality: (data.modality || undefined) as UpdateProfileDto["modality"],
         bio: data.bio || undefined,
         socialLinks: {

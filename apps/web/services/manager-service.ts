@@ -160,9 +160,31 @@ export const managerService = {
     }
   },
 
+  async cancelAppointment(appointmentId: string, reason?: string) {
+    try {
+      const response = await api.patch(
+        `/manager/appointments/${appointmentId}/cancel`,
+        { reason },
+      );
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao cancelar consulta.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
   async listProfessionals() {
     try {
-      const response = await api.get("/admin/professionals");
+      const response = await api.get("/professional");
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
