@@ -62,6 +62,7 @@ export function PatientCard({ patient }: PatientCardProps) {
         <Image
           src={photoUrl}
           alt={name}
+          title={`Foto de perfil de ${name}`}
           width={48}
           height={48}
           className="w-12 h-12 rounded-full object-cover object-center border border-gray-200 p-1 bg-[#fafafa] shadow-sm shrink-0"
@@ -69,7 +70,10 @@ export function PatientCard({ patient }: PatientCardProps) {
       );
     }
     return (
-      <div className="w-12 h-12 rounded-full font-semibold flex items-center justify-center text-[#006fee] bg-[#e6f1ff] border border-gray-200 p-1 shadow-sm shrink-0">
+      <div
+        title={`Foto de perfil de ${name}`}
+        className="w-12 h-12 rounded-full font-semibold flex items-center justify-center text-[#006fee] bg-[#e6f1ff] border border-gray-200 p-1 shadow-sm shrink-0"
+      >
         {name.charAt(0).toUpperCase()}
       </div>
     );
@@ -82,19 +86,25 @@ export function PatientCard({ patient }: PatientCardProps) {
           <div className="flex gap-4 items-center mb-4">
             {renderAvatar(patient.name, patient.photoUrl)}
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-base text-gray-900 truncate">
+              <h3
+                className="font-semibold text-base text-gray-900 truncate"
+                title={patient.name}
+              >
                 {patient.name}
               </h3>
-              <p className="text-[0.85rem] text-gray-500 truncate">
+              <p
+                className="text-[0.85rem] text-gray-500 truncate"
+                title={patient.email}
+              >
                 {patient.email}
               </p>
             </div>
           </div>
           <div className="text-[0.9rem] text-gray-700 mb-6">
-            <p className="truncate mb-1">
+            <p className="truncate mb-1" title={`Telefone: ${patient.phone}`}>
               <strong>Telefone:</strong> {patient.phone}
             </p>
-            <p className="truncate">
+            <p className="truncate" title={`${visitLabel}: ${formattedDate}`}>
               <strong>{visitLabel}:</strong> {formattedDate}
             </p>
           </div>
@@ -105,6 +115,7 @@ export function PatientCard({ patient }: PatientCardProps) {
             variant="outline"
             className="flex-1 border-gray-200 text-gray-700 text-xs"
             onClick={() => setIsProfileOpen(true)}
+            title="Abrir perfil detalhado do paciente"
           >
             Ver Perfil
           </Button>
@@ -112,6 +123,7 @@ export function PatientCard({ patient }: PatientCardProps) {
             size="sm"
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs"
             onClick={() => setIsHistoryOpen(true)}
+            title="Ver histórico de consultas deste paciente"
           >
             Histórico
           </Button>
@@ -135,7 +147,10 @@ export function PatientCard({ patient }: PatientCardProps) {
               <div className="flex items-center gap-4">
                 {renderAvatar(detailData.name, patient.photoUrl)}
                 <div>
-                  <h4 className="text-lg font-semibold text-gray-900 leading-none mb-1">
+                  <h4
+                    className="text-lg font-semibold text-gray-900 leading-none mb-1"
+                    title={detailData.name}
+                  >
                     {detailData.name}
                   </h4>
                   <span className="text-sm text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-md">
@@ -148,13 +163,17 @@ export function PatientCard({ patient }: PatientCardProps) {
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
                     E-mail
                   </p>
-                  <p className="text-sm text-gray-900">{detailData.email}</p>
+                  <p className="text-sm text-gray-900" title={detailData.email}>
+                    {detailData.email}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
                     Telefone
                   </p>
-                  <p className="text-sm text-gray-900">{detailData.phone}</p>
+                  <p className="text-sm text-gray-900" title={detailData.phone}>
+                    {detailData.phone}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
@@ -210,6 +229,7 @@ export function PatientCard({ patient }: PatientCardProps) {
                       </div>
                       <Badge
                         className={`px-2 py-0.5 rounded-md text-[11px] font-medium border-none shadow-none ${STATUS_CLASS[apt.status] ?? "bg-gray-100 text-gray-700"}`}
+                        title={`Status: ${STATUS_TEXT[apt.status] ?? apt.status}`}
                       >
                         {STATUS_TEXT[apt.status] ?? apt.status}
                       </Badge>

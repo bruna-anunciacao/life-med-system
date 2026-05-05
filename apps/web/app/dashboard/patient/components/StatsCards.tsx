@@ -8,12 +8,11 @@ type StatsCardsProps = {
 
 export function StatsCards({ stats, isMobile }: StatsCardsProps) {
   return (
-    <div
-      className={`flex h-full gap-2 ${isMobile ? "flex-row" : "flex-col"}`}
-    >
+    <div className={`flex h-full gap-2 ${isMobile ? "flex-row" : "flex-col"}`}>
       {stats.map((stat, index) => (
         <Card
           key={index}
+          title={`${stat.title}: ${stat.value}`}
           className="flex-1 border border-gray-200 py-0 gap-0"
         >
           <CardContent

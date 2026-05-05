@@ -83,6 +83,29 @@ export class ProfessionalController {
     );
   }
 
+  @Get(':id/schedule')
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
+  @ApiOperation({
+    summary: 'Obter agenda diária de um profissional específico',
+    description:
+      'Retorna os agendamentos do dia informado para um profissional específico. Acessível por gerentes (managers) e profissionais consultando a si mesmos.',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: true,
+    example: '2024-06-15',
+    description: 'Data no formato YYYY-MM-DD',
+  })
+  @ApiResponse({ status: 200, description: 'Lista de agendamentos do dia.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 404, description: 'Profissional não encontrado.' })
+  getDailyScheduleForProfessional(
+    @Param('id') professionalId: string,
+    @Query('date') date: string,
+  ) {
+    return this.professionalService.getDailySchedule(professionalId, date);
+  }
+
   @Get('patients')
   @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
   @ApiOperation({

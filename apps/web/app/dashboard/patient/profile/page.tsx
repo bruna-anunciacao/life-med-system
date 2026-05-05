@@ -8,8 +8,16 @@ import { usePatientProfileForm } from "./usePatientProfileForm";
 import { PatientInfoForm } from "./components/PatientInfoForm";
 
 const PatientProfilePage = () => {
-  const { user, isLoading, isSaving, isEditing, setIsEditing, form, handleCancel, onSubmit } =
-    usePatientProfileForm();
+  const {
+    user,
+    isLoading,
+    isSaving,
+    isEditing,
+    setIsEditing,
+    form,
+    handleCancel,
+    onSubmit,
+  } = usePatientProfileForm();
 
   if (isLoading) {
     return (
@@ -23,10 +31,18 @@ const PatientProfilePage = () => {
     <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
       <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Meu Perfil</h1>
-          <p className="mt-1 text-base text-gray-500">Gerencie suas informações pessoais.</p>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+            Meu Perfil
+          </h1>
+          <p className="mt-1 text-base text-gray-500">
+            Gerencie suas informações pessoais.
+          </p>
         </div>
-        <Button size="lg" onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}>
+        <Button
+          size="lg"
+          onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
+          title={isEditing ? "Cancelar edição" : "Habilitar edição do perfil"}
+        >
           {isEditing ? "Cancelar" : "Editar Perfil"}
         </Button>
       </div>
@@ -38,17 +54,26 @@ const PatientProfilePage = () => {
               {user?.name?.charAt(0).toUpperCase() || "P"}
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">{user?.name}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {user?.name}
+              </h2>
               <p className="text-sm text-gray-500">{user?.email}</p>
-              <span className="mt-1 px-2.5 py-0.5 inline-block rounded-full bg-[rgba(0,111,238,0.08)] text-xs font-semibold text-[#006fee]">Paciente</span>
+              <span className="mt-1 px-2.5 py-0.5 inline-block rounded-full bg-[rgba(0,111,238,0.08)] text-xs font-semibold text-[#006fee]">
+                Paciente
+              </span>
             </div>
           </div>
 
           <Separator />
 
-          <h3 className="mt-2 text-base font-semibold text-gray-700">Informações Pessoais</h3>
+          <h3 className="mt-2 text-base font-semibold text-gray-700">
+            Informações Pessoais
+          </h3>
 
-          <form id="patient-profile-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <form
+            id="patient-profile-form"
+            onSubmit={form.handleSubmit(onSubmit)}
+          >
             <PatientInfoForm
               register={form.register}
               control={form.control}
@@ -62,7 +87,13 @@ const PatientProfilePage = () => {
             <>
               <Separator />
               <div className="flex justify-end">
-                <Button size="xl" type="submit" form="patient-profile-form" disabled={isSaving}>
+                <Button
+                  size="xl"
+                  type="submit"
+                  form="patient-profile-form"
+                  disabled={isSaving}
+                  title="Salvar todas as alterações feitas no perfil"
+                >
                   {isSaving ? "Salvando..." : "Salvar Alterações"}
                 </Button>
               </div>

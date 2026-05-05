@@ -56,6 +56,7 @@ export function CancelConfirmDialog({
           <textarea
             id="reason"
             placeholder="Por que você está cancelando a consulta?"
+            title="Descreva brevemente o motivo pelo qual está cancelando a consulta"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className="w-full min-h-25 p-3 resize-none rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-[14.5px] leading-relaxed placeholder:text-slate-400 shadow-sm transition-all duration-200 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-[3px] focus:ring-blue-500/20"
@@ -67,12 +68,14 @@ export function CancelConfirmDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
+            title="Manter a consulta e fechar esta janela"
           >
             Voltar
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={isLoading}
+            title="Confirmar o cancelamento desta consulta"
             className="bg-red-600 text-white hover:bg-red-700"
           >
             {isLoading ? (

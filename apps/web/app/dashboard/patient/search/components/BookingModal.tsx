@@ -178,7 +178,8 @@ export function BookingModal({
             </h2>
             <p className="text-sm text-gray-500 mt-1">
               {professional.name} -{" "}
-              {professional.professionalProfile?.specialities?.[0]?.name || "Especialidade"}
+              {professional.professionalProfile?.specialities?.[0]?.name ||
+                "Especialidade"}
             </p>
           </DialogHeader>
 
@@ -192,6 +193,7 @@ export function BookingModal({
                 type="date"
                 min={today}
                 value={selectedDate}
+                title="Escolha a data da consulta"
                 onChange={(e) => handleDateChange(e.target.value)}
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
               />
@@ -221,6 +223,7 @@ export function BookingModal({
                       <button
                         key={slot.time}
                         onClick={() => setSelectedSlot(slot.time)}
+                        title={`Selecionar horário das ${slot.time}`}
                         className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all duration-150 cursor-pointer ${
                           selectedSlot === slot.time
                             ? "bg-[#006fee] text-white border-[#006fee] shadow-sm"
@@ -245,6 +248,7 @@ export function BookingModal({
                 onChange={(e) => setNotes(e.target.value)}
                 maxLength={500}
                 rows={isMobile ? 2 : 3}
+                title="Adicione observações ou motivos para sua consulta"
                 placeholder="Descreva o motivo da consulta ou dúvidas..."
                 className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
               />
@@ -272,6 +276,7 @@ export function BookingModal({
             <Button
               variant="outline"
               onClick={handleClose}
+              title="Cancelar agendamento e fechar janela"
               className={`rounded-lg font-semibold text-sm ${isMobile ? "w-full order-2" : ""}`}
             >
               Cancelar
@@ -279,6 +284,7 @@ export function BookingModal({
             <Button
               onClick={handleSubmit}
               disabled={!selectedDate || !selectedSlot || isSubmitting}
+              title="Confirmar o agendamento da consulta"
               className={`rounded-lg font-semibold text-sm ${isMobile ? "w-full order-1" : ""}`}
             >
               {isSubmitting ? "Agendando..." : "Confirmar Agendamento"}

@@ -38,11 +38,12 @@ export default function NewPatientPage() {
   };
 
   return (
-    <div className="py-12">
-      <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">
-          Cadastrar Novo Paciente
-        </h1>
+    <div className="min-h-screen bg-slate-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+            Cadastrar Novo Paciente
+          </h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -52,6 +53,7 @@ export default function NewPatientPage() {
                 id="name"
                 type="text"
                 placeholder="João Silva"
+                title="Insira o nome completo do paciente"
                 {...register('name')}
               />
               {errors.name && (
@@ -65,6 +67,7 @@ export default function NewPatientPage() {
                 id="email"
                 type="email"
                 placeholder="paciente@email.com"
+                title="Insira o endereço de e-mail para contato e acesso"
                 {...register('email')}
               />
               {errors.email && (
@@ -114,6 +117,7 @@ export default function NewPatientPage() {
                 id="cpf"
                 type="text"
                 placeholder="000.000.000-00"
+                title="Insira o CPF do paciente (apenas números ou formatado)"
                 {...register('cpf')}
               />
               {errors.cpf && (
@@ -126,6 +130,7 @@ export default function NewPatientPage() {
               <Input
                 id="dateOfBirth"
                 type="date"
+                title="Selecione a data de nascimento"
                 {...register('dateOfBirth')}
               />
               {errors.dateOfBirth && (
@@ -137,6 +142,7 @@ export default function NewPatientPage() {
               <Label htmlFor="gender">Gênero (opcional)</Label>
               <select
                 id="gender"
+                title="Selecione o gênero do paciente"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 {...register('gender')}
               >
@@ -156,6 +162,7 @@ export default function NewPatientPage() {
             <textarea
               id="address"
               placeholder="Rua, número, complemento, cidade..."
+              title="Insira o endereço residencial completo"
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               {...register('address')}
@@ -169,6 +176,7 @@ export default function NewPatientPage() {
             <Button
               type="submit"
               disabled={isPending}
+              title="Clique para realizar o cadastro do paciente"
               className="flex-1 bg-green-600 hover:bg-green-700 text-white"
             >
               {isPending ? 'Cadastrando...' : 'Cadastrar Paciente'}
@@ -176,6 +184,7 @@ export default function NewPatientPage() {
             <Button
               type="button"
               variant="secondary"
+              title="Cancelar e voltar para a tela anterior"
               onClick={() => router.back()}
               className="flex-1"
             >
@@ -183,6 +192,7 @@ export default function NewPatientPage() {
             </Button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

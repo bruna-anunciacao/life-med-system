@@ -145,6 +145,9 @@ model ManagerProfile {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  scheduledAppointments  Appointment[] @relation("ScheduledByManager")
+  cancelledAppointments  Appointment[] @relation("CancelledByManager")
+
   @@map("manager_profiles")
 }
 
@@ -171,6 +174,13 @@ model Appointment {
 
   patientId String @map("patient_id")
   patient   User   @relation("PatientAppointments", fields: [patientId], references: [id])
+
+  scheduledByManagerId String?         @map("scheduled_by_manager_id")
+  scheduledByManager   ManagerProfile? @relation("ScheduledByManager", fields: [scheduledByManagerId], references: [id])
+
+  cancelledByManagerId String?         @map("cancelled_by_manager_id")
+  cancelledByManager   ManagerProfile? @relation("CancelledByManager", fields: [cancelledByManagerId], references: [id])
+  cancelledAt          DateTime?       @map("cancelled_at")
 
   dateTime DateTime            @map("date_time")
   status   AppointmentStatus   @default(PENDING)

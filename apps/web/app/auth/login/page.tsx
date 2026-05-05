@@ -21,12 +21,12 @@ const LoginPage = () => {
     <div className="w-full max-w-96 sm:max-w-105 flex flex-col gap-5">
       {/* Header do form: logo + subtítulo */}
       <div className="flex flex-col">
-        <Link href="/" className="w-fit mb-3">
+        <Link href="/" className="w-fit mb-3" title="Voltar para a página inicial">
           <LifeMedLogo width={160} className="h-auto" />
         </Link>
         <p className="text-sm text-[#6b7280]">
           Não tem conta?{" "}
-          <Link href="/auth/register" className="text-[#2563eb] font-semibold hover:underline">
+          <Link href="/auth/register" className="text-[#2563eb] font-semibold hover:underline" title="Ir para a tela de cadastro">
             Criar conta
           </Link>
         </p>
@@ -43,6 +43,7 @@ const LoginPage = () => {
             placeholder="seu@email.com"
             type="email"
             autoComplete="email"
+            title="Insira o seu endereço de e-mail cadastrado"
             {...register("email")}
           />
           {errors.email && (
@@ -58,6 +59,7 @@ const LoginPage = () => {
             <Link
               href="/auth/forgot-password"
               className="text-sm font-semibold text-[#2563eb] hover:underline"
+              title="Ir para a tela de recuperação de senha"
             >
               Esqueci a senha
             </Link>
@@ -69,12 +71,14 @@ const LoginPage = () => {
               type={isPasswordVisible ? "text" : "password"}
               autoComplete="current-password"
               className="pr-11"
+              title="Insira a sua senha de acesso"
               {...register("password")}
             />
             <button
               type="button"
               tabIndex={-1}
               aria-label={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
+              title={isPasswordVisible ? "Ocultar senha" : "Mostrar senha"}
               onClick={() => setIsPasswordVisible(!isPasswordVisible)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#374151] transition-colors"
             >
@@ -86,7 +90,7 @@ const LoginPage = () => {
           )}
         </div>
 
-        <Button type="submit" size="lg" className="w-full mt-2" disabled={isLoading}>
+        <Button type="submit" size="lg" className="w-full mt-2" disabled={isLoading} title="Entrar na plataforma">
           {isLoading ? <Spinner size="sm" /> : "Entrar"}
         </Button>
       </form>

@@ -41,6 +41,7 @@ export function UpcomingAppointmentsList({
         </h2>
         <button
           onClick={onViewAll}
+          title="Ver todas as suas próximas consultas"
           className="text-xs font-medium text-blue-500 hover:text-blue-600"
         >
           Ver todas
@@ -49,7 +50,10 @@ export function UpcomingAppointmentsList({
       <Card className="border border-gray-200 py-0 gap-0">
         <CardContent className="p-0">
           {visible.length === 0 ? (
-            <div className="px-4 py-6 text-center text-sm text-gray-400">
+            <div
+              className="px-4 py-6 text-center text-sm text-gray-400"
+              title="Não há consultas agendadas para os próximos dias"
+            >
               Nenhuma consulta próxima.
             </div>
           ) : (
@@ -58,6 +62,7 @@ export function UpcomingAppointmentsList({
               return (
                 <div
                   key={appt.id}
+                  title={`Consulta com ${appt.professional.name} em ${formatDay(appt.dateTime)} de ${formatMonth(appt.dateTime)} às ${formatTime(appt.dateTime)}`}
                   className={`grid grid-cols-[48px_1fr_auto] items-center gap-4 px-4 py-3 transition-colors hover:bg-slate-50 ${i < visible.length - 1 ? "border-b border-gray-100" : ""}`}
                 >
                   <div className="flex flex-col items-center justify-center rounded-lg bg-blue-50 py-2">
@@ -78,6 +83,7 @@ export function UpcomingAppointmentsList({
                     </span>
                   </div>
                   <Badge
+                    title={`Status: ${badge.label}`}
                     className={`h-5 shrink-0 px-2 text-xs ${badge.className}`}
                   >
                     {badge.label}

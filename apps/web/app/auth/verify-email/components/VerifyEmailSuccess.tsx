@@ -12,7 +12,11 @@ export function VerifyEmailSuccess({ message }: VerifyEmailSuccessProps) {
       <h1 className="text-xl font-bold text-[#0f172a] mb-2">E-mail verificado!</h1>
       <p className="text-sm text-[#64748b] mb-6">{message}</p>
       <p className="text-xs text-[#94a3b8]">Redirecionando para o login...</p>
-      <Link href="/auth/login" className="mt-4 inline-block text-sm font-medium text-[#2563eb] hover:underline">
+      <Link 
+        href="/auth/login" 
+        className="mt-4 inline-block text-sm font-medium text-[#2563eb] hover:underline"
+        title="Ir para a tela de login agora"
+      >
         Ir para o login agora
       </Link>
     </>

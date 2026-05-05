@@ -55,7 +55,10 @@ export function DoctorCard({
       <Card className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-4 flex flex-col gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full shrink-0 overflow-hidden bg-[#006fee] flex items-center justify-center relative">
+            <div
+              className="w-12 h-12 rounded-full shrink-0 overflow-hidden bg-[#006fee] flex items-center justify-center relative"
+              title={`Foto de perfil de ${professional.name}`}
+            >
               {resolvedPhotoUrl && !imageError ? (
                 <Image
                   src={resolvedPhotoUrl}
@@ -73,10 +76,19 @@ export function DoctorCard({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-gray-900 truncate">
+              <h3
+                className="text-sm font-semibold text-gray-900 truncate"
+                title={professional.name}
+              >
                 {professional.name}
               </h3>
-              <p className="text-xs text-gray-500">
+              <p
+                className="text-xs text-gray-500"
+                title={
+                  professional.professionalProfile?.specialities?.[0]?.name ||
+                  "Especialidade não informada"
+                }
+              >
                 {professional.professionalProfile?.specialities?.[0]?.name ||
                   "Especialidade não informada"}
               </p>
@@ -84,11 +96,17 @@ export function DoctorCard({
           </div>
 
           <div className="flex flex-wrap gap-2 items-center">
-            <Badge className="px-2 py-0.5 rounded text-[0.65rem] font-semibold">
+            <Badge
+              className="px-2 py-0.5 rounded text-[0.65rem] font-semibold"
+              title={`Modalidade de atendimento: ${MODALITY_LABEL[modality ?? ""] ?? "Remoto"}`}
+            >
               {MODALITY_LABEL[modality ?? ""] ?? "Remoto"}
             </Badge>
             {professional.status === "VERIFIED" && (
-              <span className="text-xs font-medium">
+              <span
+                className="text-xs font-medium"
+                title="Profissional verificado pela plataforma"
+              >
                 Verificado
                 <Check className="inline size-2 ml-1" />
               </span>
@@ -96,7 +114,12 @@ export function DoctorCard({
           </div>
 
           <div className="flex gap-2">
-            <Button size="sm" className="flex-1 text-xs" onClick={onBook}>
+            <Button
+              size="sm"
+              className="flex-1 text-xs"
+              onClick={onBook}
+              title={`Agendar consulta com ${professional.name}`}
+            >
               <CalendarIcon />
               Agendar
             </Button>
@@ -105,6 +128,7 @@ export function DoctorCard({
               variant="outline"
               className="flex-1 text-xs"
               onClick={onViewProfile}
+              title={`Ver perfil detalhado de ${professional.name}`}
             >
               Ver Perfil
             </Button>
@@ -117,7 +141,10 @@ export function DoctorCard({
   return (
     <Card className="border border-gray-200 rounded-xl bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)]">
       <CardContent className="p-6 flex gap-5">
-        <div className="relative w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white flex-shrink-0 overflow-hidden">
+        <div
+          className="relative w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white flex-shrink-0 overflow-hidden"
+          title={`Foto de perfil de ${professional.name}`}
+        >
           {resolvedPhotoUrl && !imageError ? (
             <Image
               src={resolvedPhotoUrl}
@@ -134,24 +161,42 @@ export function DoctorCard({
         </div>
 
         <div className="flex-1 flex flex-col gap-1.5">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3
+            className="text-lg font-semibold text-gray-900"
+            title={professional.name}
+          >
             {professional.name}
           </h3>
-          <p className="text-sm text-gray-500">
+          <p
+            className="text-sm text-gray-500"
+            title={
+              professional.professionalProfile?.specialities?.[0]?.name ||
+              "Especialidade não informada"
+            }
+          >
             {professional.professionalProfile?.specialities?.[0]?.name ||
               "Especialidade não informada"}
           </p>
           {professional.professionalProfile?.professionalLicense && (
-            <p className="text-xs text-gray-400">
+            <p
+              className="text-xs text-gray-400"
+              title={`Registro profissional: ${professional.professionalProfile.professionalLicense}`}
+            >
               CRM: {professional.professionalProfile.professionalLicense}
             </p>
           )}
           <div className="mt-2 flex flex-wrap gap-2 items-center">
-            <Badge className="px-2.5 py-0.5 rounded text-xs font-semibold">
+            <Badge
+              className="px-2.5 py-0.5 rounded text-xs font-semibold"
+              title={`Modalidade de atendimento: ${MODALITY_LABEL[modality ?? ""] ?? "Remoto"}`}
+            >
               {MODALITY_LABEL[modality ?? ""] ?? "Remoto"}
             </Badge>
             {professional.status === "VERIFIED" && (
-              <span className="text-xs font-medium">
+              <span
+                className="text-xs font-medium"
+                title="Profissional verificado pela plataforma"
+              >
                 Verificado
                 <Check className="inline size-2 ml-1" />
               </span>
@@ -160,11 +205,20 @@ export function DoctorCard({
         </div>
 
         <div className="flex flex-row justify-start gap-2 shrink-0">
-          <Button size="sm" onClick={onBook}>
+          <Button
+            size="sm"
+            onClick={onBook}
+            title={`Agendar consulta com ${professional.name}`}
+          >
             <CalendarIcon />
             Agendar
           </Button>
-          <Button size="sm" variant="outline" onClick={onViewProfile}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onViewProfile}
+            title={`Ver perfil detalhado de ${professional.name}`}
+          >
             Ver Perfil
           </Button>
         </div>
