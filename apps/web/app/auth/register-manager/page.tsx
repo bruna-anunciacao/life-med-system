@@ -42,6 +42,7 @@ export default function RegisterManagerPage() {
             <input
               type="email"
               placeholder="seu@email.com"
+              title="Insira o seu e-mail institucional"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('email')}
             />
@@ -57,6 +58,7 @@ export default function RegisterManagerPage() {
             <input
               type="password"
               placeholder="Senha segura"
+              title="Crie uma senha forte para sua conta"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('password')}
             />
@@ -72,6 +74,7 @@ export default function RegisterManagerPage() {
             <input
               type="tel"
               placeholder="+5571999999999"
+              title="Insira seu telefone de contato com DDD"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('phone')}
             />
@@ -87,6 +90,7 @@ export default function RegisterManagerPage() {
             <input
               type="text"
               placeholder="Rua..., Número..."
+              title="Insira seu endereço completo (opcional)"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('address')}
             />
@@ -102,6 +106,7 @@ export default function RegisterManagerPage() {
             <textarea
               placeholder="Descreva-se brevemente"
               rows={3}
+              title="Escreva um pouco sobre sua atuação como gerente"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               {...field('bio')}
             />
@@ -113,6 +118,7 @@ export default function RegisterManagerPage() {
           <Button
             type="submit"
             disabled={isPending}
+            title="Clique para realizar o registro como gerente"
             className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isPending ? 'Registrando...' : 'Registrar como MANAGER'}
@@ -121,7 +127,11 @@ export default function RegisterManagerPage() {
 
         <div className="mt-4 text-center text-sm text-gray-600">
           Já tem uma conta?{' '}
-          <a href="/auth/login" className="text-blue-600 hover:underline">
+          <a 
+            href="/auth/login" 
+            className="text-blue-600 hover:underline"
+            title="Ir para a tela de login"
+          >
             Faça login
           </a>
         </div>

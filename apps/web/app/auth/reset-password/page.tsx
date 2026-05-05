@@ -15,7 +15,11 @@ const ResetPasswordPage = () => {
     <div className="w-full max-w-96 sm:max-w-105 flex flex-col gap-5">
       {/* Header do form: logo + subtítulo */}
       <div className="flex flex-col">
-        <Link href="/" className="w-fit mb-3">
+        <Link 
+          href="/" 
+          className="w-fit mb-3"
+          title="Voltar para a página inicial"
+        >
           <LifeMedLogo width={160} className="h-auto" />
         </Link>
         <p className="text-sm text-[#6b7280]">
@@ -28,7 +32,11 @@ const ResetPasswordPage = () => {
 
       <p className="text-sm text-[#6b7280]">
         Lembrou sua senha?{" "}
-        <Link href="/auth/login" className="text-[#2563eb] font-semibold hover:underline">
+        <Link 
+          href="/auth/login" 
+          className="text-[#2563eb] font-semibold hover:underline"
+          title="Voltar para a tela de login"
+        >
           Voltar ao login
         </Link>
       </p>

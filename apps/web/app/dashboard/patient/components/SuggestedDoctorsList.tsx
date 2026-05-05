@@ -23,6 +23,7 @@ export function SuggestedDoctorsList({
           </h2>
           <button
             onClick={onViewAll}
+            title="Ver a lista completa de profissionais disponíveis"
             className="text-xs font-medium text-blue-500 hover:text-blue-600"
           >
             Ver todos
@@ -30,7 +31,10 @@ export function SuggestedDoctorsList({
         </div>
         <div className="divide-y divide-gray-100">
           {professionals.length === 0 ? (
-            <div className="py-4 text-center text-sm text-gray-400">
+            <div
+              className="py-4 text-center text-sm text-gray-400"
+              title="Nenhum profissional disponível no momento"
+            >
               Nenhum profissional disponível.
             </div>
           ) : (
@@ -39,20 +43,30 @@ export function SuggestedDoctorsList({
                 key={doc.id}
                 className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0"
               >
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
+                <div
+                  className="flex size-8 shrink-0 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white"
+                  title={`Foto de perfil de ${doc.name}`}
+                >
                   {getInitials(doc.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-gray-900">
+                  <p
+                    className="truncate text-sm font-medium text-gray-900"
+                    title={`Profissional: ${doc.name}`}
+                  >
                     {doc.name}
                   </p>
-                  <p className="text-xs text-gray-400">
+                  <p
+                    className="text-xs text-gray-400"
+                    title={`Especialidade: ${doc.professionalProfile?.specialities?.[0]?.name || "Não informada"}`}
+                  >
                     {doc.professionalProfile?.specialities?.[0]?.name || ""}
                   </p>
                 </div>
                 <Button
                   size="sm"
                   className="h-7 shrink-0 px-3 text-xs"
+                  title={`Agendar consulta com ${doc.name}`}
                   onClick={onBook}
                 >
                   Agendar

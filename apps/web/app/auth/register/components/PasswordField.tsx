@@ -43,17 +43,20 @@ export function PasswordField<T extends FieldValues>({
 
   return (
     <div className="w-full flex flex-col gap-1">
-      <Label className="text-sm font-medium text-[#334155]">{label}</Label>
+      <Label htmlFor={name} className="text-sm font-medium text-[#334155]">{label}</Label>
       <div className="relative">
         <Input
+          id={name}
           placeholder="Insira a senha"
           type={isVisible ? "text" : "password"}
+          title={label}
           className="h-12 px-4 py-3 rounded-lg border border-[#cbd5e1] text-sm text-[#334155] bg-white outline-none transition-all focus:border-[#2563eb] focus:shadow-[0_0_0_2px_rgba(37,99,235,0.1)]"
           {...register(name)}
         />
         <Button
           type="button"
           aria-label={isVisible ? "Esconder senha" : "Mostrar senha"}
+          title={isVisible ? "Esconder senha" : "Mostrar senha"}
           size="sm"
           variant="ghost"
           className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
@@ -64,8 +67,8 @@ export function PasswordField<T extends FieldValues>({
       </div>
 
       {showStrengthMeter && currentValue && (
-        <div className="mt-1 flex flex-col gap-1.5">
-          <div className="flex gap-1.5 w-full">
+        <div className="mt-1 flex flex-col gap-1.5" aria-live="polite">
+          <div className="flex gap-1.5 w-full" title={`Força da senha: ${strength.label}`}>
             {[...Array(4)].map((_, index) => (
               <div
                 key={index}
@@ -82,7 +85,7 @@ export function PasswordField<T extends FieldValues>({
       )}
 
       {error && (
-        <p className="text-sm text-destructive">{error.message as string}</p>
+        <p className="text-sm text-destructive" role="alert">{error.message as string}</p>
       )}
     </div>
   );

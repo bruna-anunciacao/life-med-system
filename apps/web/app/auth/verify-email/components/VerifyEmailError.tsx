@@ -33,11 +33,13 @@ export function VerifyEmailError({ message }: VerifyEmailErrorProps) {
           placeholder="Seu e-mail"
           value={resendEmail}
           onChange={(e) => setResendEmail(e.target.value)}
+          title="Insira o seu e-mail para receber um novo link de verificação"
           className="w-full px-4 py-2 border border-[#e2e8f0] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
         />
         <button
           onClick={handleResend}
           disabled={resendMutation.isPending || !resendEmail}
+          title="Clique para reenviar o e-mail de verificação"
           className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#0f172a] text-white text-sm font-medium hover:bg-[#1e293b] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {resendMutation.isPending ? (
@@ -49,7 +51,11 @@ export function VerifyEmailError({ message }: VerifyEmailErrorProps) {
         </button>
       </div>
 
-      <Link href="/auth/login" className="mt-6 inline-block text-sm text-[#64748b] hover:underline">
+      <Link 
+        href="/auth/login" 
+        className="mt-6 inline-block text-sm text-[#64748b] hover:underline"
+        title="Voltar para a tela de login"
+      >
         Voltar para o login
       </Link>
     </>
