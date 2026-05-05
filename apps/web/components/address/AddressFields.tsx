@@ -10,7 +10,7 @@ type AddressFieldsProps<T extends FieldValues> = {
   errors: FieldErrors<T>;
   isFetchingZipCode: boolean;
   disabled?: boolean;
-  fieldPrefix?: Path<T>;
+  fieldPrefix?: string;
 };
 
 export function AddressFields<T extends FieldValues>({
@@ -21,17 +21,17 @@ export function AddressFields<T extends FieldValues>({
   fieldPrefix,
 }: AddressFieldsProps<T>) {
   const getFieldName = (field: string) =>
-    fieldPrefix ? `${fieldPrefix}.${field}` : field;
+  (fieldPrefix ? `${fieldPrefix}.${field}` : field) as Path<T>;
 
   const getFieldId = (field: string) =>
     fieldPrefix ? `${fieldPrefix}-${field}` : field;
 
   const getError = (field: string) => {
     if (fieldPrefix) {
-      const prefixErrors = errors[fieldPrefix] as FieldErrors<FieldValues>;
-      return prefixErrors?.[field]?.message;
+      const prefixErrors = errors[fieldPrefix as keyof FieldErrors<T>] as FieldErrors<FieldValues>;
+      return prefixErrors?.[field]?.message as string | undefined;
     }
-    return errors[field as keyof T]?.message;
+    return (errors[field as keyof T] as any)?.message as string | undefined;
   };
 
   return (
