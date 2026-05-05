@@ -48,6 +48,7 @@ const AdminUserProfilePage = () => {
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
   const photoPath = user.professionalProfile?.photoUrl;
+  const canEditProfile = user.role === "PATIENT" || user.role === "PROFESSIONAL";
   const fullPhotoUrl = photoPath
     ? photoPath.startsWith("http") ? photoPath : `${apiBaseUrl}${photoPath}`
     : null;
@@ -61,9 +62,11 @@ const AdminUserProfilePage = () => {
         </div>
         <div className="flex items-center gap-3">
           <Button size="lg" onClick={() => router.back()}>Voltar</Button>
-          <Button size="lg" onClick={() => (isEditing ? handleCancel() : setIsEditing(true))} disabled={isSaving}>
-            {isEditing ? "Cancelar edição" : "Editar dados"}
-          </Button>
+          {canEditProfile && (
+            <Button size="lg" onClick={() => (isEditing ? handleCancel() : setIsEditing(true))} disabled={isSaving}>
+              {isEditing ? "Cancelar edição" : "Editar dados"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -100,7 +103,7 @@ const AdminUserProfilePage = () => {
             </form>
           )}
 
-          {isEditing && (
+          {isEditing && canEditProfile && (
             <>
               <Separator />
               <div className="mt-6 flex justify-end">

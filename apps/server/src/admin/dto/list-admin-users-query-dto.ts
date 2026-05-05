@@ -8,7 +8,7 @@ export class ListAdminUsersQueryDto {
   @IsOptional()
   @Transform(toUpper)
   @IsEnum(UserRole)
-  role?: 'PATIENT' | 'PROFESSIONAL';
+  role?: 'PATIENT' | 'PROFESSIONAL' | 'MANAGER';
 
   @IsOptional()
   @Transform(toUpper)

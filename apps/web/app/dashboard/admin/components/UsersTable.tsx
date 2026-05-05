@@ -25,11 +25,13 @@ const TYPE_TABS: { label: string; value: TypeFilter }[] = [
   { label: "Todos", value: "all" },
   { label: "Pacientes", value: "PATIENT" },
   { label: "Profissionais", value: "PROFESSIONAL" },
+  { label: "Gestores", value: "MANAGER" },
 ];
 
-const TYPE_BADGE: Record<"PATIENT" | "PROFESSIONAL", { label: string; className: string }> = {
+const TYPE_BADGE: Record<"PATIENT" | "PROFESSIONAL" | "MANAGER", { label: string; className: string }> = {
   PATIENT: { label: "Paciente", className: "bg-blue-50 text-blue-600 border border-blue-200" },
   PROFESSIONAL: { label: "Profissional", className: "bg-violet-50 text-violet-600 border border-violet-200" },
+  MANAGER: { label: "Gestor", className: "bg-amber-50 text-amber-700 border border-amber-200" },
 };
 
 type Props = {
