@@ -172,6 +172,10 @@ const NewApointmentPage = () => {
           if (!open) setSelectedProfessional(null);
         }}
         professional={selectedProfessional as unknown as ProfessionalData}
+        onBook={() => {
+          setBookingProfessional(selectedProfessional);
+          setSelectedProfessional(null);
+        }}
       />
 
       <BookingModal

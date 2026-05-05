@@ -19,7 +19,6 @@ import {
   CalendarDays,
 } from "lucide-react";
 import Image from "next/image";
-import { BookingModal } from "./BookingModal";
 import { env } from "@/config/env";
 
 export interface ProfessionalData {
@@ -47,6 +46,8 @@ interface SeeProfileModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   professional?: ProfessionalData | null;
+  onBook?: () => void;
+  showBookingAction?: boolean;
 }
 
 const getModalityInfo = (modality?: string) => {
@@ -85,24 +86,29 @@ const getPaymentName = (method: string) => {
   return methods[method] || method;
 };
 
+const getSpecialityInfo = (
+  specialities?: { id: string; name: string }[],
+) => {
+  const speciality = specialities?.[0]?.name || "Especialidade não informada";
+  const subspeciality = specialities?.[1]?.name;
+
+  return { speciality, subspeciality };
+};
+
 export function SeeProfileModal({
   isOpen,
   onOpenChange,
   professional,
+  onBook,
+  showBookingAction = true,
 }: SeeProfileModalProps) {
   const [imageError, setImageError] = useState(false);
-
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-
-  const handleBookingSuccess = () => {
-    setIsBookingModalOpen(false);
-    onOpenChange(false);
-  };
 
   if (!professional || !professional.professionalProfile) return null;
 
   const { professionalProfile: profile } = professional;
   const modalityInfo = getModalityInfo(profile.modality);
+  const { speciality, subspeciality } = getSpecialityInfo(profile.specialities);
 
   const hasPrice = profile.price !== null && profile.price !== undefined;
   const hasPayments = profile.payments && profile.payments.length > 0;
@@ -153,8 +159,14 @@ export function SeeProfileModal({
                   </h3>
                   <div className="flex items-center gap-2 mt-2 text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full text-sm">
                     <Stethoscope className="w-4 h-4" />
-                    <span>{profile.specialities?.[0]?.name || "Especialidade não informada"}</span>
+                    <span>{speciality}</span>
                   </div>
+                  {subspeciality && (
+                    <div className="mt-2 text-sm text-gray-500">
+                      <span className="font-medium text-gray-700">Subespecialidade:</span>{" "}
+                      {subspeciality}
+                    </div>
+                  )}
                   <div className="mt-3 text-[0.85rem] text-[#8a91a0] bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
                     <span className="font-medium text-gray-600">Registro:</span>{" "}
                     {profile.professionalLicense}
@@ -301,24 +313,19 @@ export function SeeProfileModal({
               >
                 Fechar
               </Button>
-              <Button
-                onClick={() => setIsBookingModalOpen(true)}
-                className="px-6 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer hover:bg-[#005bc4] transition-all shadow-sm flex items-center gap-2"
-              >
-                <CalendarDays className="w-4 h-4" />
-                Agendar Consulta
-              </Button>
+              {showBookingAction && (
+                <Button
+                  onClick={onBook}
+                  className="px-6 py-2 rounded-lg bg-[#006fee] font-semibold text-sm text-white cursor-pointer hover:bg-[#005bc4] transition-all shadow-sm flex items-center gap-2"
+                >
+                  <CalendarDays className="w-4 h-4" />
+                  Agendar Consulta
+                </Button>
+              )}
             </DialogFooter>
           </div>
         </DialogContent>
       </Dialog>
-
-      <BookingModal
-        isOpen={isBookingModalOpen}
-        onOpenChange={setIsBookingModalOpen}
-        onSuccess={handleBookingSuccess}
-        professional={professional}
-      />
     </>
   );
 }

@@ -21,7 +21,9 @@ import {
   Clock,
   NotePencil,
   CurrencyDollar,
+  UserCircle,
 } from "@phosphor-icons/react";
+import { ProfessionalData, SeeProfileModal } from "./SeeProfileModal";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -43,6 +45,15 @@ const timeToMins = (time: string) => {
   return parseInt(h || "0", 10) * 60 + parseInt(m || "0", 10);
 };
 
+const getSpecialityInfo = (
+  specialities?: { id: string; name: string }[],
+) => {
+  const speciality = specialities?.[0]?.name || "Especialidade não informada";
+  const subspeciality = specialities?.[1]?.name;
+
+  return { speciality, subspeciality };
+};
+
 export function BookingModal({
   isOpen,
   onOpenChange,
@@ -58,6 +69,7 @@ export function BookingModal({
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -135,6 +147,7 @@ export function BookingModal({
     setSelectedSlot("");
     setNotes("");
     setSlots([]);
+    setIsProfileOpen(false);
     onOpenChange(false);
   };
 
@@ -161,131 +174,154 @@ export function BookingModal({
   });
 
   const price = professional.professionalProfile?.price;
+  const { speciality, subspeciality } = getSpecialityInfo(
+    professional.professionalProfile?.specialities,
+  );
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent
-        className={`max-h-[90vh] overflow-y-auto p-0 border-none bg-transparent shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${isMobile ? "max-w-[95vw]" : "sm:max-w-lg"}`}
-      >
-        <div
-          className={`w-full flex flex-col overflow-auto rounded-2xl bg-white text-black mx-auto ${isMobile ? "p-4" : "p-6"}`}
+    <>
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent
+          className={`max-h-[90vh] overflow-y-auto p-0 border-none bg-transparent shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${isMobile ? "max-w-[95vw]" : "sm:max-w-lg"}`}
         >
-          <DialogHeader className="flex flex-col items-center text-center mb-4">
-            <h2
-              className={`font-semibold ${isMobile ? "text-xl" : "text-2xl"}`}
-            >
+          <div
+            className={`w-full flex flex-col overflow-auto rounded-2xl bg-white text-black mx-auto ${isMobile ? "p-4" : "p-6"}`}
+          >
+            <DialogHeader className="flex flex-col items-center text-center mb-4">
+              <h2
+                className={`font-semibold ${isMobile ? "text-xl" : "text-2xl"}`}
+              >
               Agendar Consulta
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              {professional.name} -{" "}
-              {professional.professionalProfile?.specialities?.[0]?.name || "Especialidade"}
+              {professional.name} - {speciality}
             </p>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <CalendarDots size={18} />
-                Selecione a data
-              </label>
-              <input
-                type="date"
-                min={today}
-                value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
-              />
-            </div>
-
-            {isLoadingSlots && (
-              <div className="flex justify-center py-6">
-                <Spinner size="md" />
-              </div>
+            {subspeciality && (
+              <p className="text-sm text-gray-500">Subespecialidade: {subspeciality}</p>
             )}
-
-            {selectedDate && !isLoadingSlots && slots.length > 0 && (
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                  <Clock size={18} />
-                  Horários disponíveis
-                </label>
-                {availableSlots.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic py-2">
-                    Todos os horários estão ocupados nesta data.
-                  </p>
-                ) : (
-                  <div
-                    className={`grid gap-2 ${isMobile ? "grid-cols-3" : "grid-cols-4"}`}
-                  >
-                    {availableSlots.map((slot) => (
-                      <button
-                        key={slot.time}
-                        onClick={() => setSelectedSlot(slot.time)}
-                        className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all duration-150 cursor-pointer ${
-                          selectedSlot === slot.time
-                            ? "bg-[#006fee] text-white border-[#006fee] shadow-sm"
-                            : "bg-gray-50 text-gray-700 border-gray-200 hover:border-[#006fee] hover:bg-blue-50"
-                        }`}
-                      >
-                        {slot.time}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div>
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                <NotePencil size={18} />
-                Observações (opcional)
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                maxLength={500}
-                rows={isMobile ? 2 : 3}
-                placeholder="Descreva o motivo da consulta ou dúvidas..."
-                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
-              />
-            </div>
-
-            {price !== undefined && price !== null && (
-              <div className="mt-2 bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-blue-900 font-medium text-sm">
-                  <CurrencyDollar size={20} className="text-blue-600" />
-                  Valor da consulta
-                </div>
-                <span className="font-bold text-blue-700 text-lg">
-                  {price.toLocaleString("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </span>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter
-            className={`flex mt-4 ${isMobile ? "flex-col gap-2" : "flex-row justify-end gap-3"}`}
-          >
             <Button
               variant="outline"
-              onClick={handleClose}
-              className={`rounded-lg font-semibold text-sm ${isMobile ? "w-full order-2" : ""}`}
+              size="sm"
+                onClick={() => setIsProfileOpen(true)}
+                className="mt-3 rounded-full"
+              >
+                <UserCircle size={18} />
+                Ver perfil
+              </Button>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <CalendarDots size={18} />
+                  Selecione a data
+                </label>
+                <input
+                  type="date"
+                  min={today}
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
+                />
+              </div>
+
+              {isLoadingSlots && (
+                <div className="flex justify-center py-6">
+                  <Spinner size="md" />
+                </div>
+              )}
+
+              {selectedDate && !isLoadingSlots && slots.length > 0 && (
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                    <Clock size={18} />
+                    Horários disponíveis
+                  </label>
+                  {availableSlots.length === 0 ? (
+                    <p className="text-sm text-gray-500 italic py-2">
+                      Todos os horários estão ocupados nesta data.
+                    </p>
+                  ) : (
+                    <div
+                      className={`grid gap-2 ${isMobile ? "grid-cols-3" : "grid-cols-4"}`}
+                    >
+                      {availableSlots.map((slot) => (
+                        <button
+                          key={slot.time}
+                          onClick={() => setSelectedSlot(slot.time)}
+                          className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all duration-150 cursor-pointer ${
+                            selectedSlot === slot.time
+                              ? "bg-[#006fee] text-white border-[#006fee] shadow-sm"
+                              : "bg-gray-50 text-gray-700 border-gray-200 hover:border-[#006fee] hover:bg-blue-50"
+                          }`}
+                        >
+                          {slot.time}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                  <NotePencil size={18} />
+                  Observações (opcional)
+                </label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  maxLength={500}
+                  rows={isMobile ? 2 : 3}
+                  placeholder="Descreva o motivo da consulta ou dúvidas..."
+                  className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
+                />
+              </div>
+
+              {price !== undefined && price !== null && (
+                <div className="mt-2 bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-blue-900 font-medium text-sm">
+                    <CurrencyDollar size={20} className="text-blue-600" />
+                    Valor da consulta
+                  </div>
+                  <span className="font-bold text-blue-700 text-lg">
+                    {price.toLocaleString("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <DialogFooter
+              className={`flex mt-4 ${isMobile ? "flex-col gap-2" : "flex-row justify-end gap-3"}`}
             >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!selectedDate || !selectedSlot || isSubmitting}
-              className={`rounded-lg font-semibold text-sm ${isMobile ? "w-full order-1" : ""}`}
-            >
-              {isSubmitting ? "Agendando..." : "Confirmar Agendamento"}
-            </Button>
-          </DialogFooter>
-        </div>
-      </DialogContent>
-    </Dialog>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className={`rounded-lg font-semibold text-sm ${isMobile ? "w-full order-2" : ""}`}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!selectedDate || !selectedSlot || isSubmitting}
+                className={`rounded-lg font-semibold text-sm ${isMobile ? "w-full order-1" : ""}`}
+              >
+                {isSubmitting ? "Agendando..." : "Confirmar Agendamento"}
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <SeeProfileModal
+        isOpen={isProfileOpen}
+        onOpenChange={setIsProfileOpen}
+        professional={professional as ProfessionalData}
+        showBookingAction={false}
+      />
+    </>
   );
 }
