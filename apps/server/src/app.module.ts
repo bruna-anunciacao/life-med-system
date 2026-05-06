@@ -18,6 +18,7 @@ import { SpecialityModule } from './speciality/speciality.module';
 import { QuestionnaireModule } from './questionnaire/questionnaire.module';
 import { AdminModule } from './admin/admin.module';
 import { HealthController } from './health/health.controller';
+import { GoogleCalendarModule } from './google-calendar/google-calendar.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { HealthController } from './health/health.controller';
     SpecialityModule,
     QuestionnaireModule,
     AdminModule,
+    GoogleCalendarModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService, PrismaService, AdminSeederService],

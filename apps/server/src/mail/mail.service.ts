@@ -191,6 +191,7 @@ export class MailService implements OnModuleInit {
       professionalName: string;
       dateTime: Date;
       modality: string;
+      meetLink?: string | null;
     },
   ) {
     const date = appointment.dateTime.toLocaleDateString('pt-BR', {
@@ -207,6 +208,7 @@ export class MailService implements OnModuleInit {
       date,
       time,
       modality: this.formatModality(appointment.modality),
+      meetLink: appointment.meetLink,
     });
     await this.sendEmail({
       to: patient.email,
@@ -222,6 +224,7 @@ export class MailService implements OnModuleInit {
       dateTime: Date;
       modality: string;
       notes?: string | null;
+      meetLink?: string | null;
     },
   ) {
     const date = appointment.dateTime.toLocaleDateString('pt-BR', {
@@ -239,6 +242,7 @@ export class MailService implements OnModuleInit {
       time,
       modality: this.formatModality(appointment.modality),
       notes: appointment.notes ?? undefined,
+      meetLink: appointment.meetLink,
     });
     await this.sendEmail({
       to: professional.email,

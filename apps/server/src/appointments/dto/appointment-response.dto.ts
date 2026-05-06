@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { AppointmentModality } from '@prisma/client';
 
 export class ProfessionalResponseDto {
   @ApiProperty({
@@ -56,6 +57,21 @@ export class AppointmentResponseDto {
     nullable: true,
   })
   notes?: string;
+
+  @ApiProperty({
+    enum: ['VIRTUAL', 'HOME_VISIT', 'CLINIC'],
+    example: 'VIRTUAL',
+    description: 'Modalidade da consulta',
+  })
+  modality!: AppointmentModality;
+
+  @ApiProperty({
+    example: 'https://meet.google.com/abc-defg-hij',
+    description: 'Link do Google Meet (apenas para consultas VIRTUAL)',
+    nullable: true,
+    required: false,
+  })
+  meetLink?: string | null;
 
   @ApiProperty({
     example: '2026-04-07T03:27:01.131Z',

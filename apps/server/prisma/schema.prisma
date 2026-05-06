@@ -187,6 +187,9 @@ model Appointment {
   modality AppointmentModality @default(VIRTUAL)
   notes    String?             @db.Text
 
+  meetLink      String? @map("meet_link")
+  googleEventId String? @map("google_event_id")
+
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("appointments")

@@ -4,9 +4,12 @@ import {
   NotFoundException,
   ForbiddenException,
   Logger,
+  Inject,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
+import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
+import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
 import {
   CreateAppointmentPatientDto,
   ListAppointmentsQueryDto,
@@ -27,6 +30,7 @@ export class AppointmentsService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
+    @Inject(MEET_SERVICE) private meetService: MeetService,
   ) {}
 
   async createAppointment(
@@ -35,9 +39,10 @@ export class AppointmentsService {
   ): Promise<AppointmentResponseDto> {
     const appointmentDate = new Date(dto.dateTime);
 
-    const appointment = await this.prisma.$transaction(async (tx) => {
+    let appointment = await this.prisma.$transaction(async (tx) => {
       const professional = await tx.user.findUnique({
         where: { id: dto.professionalId },
+        include: { professionalProfile: true },
       });
 
       if (!professional) {
@@ -69,6 +74,7 @@ export class AppointmentsService {
           dateTime: appointmentDate,
           notes: dto.notes,
           status: 'PENDING',
+          modality: professional.professionalProfile?.modality ?? 'VIRTUAL',
         },
         include: {
           patient: true,
@@ -79,6 +85,46 @@ export class AppointmentsService {
 
     this.logger.log(`Agendamento criado com sucesso: ${appointment.id}`);
 
+    let meetLink: string | null = null;
+    if (appointment.modality === 'VIRTUAL') {
+      try {
+        const endDate = new Date(
+          appointment.dateTime.getTime() + APPOINTMENT_DURATION_MINUTES * 60000,
+        );
+        const meet = await this.meetService.createMeetEvent({
+          requestId: appointment.id,
+          summary: `Consulta - ${appointment.professional.name}`,
+          description: appointment.notes ?? undefined,
+          startISO: appointment.dateTime.toISOString(),
+          endISO: endDate.toISOString(),
+          attendees: [
+            {
+              email: appointment.patient.email,
+              displayName: appointment.patient.name,
+            },
+            {
+              email: appointment.professional.email,
+              displayName: appointment.professional.name,
+            },
+          ],
+        });
+
+        appointment = await this.prisma.appointment.update({
+          where: { id: appointment.id },
+          data: {
+            meetLink: meet.meetLink,
+            googleEventId: meet.eventId,
+          },
+          include: { patient: true, professional: true },
+        });
+        meetLink = meet.meetLink;
+      } catch (err) {
+        this.logger.error(
+          `Falha ao criar evento no Google Calendar: ${(err as Error).message}`,
+        );
+      }
+    }
+
     await Promise.all([
       this.mailService.sendAppointmentCreatedPatientEmail(
         { name: appointment.patient.name, email: appointment.patient.email },
@@ -86,6 +132,7 @@ export class AppointmentsService {
           professionalName: appointment.professional.name,
           dateTime: appointment.dateTime,
           modality: appointment.modality,
+          meetLink,
         },
       ),
       this.mailService.sendAppointmentCreatedProfessionalEmail(
@@ -98,6 +145,7 @@ export class AppointmentsService {
           dateTime: appointment.dateTime,
           modality: appointment.modality,
           notes: appointment.notes,
+          meetLink,
         },
       ),
     ]).catch((err) =>
@@ -327,6 +375,16 @@ export class AppointmentsService {
     this.logger.log(
       `Agendamento ${appointmentId} cancelado por: ${dto.reason || 'sem motivo'}`,
     );
+
+    if (updated.googleEventId) {
+      try {
+        await this.meetService.cancelMeetEvent(updated.googleEventId);
+      } catch (err) {
+        this.logger.error(
+          `Falha ao cancelar evento no Google Calendar: ${(err as Error).message}`,
+        );
+      }
+    }
 
     await Promise.all([
       this.mailService.sendAppointmentCancelledEmail(
@@ -589,6 +647,8 @@ export class AppointmentsService {
       dateTime: appointment.dateTime,
       status: appointment.status,
       notes: appointment.notes,
+      modality: appointment.modality,
+      meetLink: appointment.meetLink ?? null,
       createdAt: appointment.createdAt,
       professional: {
         id: appointment.professional.id,

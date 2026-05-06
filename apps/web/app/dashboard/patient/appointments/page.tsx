@@ -26,7 +26,8 @@ function mapApiToAppointment(appt: AppointmentResponse): Appointment {
     specialty: "",
     dateTime: appt.dateTime,
     status: appt.status,
-    modality: "VIRTUAL",
+    modality: appt.modality,
+    meetLink: appt.meetLink,
     notes: appt.notes,
   };
 }
