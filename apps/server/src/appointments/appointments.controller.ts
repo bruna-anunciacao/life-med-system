@@ -80,12 +80,13 @@ export class AppointmentsController {
     );
   }
   @Post('manager')
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), QuestionnaireCompletionGuard)
   @ApiOperation({
-    summary: 'Agendar consulta pelo pelo gestor',
-    description: 'Cria um novo agendamento de consulta. Requer autenticação.',
+    summary: 'Agendar consulta pelo gestor',
+    description: 'Cria um novo agendamento de consulta em nome de um paciente. Requer autenticação do gestor.',
   })
-  @ApiBody({ type: CreateAppointmentPatientDto })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
+  @ApiBody({ type: CreateAppointmentPatientForManagerDto })
   @ApiResponse({
     status: 201,
     description: 'Consulta agendada com sucesso.',
@@ -96,16 +97,19 @@ export class AppointmentsController {
     description: 'Dados inválidos ou horário indisponível.',
   })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente gestor.' })
-  @ApiResponse({ status: 404, description: 'Profissional não encontrado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
+  @ApiResponse({ status: 404, description: 'Profissional ou paciente não encontrado.' })
   async createAppointmentByManager(
     @Request() req,
     @Body() dto: CreateAppointmentPatientForManagerDto,
   ): Promise<AppointmentResponseDto> {
     this.logger.log(
-      `Gestor ${req.user.id} tentando agendar com profissional ${dto.professionalId} para paciente ${dto.patientId}`,
+      `Gestor ${req.user.id} agendando consulta para paciente ${dto.patientId} com profissional ${dto.professionalId}`,
     );
-    return this.appointmentsService.createAppointment(dto.patientId, dto);
+    return this.appointmentsService.createAppointmentByManager(
+      req.user.id as string,
+      dto,
+    );
   }
 
   @Get('my-appointments')

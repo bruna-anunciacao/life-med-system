@@ -11,6 +11,7 @@ import { createTempPasswordEmail } from './templates/temp-password.template';
 import { createAppointmentCreatedPatientEmail } from './templates/appointment-created-patient.template';
 import { createAppointmentCreatedProfessionalEmail } from './templates/appointment-created-professional.template';
 import { createAppointmentCancelledEmail } from './templates/appointment-cancelled.template';
+import { createMassCancellationEmail } from './templates/mass-cancellation.template';
 
 export type EmailAttachment = {
   filename: string;
@@ -274,6 +275,40 @@ export class MailService implements OnModuleInit {
     await this.sendEmail({
       to: recipient.email,
       subject: 'Agendamento Cancelado - LifeMed',
+      html: htmlBody,
+    });
+  }
+
+  async sendMassCancellationEmail(
+    recipient: { name: string; email: string },
+    appointment: {
+      professionalName: string;
+      dateTime: Date;
+    },
+  ) {
+    const date = appointment.dateTime.toLocaleDateString('pt-BR', {
+      timeZone: 'America/Bahia',
+    });
+    const time = appointment.dateTime.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Bahia',
+    });
+    
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const rescheduleUrl = `${frontendUrl}/dashboard/patient/search`;
+
+    const htmlBody = createMassCancellationEmail({
+      recipientName: recipient.name,
+      professionalName: appointment.professionalName,
+      date,
+      time,
+      rescheduleUrl,
+    });
+    
+    await this.sendEmail({
+      to: recipient.email,
+      subject: 'Aviso Importante: Cancelamento de Consulta - LifeMed',
       html: htmlBody,
     });
   }

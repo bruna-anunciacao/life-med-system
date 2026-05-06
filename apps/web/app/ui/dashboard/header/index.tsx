@@ -27,7 +27,8 @@ const DashboardHeader = ({ role }: { role: string }) => {
         return [
           { name: "Início", href: "/dashboard/manager" },
           { name: "Pacientes", href: "/dashboard/manager/patients" },
-          { name: "Consultas", href: "/dashboard/manager/appointments" },
+          { name: "Agendamentos", href: "/dashboard/manager/appointments" },
+          { name: "Agendar", href: "/dashboard/manager/appointments/new" },
         ];
       default:
         return [
@@ -49,7 +50,7 @@ const DashboardHeader = ({ role }: { role: string }) => {
   return (
     <header className="flex h-14 w-full items-center border-b border-gray-200 bg-white px-6">
       <div className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0">
-        <Link href={`/dashboard/${role.toLowerCase()}`}>
+        <Link href={`/dashboard/${role.toLowerCase()}`} title="Página inicial">
           <LifeMedLogo height={28} width={75} />
         </Link>
       </div>
@@ -61,6 +62,7 @@ const DashboardHeader = ({ role }: { role: string }) => {
             <Link
               key={item.href}
               href={item.href}
+              title={`Acessar ${item.name}`}
               className={`rounded-lg px-3.5 py-2 text-sm font-medium no-underline transition-colors duration-200 ${
                 isActive
                   ? "bg-sky-100 font-semibold text-sky-700"
@@ -76,7 +78,12 @@ const DashboardHeader = ({ role }: { role: string }) => {
       <div
         className={`ml-auto flex items-center gap-3 ${role !== "ADMIN" ? "hidden md:flex" : ""}`}
       >
-        <Button variant="destructive" size="lg" onClick={handleLogout}>
+        <Button
+          variant="destructive"
+          size="lg"
+          onClick={handleLogout}
+          title="Sair do sistema"
+        >
           <LogOut className="size-4" />
           Sair
         </Button>

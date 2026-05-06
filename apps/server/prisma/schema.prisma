@@ -71,6 +71,7 @@ model User {
   passwordResets     PasswordReset[]
   sessions           Session[]
   answeredQuestionnaires VulnerabilityQuestionnaire[]
+  scheduleBlocks     ScheduleBlock[]
 
   @@map("users")
 }
@@ -144,6 +145,9 @@ model ManagerProfile {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  scheduledAppointments  Appointment[] @relation("ScheduledByManager")
+  cancelledAppointments  Appointment[] @relation("CancelledByManager")
+
   @@map("manager_profiles")
 }
 
@@ -170,6 +174,13 @@ model Appointment {
 
   patientId String @map("patient_id")
   patient   User   @relation("PatientAppointments", fields: [patientId], references: [id])
+
+  scheduledByManagerId String?         @map("scheduled_by_manager_id")
+  scheduledByManager   ManagerProfile? @relation("ScheduledByManager", fields: [scheduledByManagerId], references: [id])
+
+  cancelledByManagerId String?         @map("cancelled_by_manager_id")
+  cancelledByManager   ManagerProfile? @relation("CancelledByManager", fields: [cancelledByManagerId], references: [id])
+  cancelledAt          DateTime?       @map("cancelled_at")
 
   dateTime DateTime            @map("date_time")
   status   AppointmentStatus   @default(PENDING)
@@ -213,4 +224,18 @@ model EmailVerification {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("email_verifications")
+}
+
+model ScheduleBlock {
+  id             String   @id @default(uuid())
+  professionalId String   @map("professional_id")
+  professional   User     @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  
+  date           String   // Formato YYYY-MM-DD
+  startTime      String?  @map("start_time") // HH:MM, nulo se for dia inteiro
+  endTime        String?  @map("end_time")   // HH:MM, nulo se for dia inteiro
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("schedule_blocks")
 }

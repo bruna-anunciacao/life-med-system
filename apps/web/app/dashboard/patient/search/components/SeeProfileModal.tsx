@@ -55,22 +55,22 @@ const getModalityInfo = (modality?: string) => {
     case "VIRTUAL":
       return {
         text: "Atendimento Online",
-        icon: <Video className="w-5 h-5 text-blue-600" />,
+        icon: <Video className="w-5 h-5 text-blue-600" aria-hidden="true" />,
       };
     case "HOME_VISIT":
       return {
         text: "Atendimento Domiciliar",
-        icon: <Home className="w-5 h-5 text-blue-600" />,
+        icon: <Home className="w-5 h-5 text-blue-600" aria-hidden="true" />,
       };
     case "CLINIC":
       return {
         text: "Atendimento Presencial",
-        icon: <MapPin className="w-5 h-5 text-blue-600" />,
+        icon: <MapPin className="w-5 h-5 text-blue-600" aria-hidden="true" />,
       };
     default:
       return {
         text: "Modalidade não informada",
-        icon: <Video className="w-5 h-5 text-gray-400" />,
+        icon: <Video className="w-5 h-5 text-gray-400" aria-hidden="true" />,
       };
   }
 };
@@ -127,7 +127,10 @@ export function SeeProfileModal({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto p-0 border-none bg-transparent shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <DialogContent 
+          className="sm:max-w-xl max-h-[90vh] overflow-y-auto p-0 border-none bg-transparent shadow-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          aria-label={`Perfil completo de ${professional.name}`}
+        >
           <div className="w-full p-6 flex flex-col overflow-auto rounded-2xl bg-white text-black mx-auto">
             <DialogHeader className="flex flex-col items-center text-center mb-6">
               <h2 className="text-2xl font-semibold">Perfil do Profissional</h2>
@@ -138,7 +141,10 @@ export function SeeProfileModal({
 
             <div className="gap-6 pb-2">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
-                <div className="relative w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white flex-shrink-0 overflow-hidden">
+                <div 
+                  className="relative w-16 h-16 flex items-center justify-center rounded-full bg-[#006fee] text-2xl font-semibold text-white flex-shrink-0 overflow-hidden"
+                  aria-label="Foto de perfil ou inicial"
+                >
                   {resolvedPhotoUrl && !imageError ? (
                     <Image
                       src={resolvedPhotoUrl}
@@ -174,7 +180,7 @@ export function SeeProfileModal({
                 </div>
               </div>
 
-              <Separator className="my-6" />
+              <Separator className="my-6" aria-hidden="true" />
 
               {profile.bio && (
                 <>
@@ -186,7 +192,7 @@ export function SeeProfileModal({
                       {profile.bio}
                     </p>
                   </div>
-                  <Separator className="my-6" />
+                  <Separator className="my-6" aria-hidden="true" />
                 </>
               )}
 
@@ -195,7 +201,10 @@ export function SeeProfileModal({
                   <h3 className="text-base font-semibold text-gray-900">
                     Local de Atendimento
                   </h3>
-                  <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 h-full min-h-[90px]">
+                  <div 
+                    className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 h-full min-h-[90px]"
+                    title={`Modalidade: ${modalityInfo.text}`}
+                  >
                     <div className="bg-white p-2.5 rounded-lg shadow-sm border border-gray-100 shrink-0">
                       {modalityInfo.icon}
                     </div>
@@ -224,7 +233,7 @@ export function SeeProfileModal({
                     ) : (
                       <>
                         {hasPrice && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2" title="Preço por consulta">
                             <span className="font-medium text-gray-700 text-[0.95rem]">
                               Consulta:
                             </span>
@@ -238,8 +247,8 @@ export function SeeProfileModal({
                         )}
 
                         {hasPayments && (
-                          <div className="flex items-center gap-2">
-                            <CreditCard className="w-4 h-4 text-gray-400 shrink-0" />
+                          <div className="flex items-center gap-2" title="Métodos de pagamento aceitos">
+                            <CreditCard className="w-4 h-4 text-gray-400 shrink-0" aria-hidden="true" />
                             <div className="flex flex-wrap gap-1.5">
                               {profile.payments!.map((method) => (
                                 <span
@@ -260,7 +269,7 @@ export function SeeProfileModal({
 
               {hasValidSocialLinks && (
                 <>
-                  <Separator className="my-6" />
+                  <Separator className="my-6" aria-hidden="true" />
                   <div>
                     <h3 className="text-base font-semibold mb-3">
                       Redes Sociais e Links
@@ -271,9 +280,10 @@ export function SeeProfileModal({
                           href={profile.socialLinks!.instagram}
                           target="_blank"
                           rel="noopener noreferrer"
+                          title="Abrir Instagram em uma nova aba"
                           className="flex items-center gap-2 text-[0.85rem] text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-pink-600" />
+                          <ExternalLink className="w-3.5 h-3.5 text-pink-600" aria-hidden="true" />
                           Instagram
                         </a>
                       )}
@@ -282,9 +292,10 @@ export function SeeProfileModal({
                           href={profile.socialLinks!.linkedin}
                           target="_blank"
                           rel="noopener noreferrer"
+                          title="Abrir LinkedIn em uma nova aba"
                           className="flex items-center gap-2 text-[0.85rem] text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-blue-700" />
+                          <ExternalLink className="w-3.5 h-3.5 text-blue-700" aria-hidden="true" />
                           LinkedIn
                         </a>
                       )}
@@ -293,9 +304,10 @@ export function SeeProfileModal({
                           href={profile.socialLinks!.other}
                           target="_blank"
                           rel="noopener noreferrer"
+                          title="Abrir Website em uma nova aba"
                           className="flex items-center gap-2 text-[0.85rem] text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-gray-600" />
+                          <ExternalLink className="w-3.5 h-3.5 text-gray-600" aria-hidden="true" />
                           Website
                         </a>
                       )}
@@ -309,6 +321,7 @@ export function SeeProfileModal({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
+                title="Fechar este perfil"
                 className="px-6 py-2 rounded-lg font-semibold text-sm cursor-pointer transition-all duration-200"
               >
                 Fechar

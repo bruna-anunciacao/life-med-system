@@ -46,12 +46,14 @@ type AppointmentCardProps = {
   appointment: Appointment;
   slot: string;
   onStatusChange: (id: string, newStatus: string, notes?: string) => void;
+  isReadOnly?: boolean;
 };
 
 export function AppointmentCard({
   appointment,
   slot,
   onStatusChange,
+  isReadOnly = false,
 }: AppointmentCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string>("");
@@ -103,7 +105,7 @@ export function AppointmentCard({
               )}
             </div>
           </div>
-          {appointment.status !== "CANCELLED" && (
+          {appointment.status !== "CANCELLED" && !isReadOnly && (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center justify-center h-8 w-8 rounded-lg bg-gray-50 text-gray-400 border border-transparent hover:border-gray-200 hover:bg-white hover:text-gray-600 transition-all shadow-sm shrink-0">
                 <MoreVerticalIcon className="w-4 h-4" />

@@ -220,6 +220,7 @@ export function BookingModal({
                   type="date"
                   min={today}
                   value={selectedDate}
+                  title="Escolha a data da consulta"
                   onChange={(e) => handleDateChange(e.target.value)}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#006fee] focus:border-transparent"
                 />

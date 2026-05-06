@@ -20,7 +20,11 @@ type ProfessionalProfile = {
     modality?: string;
     bio?: string;
     photoUrl?: string;
-    socialLinks?: { referenceLink?: string; instagram?: string; other?: string };
+    socialLinks?: {
+      referenceLink?: string;
+      instagram?: string;
+      other?: string;
+    };
   };
 };
 
@@ -69,7 +73,11 @@ export function useProfileForm() {
         modality: (response.professionalProfile?.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC") || "VIRTUAL",
         bio: response.professionalProfile?.bio || "",
         photoUrl: response.professionalProfile?.photoUrl || "",
-        socialLinks: response.professionalProfile?.socialLinks || { referenceLink: "", instagram: "", other: "" },
+        socialLinks: response.professionalProfile?.socialLinks || {
+          referenceLink: "",
+          instagram: "",
+          other: "",
+        },
       });
     } catch {
       toast.error("Erro ao carregar perfil.");
@@ -113,13 +121,21 @@ export function useProfileForm() {
         modality: (user.professionalProfile?.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC") || "VIRTUAL",
         bio: user.professionalProfile?.bio || "",
         photoUrl: user.professionalProfile?.photoUrl || "",
-        socialLinks: user.professionalProfile?.socialLinks || { referenceLink: "", instagram: "", other: "" },
+        socialLinks: user.professionalProfile?.socialLinks || {
+          referenceLink: "",
+          instagram: "",
+          other: "",
+        },
       });
+      setSelectedFile(null);
+      setPreviewUrl(user.professionalProfile?.photoUrl || null);
     }
     setIsEditing(false);
   };
 
-  useEffect(() => { loadProfile(); }, [loadProfile]);
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   return {
     user,
