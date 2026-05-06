@@ -41,21 +41,9 @@ export const patientProfileSchema = z.object({
       },
       { message: "Data de nascimento inválida" },
     ),
-  gender: z.enum(
-    [
-      "MALE",
-      "FEMALE",
-      "OTHER",
-      "Masculino",
-      "Feminino",
-      "Outro",
-      "Prefiro não informar",
-      "",
-    ],
-    {
-      error: () => ({ message: "Selecione um gênero válido" }),
-    },
-  ),
+  gender: z.enum(["MALE", "FEMALE", "OTHER", "UNDISCLOSED", "Masculino", "Feminino", "Outro", "Prefiro não informar", ""], {
+    error: () => ({ message: "Selecione um gênero válido" }),
+  }),
 });
 
 export type PatientProfileSchema = z.infer<typeof patientProfileSchema>;

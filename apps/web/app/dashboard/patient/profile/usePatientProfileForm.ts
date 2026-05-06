@@ -9,6 +9,7 @@ type UserProfile = {
   id: string;
   name: string;
   email: string;
+  cpf?: string;
   role: string;
   status: string;
   patientProfile?: {
@@ -17,6 +18,21 @@ type UserProfile = {
     dateOfBirth?: string;
     gender?: string;
   };
+};
+
+const normalizeGender = (gender?: string) => {
+  switch (gender) {
+    case "Masculino":
+      return "MALE";
+    case "Feminino":
+      return "FEMALE";
+    case "Outro":
+      return "OTHER";
+    case "Prefiro não informar":
+      return "UNDISCLOSED";
+    default:
+      return (gender as PatientProfileSchema["gender"]) || "";
+  }
 };
 
 export function usePatientProfileForm() {
@@ -46,7 +62,7 @@ export function usePatientProfileForm() {
         dateOfBirth: data.patientProfile?.dateOfBirth
           ? (data.patientProfile.dateOfBirth.split("T")[0] ?? "")
           : "",
-        gender: (data.patientProfile?.gender as PatientProfileSchema["gender"]) || "", 
+        gender: normalizeGender(data.patientProfile?.gender),
       });
     } catch {
       toast.error("Erro ao carregar perfil.");
@@ -67,7 +83,7 @@ export function usePatientProfileForm() {
         dateOfBirth: user.patientProfile?.dateOfBirth
           ? (String(user.patientProfile.dateOfBirth).split("T")[0] ?? "")
           : "",
-        gender: (user.patientProfile?.gender as PatientProfileSchema["gender"]) || "",
+        gender: normalizeGender(user.patientProfile?.gender),
       });
     }
     setIsEditing(false);
@@ -79,6 +95,8 @@ export function usePatientProfileForm() {
       await usersService.updateProfile({
         name: values.name,
         phone: values.phone || undefined,
+        dateOfBirth: values.dateOfBirth || undefined,
+        gender: values.gender || undefined,
       });
       toast.success("Perfil atualizado com sucesso!");
       setIsEditing(false);

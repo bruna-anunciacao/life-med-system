@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { adminService } from "../services/admin-service";
 
-export type TypeFilter = "all" | "PATIENT" | "PROFESSIONAL";
+export type TypeFilter = "all" | "PATIENT" | "PROFESSIONAL" | "MANAGER";
 
 const FUSE_OPTIONS = { keys: ["name", "email"], threshold: 0.3 };
 

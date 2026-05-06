@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { RegisterFormData } from "../register-validation";
 import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
+import { applyCpfMask } from "@/lib/cpf";
 
 type ProfessionalFieldsProps = {
   register: UseFormRegister<RegisterFormData>;
@@ -17,15 +18,7 @@ export function ProfessionalFields({
   const { data: specialities = [], isLoading: loadingSpecialities } = useSpecialitiesQuery();
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "");
-    if (value.length <= 11) {
-      value = value.replace(/(\d{3})(\d)/, "$1.$2");
-      value = value.replace(/(\d{3})(\d)/, "$1.$2");
-      value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    } else {
-      value = value.slice(0, 14);
-    }
-    e.target.value = value;
+    e.target.value = applyCpfMask(e.target.value);
   };
 
   return (

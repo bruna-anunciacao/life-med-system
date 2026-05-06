@@ -281,7 +281,7 @@ export class UsersService {
   async findAllUsers(query: ListAdminUsersQueryDto) {
     return this.prisma.user.findMany({
       where: {
-        role: query.role ?? { in: ['PATIENT', 'PROFESSIONAL'] },
+        role: query.role ?? { in: ['PATIENT', 'PROFESSIONAL', 'MANAGER'] },
         ...(query.status && { status: query.status }),
         ...(query.search && {
           OR: [

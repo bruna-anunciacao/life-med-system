@@ -4,6 +4,7 @@ export const API_ROUTES = {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
     REGISTER_PROFESSIONAL: "/auth/register/professional",
+    REGISTER_MANAGER: "/auth/register/manager",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
     VERIFY_EMAIL: "/auth/verify-email",

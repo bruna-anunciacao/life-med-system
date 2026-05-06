@@ -7,6 +7,13 @@ type UserProfileHeaderProps = {
 };
 
 export function UserProfileHeader({ name, email, role, specialty, photoUrl }: UserProfileHeaderProps) {
+  const roleLabel =
+    role === "PROFESSIONAL"
+      ? specialty || "Profissional"
+      : role === "MANAGER"
+        ? "Gestor"
+        : "Paciente";
+
   return (
     <div className="flex items-center gap-5">
       {photoUrl ? (
@@ -25,7 +32,7 @@ export function UserProfileHeader({ name, email, role, specialty, photoUrl }: Us
         <h2 className="text-xl font-semibold text-gray-900">{name}</h2>
         <p className="text-sm text-gray-500">{email}</p>
         <span className="mt-1 px-2.5 py-0.5 inline-block rounded-full bg-[rgba(0,111,238,0.08)] text-xs font-semibold text-[#006fee]">
-          {role === "PROFESSIONAL" ? specialty || "Profissional" : "Paciente"}
+          {roleLabel}
         </span>
       </div>
     </div>

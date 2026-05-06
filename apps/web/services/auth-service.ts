@@ -1,6 +1,7 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
 import Cookies from "js-cookie";
+import { API_ROUTES } from "../constants/api-routes";
 import {
   AUTH_TOKEN_KEY,
   QUESTIONNAIRE_COMPLETED_KEY,
@@ -36,7 +37,9 @@ export interface RegisterProfessionalDto {
 }
 
 export interface RegisterManagerDto {
+  name: string;
   email: string;
+  cpf: string;
   password: string;
   phone: string;
   bio?: string;
@@ -114,7 +117,7 @@ export const authService = {
 
   async registerManager(data: RegisterManagerDto) {
     try {
-      const response = await api.post("/auth/register/manager", data);
+      const response = await api.post(API_ROUTES.AUTH.REGISTER_MANAGER, data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

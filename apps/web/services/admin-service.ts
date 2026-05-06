@@ -6,7 +6,7 @@ export interface AdminUser {
   id: string;
   name: string;
   email: string;
-  role: "PATIENT" | "PROFESSIONAL";
+  role: "PATIENT" | "PROFESSIONAL" | "MANAGER";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
   emailVerified: boolean;
   patientProfile?: {
@@ -27,7 +27,7 @@ export interface AdminUser {
 }
 
 export interface AdminUsersParams {
-  role?: "PATIENT" | "PROFESSIONAL";
+  role?: "PATIENT" | "PROFESSIONAL" | "MANAGER";
   status?: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
   search?: string;
 }

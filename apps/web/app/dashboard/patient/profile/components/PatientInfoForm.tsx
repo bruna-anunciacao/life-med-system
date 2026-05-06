@@ -5,6 +5,7 @@ import {
   Control,
 } from "react-hook-form";
 import { PatientProfileSchema } from "../patient-profile.validation";
+import { formatCpf } from "@/lib/cpf";
 import ptBr from "react-phone-number-input/locale/pt-BR";
 import PhoneInput from "react-phone-number-input";
 
@@ -13,6 +14,7 @@ type PatientInfoFormProps = {
   control: Control<PatientProfileSchema>;
   errors: FieldErrors<PatientProfileSchema>;
   email: string;
+  cpf: string;
   isEditing: boolean;
 };
 
@@ -25,13 +27,7 @@ export const formatPhoneNumber = (val?: string | null) => {
   return cleaned;
 };
 
-export function PatientInfoForm({
-  register,
-  control,
-  errors,
-  email,
-  isEditing,
-}: PatientInfoFormProps) {
+export function PatientInfoForm({ register, control, errors, email, cpf, isEditing }: PatientInfoFormProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <div className="flex flex-col gap-1.5">
@@ -53,10 +49,15 @@ export function PatientInfoForm({
 
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold text-gray-700">Email</label>
+        <input type="email" className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" value={email ?? ""} disabled readOnly />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-semibold text-gray-700">CPF</label>
         <input
-          type="email"
+          type="text"
           className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
-          value={email}
+          value={formatCpf(cpf ?? "")}
           disabled
           readOnly
         />
@@ -126,10 +127,10 @@ export function PatientInfoForm({
           {...register("gender")}
         >
           <option value="">Selecione</option>
-          <option value="Masculino">Masculino</option>
-          <option value="Feminino">Feminino</option>
-          <option value="Outro">Outro</option>
-          <option value="Prefiro não informar">Prefiro não informar</option>
+          <option value="MALE">Masculino</option>
+          <option value="FEMALE">Feminino</option>
+          <option value="OTHER">Outro</option>
+          <option value="UNDISCLOSED">Prefiro não informar</option>
         </select>
         {errors.gender && (
           <span className="text-xs text-red-600 mt-0.5">
