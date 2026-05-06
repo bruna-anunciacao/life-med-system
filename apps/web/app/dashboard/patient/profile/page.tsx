@@ -79,6 +79,7 @@ const PatientProfilePage = () => {
               control={form.control}
               errors={form.formState.errors}
               email={user?.email || ""}
+              cpf={user?.cpf || ""}
               isEditing={isEditing}
             />
           </form>

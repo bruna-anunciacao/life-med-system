@@ -54,6 +54,7 @@ const AdminUserProfilePage = () => {
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
   const photoPath = user.professionalProfile?.photoUrl;
+  const canEditProfile = user.role === "PATIENT" || user.role === "PROFESSIONAL";
   const fullPhotoUrl = photoPath
     ? photoPath.startsWith("http") ? photoPath : `${apiBaseUrl}${photoPath}`
     : null;
@@ -73,14 +74,16 @@ const AdminUserProfilePage = () => {
           >
             Voltar
           </Button>
-          <Button 
-            size="lg" 
-            onClick={() => (isEditing ? handleCancel() : setIsEditing(true))} 
-            disabled={isSaving}
-            title={isEditing ? "Cancelar alterações e sair do modo de edição" : "Habilitar edição dos dados do usuário"}
-          >
-            {isEditing ? "Cancelar edição" : "Editar dados"}
-          </Button>
+          {canEditProfile && (
+            <Button 
+              size="lg" 
+              onClick={() => (isEditing ? handleCancel() : setIsEditing(true))} 
+              disabled={isSaving}
+              title={isEditing ? "Cancelar alterações e sair do modo de edição" : "Habilitar edição dos dados do usuário"}
+            >
+              {isEditing ? "Cancelar edição" : "Editar dados"}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -118,7 +121,7 @@ const AdminUserProfilePage = () => {
             </form>
           )}
 
-          {isEditing && (
+          {isEditing && canEditProfile && (
             <>
               <Separator />
               <div className="mt-6 flex justify-end">
