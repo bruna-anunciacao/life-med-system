@@ -48,6 +48,12 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
+const formatLocalDate = (dateString: string) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString.split('T')[0] + 'T00:00:00');
+  return date.toLocaleDateString('pt-BR');
+};
+
 export default function PatientsPage() {
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -267,19 +273,11 @@ export default function PatientsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {patient.patientProfile?.dateOfBirth
-                        ? new Date(patient.patientProfile.dateOfBirth).toLocaleDateString(
-                            'pt-BR',
-                          )
+                        ? formatLocalDate(patient.patientProfile.dateOfBirth)
                         : '-'}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {patient.patientProfile?.gender === 'M'
-                        ? 'Masculino'
-                        : patient.patientProfile?.gender === 'F'
-                          ? 'Feminino'
-                          : patient.patientProfile?.gender === 'O'
-                            ? 'Outro'
-                            : '-'}
+                      {patient.patientProfile?.gender ?? '-'}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <Link

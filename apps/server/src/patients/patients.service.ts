@@ -221,28 +221,53 @@ export class PatientsService {
       throw new NotFoundException('Perfil do paciente não encontrado');
     }
 
-    const updated = await this.prisma.patientProfile.update({
-      where: { userId: patientId },
+    const updatedUser = await this.prisma.user.update({
+      where: { id: patientId },
       data: {
-        phone: dto.phone ?? patient.patientProfile.phone,
-        dateOfBirth: dto.dateOfBirth
-          ? new Date(dto.dateOfBirth)
-          : patient.patientProfile.dateOfBirth,
-        gender: dto.gender ?? patient.patientProfile.gender,
-        address: dto.address ?? patient.patientProfile.address,
+        name: dto.name !== undefined ? dto.name : patient.name,
+        cpf: dto.cpf !== undefined ? dto.cpf : patient.cpf,
+        email: dto.email !== undefined ? dto.email : patient.email,
+
+        patientProfile: {
+          update: {
+            phone:
+              dto.phone !== undefined
+                ? dto.phone
+                : patient.patientProfile?.phone,
+            gender:
+              dto.gender !== undefined
+                ? dto.gender
+                : patient.patientProfile?.gender,
+            address:
+              dto.address !== undefined
+                ? dto.address
+                : patient.patientProfile?.address,
+            dateOfBirth: dto.dateOfBirth
+              ? new Date(dto.dateOfBirth)
+              : dto.dateOfBirth === null
+                ? null
+                : patient.patientProfile?.dateOfBirth,
+          },
+        },
       },
       include: {
-        user: true,
+        patientProfile: true,
       },
     });
 
     return {
-      id: updated.userId,
-      email: updated.user.email,
-      name: updated.user.name,
-      patientProfile: updated,
+      id: updatedUser.id,
+      email: updatedUser.email,
+      name: updatedUser.name,
+      cpf: updatedUser.cpf,
+      phone: updatedUser.patientProfile?.phone,
+      dateOfBirth: updatedUser.patientProfile?.dateOfBirth,
+      gender: updatedUser.patientProfile?.gender,
+      address: updatedUser.patientProfile?.address,
+      patientProfile: updatedUser.patientProfile,
     };
   }
+
   async listPatients(search?: string) {
     return this.prisma.user.findMany({
       where: {

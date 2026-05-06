@@ -1,10 +1,37 @@
-import { IsOptional, IsString, IsDateString, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsDateString, IsIn, IsEmail } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdatePatientDto {
   @ApiProperty({
-    example: '71999999999',
-    description: 'Telefone do paciente',
+    example: 'João Silva',
+    description: 'Nome completo do paciente',
+    required: false,
+  })
+  @IsString({ message: 'Nome deve ser texto' })
+  @IsOptional()
+  name?: string;
+
+  @ApiProperty({
+    example: '000.000.000-00',
+    description: 'CPF do paciente',
+    required: false,
+  })
+  @IsString({ message: 'CPF deve ser texto' })
+  @IsOptional()
+  cpf?: string;
+
+  @ApiProperty({
+    example: 'usuario@email.com',
+    description: 'E-mail do usuário',
+    required: false,
+  })
+  @IsOptional()
+  @IsEmail({}, { message: 'Email inválido' })
+  email?: string;
+
+  @ApiProperty({
+    example: '+5571999999999',
+    description: 'Telefone do paciente (formato internacional)',
     required: false,
   })
   @IsString({ message: 'Telefone deve ser texto' })
@@ -21,16 +48,29 @@ export class UpdatePatientDto {
   dateOfBirth?: string;
 
   @ApiProperty({
-    example: 'F',
-    description: 'Gênero: M (masculino), F (feminino), O (outro)',
-    enum: ['M', 'F', 'O'],
+    example: 'Masculino',
+    description: 'Gênero do paciente',
+    enum: ['Masculino', 'Feminino', 'Outro', 'Prefiro não informar'],
     required: false,
   })
   @IsString({ message: 'Gênero deve ser texto' })
   @IsOptional()
-  @IsIn(['M', 'F', 'O'], {
-    message: 'Gênero deve ser M, F ou O',
-  })
+  @IsIn(
+    [
+      'MALE',
+      'FEMALE',
+      'OTHER',
+      'UNDISCLOSED',
+      'Masculino',
+      'Feminino',
+      'Outro',
+      'Prefiro não informar',
+    ],
+    {
+      message:
+        'Gênero deve ser Masculino, Feminino, Outro ou Prefiro não informar',
+    },
+  )
   gender?: string;
 
   @ApiProperty({
