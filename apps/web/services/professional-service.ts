@@ -49,9 +49,12 @@ export const professionalService = {
     }
   },
 
-  async getDailySchedule(date: string) {
+  async getDailySchedule(date: string, professionalId?: string) {
     try {
-      const response = await api.get(`/professional/schedule?date=${date}`);
+      const endpoint = professionalId
+        ? `/professional/${professionalId}/schedule?date=${date}`
+        : `/professional/schedule?date=${date}`;
+      const response = await api.get(endpoint);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

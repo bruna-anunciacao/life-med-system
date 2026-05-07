@@ -10,6 +10,7 @@ import { PatientFields } from "./components/PatientFields";
 import { ProfessionalFields } from "./components/ProfessionalFields";
 import { PasswordField } from "./components/PasswordField";
 import { LifeMedLogo } from "../../ui/life-med-logo";
+import { applyCpfMask } from "@/lib/cpf";
 
 const RegisterPage = () => {
   const { form, role, isLoading, handleRoleChange, onSubmit } =
@@ -24,23 +25,23 @@ const RegisterPage = () => {
   } = form;
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, "").slice(0, 11);
-    value = value.replace(/(\d{3})(\d)/, "$1.$2");
-    value = value.replace(/(\d{3})(\d)/, "$1.$2");
-    value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    setValue("cpf", value, { shouldValidate: false });
+    setValue("cpf", applyCpfMask(e.target.value), { shouldValidate: false });
   };
 
   return (
     <div className="w-full max-w-xl flex flex-col gap-4">
       {/* Header do form: logo + subtítulo */}
       <div className="flex flex-col">
-        <Link href="/" className="w-fit mb-3">
+        <Link href="/" className="w-fit mb-3" title="Voltar para a página inicial">
           <LifeMedLogo width={160} className="h-auto" />
         </Link>
         <p className="text-sm text-[#6b7280]">
           Já tem uma conta?{" "}
-          <Link href="/auth/login" className="text-[#2563eb] font-semibold hover:underline">
+          <Link 
+            href="/auth/login" 
+            className="text-[#2563eb] font-semibold hover:underline"
+            title="Ir para a tela de login"
+          >
             Fazer login
           </Link>
         </p>
@@ -52,7 +53,10 @@ const RegisterPage = () => {
         <div className="flex flex-col gap-2">
           <label className="text-sm font-semibold text-[#374151]">Eu sou</label>
           <div className="flex gap-6">
-            <label className="flex items-center gap-2 text-sm text-[#374151] cursor-pointer">
+            <label 
+              className="flex items-center gap-2 text-sm text-[#374151] cursor-pointer"
+              title="Cadastrar como Paciente"
+            >
               <input
                 type="radio"
                 value="PATIENT"
@@ -62,7 +66,10 @@ const RegisterPage = () => {
               />
               Paciente
             </label>
-            <label className="flex items-center gap-2 text-sm text-[#374151] cursor-pointer">
+            <label 
+              className="flex items-center gap-2 text-sm text-[#374151] cursor-pointer"
+              title="Cadastrar como Profissional de Saúde"
+            >
               <input
                 type="radio"
                 value="PROFESSIONAL"
@@ -79,13 +86,27 @@ const RegisterPage = () => {
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="name" className="text-sm font-semibold text-[#374151]">Nome completo</Label>
-            <Input id="name" placeholder="Ex: Maria Silva" type="text" autoComplete="name" {...register("name")} />
+            <Input 
+              id="name" 
+              placeholder="Ex: Maria Silva" 
+              type="text" 
+              autoComplete="name" 
+              title="Insira seu nome completo"
+              {...register("name")} 
+            />
             {errors.name && <p className="text-xs font-medium text-[#dc2626]">{errors.name.message}</p>}
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="email" className="text-sm font-semibold text-[#374151]">E-mail</Label>
-            <Input id="email" placeholder="seu@email.com" type="email" autoComplete="email" {...register("email")} />
+            <Input 
+              id="email" 
+              placeholder="seu@email.com" 
+              type="email" 
+              autoComplete="email" 
+              title="Insira seu melhor e-mail para contato e acesso"
+              {...register("email")} 
+            />
             {errors.email && <p className="text-xs font-medium text-[#dc2626]">{errors.email.message}</p>}
           </div>
         </div>
@@ -123,7 +144,13 @@ const RegisterPage = () => {
           />
         </div>
 
-        <Button type="submit" size="lg" className="w-full mt-1" disabled={isLoading}>
+        <Button 
+          type="submit" 
+          size="lg" 
+          className="w-full mt-1" 
+          disabled={isLoading}
+          title="Criar minha conta na Life Med"
+        >
           {isLoading ? <Spinner size="sm" /> : "Cadastrar"}
         </Button>
       </form>

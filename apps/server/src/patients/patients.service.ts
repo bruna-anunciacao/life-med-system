@@ -10,7 +10,6 @@ import {
   UserRole,
   UserStatus,
 } from '@prisma/client';
-import type PDFKit from 'pdfkit';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReportsService } from '../reports/reports.service';
@@ -19,6 +18,8 @@ import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+
+type PDFDocumentType = PDFKit.PDFDocument;
 
 @Injectable()
 export class PatientsService {
@@ -33,7 +34,7 @@ export class PatientsService {
   async exportDoneAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFKit.PDFDocument> {
+  ): Promise<PDFDocumentType> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.COMPLETED,
@@ -46,7 +47,7 @@ export class PatientsService {
   async exportPendingAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFKit.PDFDocument> {
+  ): Promise<PDFDocumentType> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.PENDING,
@@ -59,7 +60,7 @@ export class PatientsService {
   async exportCancelledAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFKit.PDFDocument> {
+  ): Promise<PDFDocumentType> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.CANCELLED,
@@ -243,9 +244,17 @@ export class PatientsService {
       patientProfile: updated,
     };
   }
-  async listPatients() {
+  async listPatients(search?: string) {
     return this.prisma.user.findMany({
-      where: { role: UserRole.PATIENT },
+      where: {
+        role: UserRole.PATIENT,
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { cpf: { contains: search } },
+          ],
+        }),
+      },
       include: {
         patientProfile: {
           include: {

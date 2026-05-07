@@ -128,10 +128,15 @@ const SchedulePage = () => {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <Button variant="outline" size="lg" onClick={() => setIsBlockModalOpen(true)} className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
+          <Button variant="outline" title="Cancelar a agenda do dia" size="lg" onClick={() => setIsBlockModalOpen(true)} className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
             Cancelar Agenda
           </Button>
-          <Button size="lg" onClick={() => setIsOpen(true)} className="w-full sm:w-auto">
+          <Button
+          size="lg"
+          onClick={() => setIsOpen(true)}
+          className="w-full sm:w-auto"
+          title="Configurar horários e dias de atendimento"
+        >
             Gerenciar Horários
           </Button>
         </div>
@@ -139,7 +144,10 @@ const SchedulePage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-6">
         <aside className="flex flex-col gap-6">
-          <div className="border border-gray-200 shadow-sm bg-white rounded-[20px] p-4 overflow-x-auto">
+          <div
+            className="border border-gray-200 shadow-sm bg-white rounded-[20px] p-4 overflow-x-auto"
+            title="Selecione um dia para visualizar a agenda"
+          >
             <DayPicker
               mode="single"
               selected={selectedDate}
@@ -156,7 +164,12 @@ const SchedulePage = () => {
                 format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
             </h2>
             {isAvailableToday && (
-              <Badge className="py-1 px-4 w-fit">Dia de Atendimento</Badge>
+              <Badge
+                className="py-1 px-4 w-fit"
+                title="Você tem horários configurados para atendimento neste dia"
+              >
+                Dia de Atendimento
+              </Badge>
             )}
           </div>
 

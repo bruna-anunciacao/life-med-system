@@ -50,11 +50,10 @@ const PatientDashboard = () => {
         if (appointmentsData) setAppointments(appointmentsData.data);
         setProfessionals(
           (professionalsData || []).filter(
-            (p: Professional) => p.status !== "PENDING" && p.status !== "BLOCKED",
+            (p: Professional) =>
+              p.status !== "PENDING" && p.status !== "BLOCKED",
           ),
         );
-      } catch {
-        // partial data is OK for dashboard
       } finally {
         setIsLoading(false);
       }
@@ -133,6 +132,7 @@ const PatientDashboard = () => {
         </div>
         <Button
           onClick={goToSearch}
+          title="Buscar e agendar com novos profissionais de saúde"
           className={`gap-2 ${isMobile ? "w-full" : ""}`}
         >
           <SearchIcon size={16} />

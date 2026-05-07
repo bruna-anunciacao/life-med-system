@@ -8,18 +8,28 @@ type AppointmentTabsProps = {
 
 const getTabCount = (appointments: Appointment[], tab: TabKey) => {
   switch (tab) {
-    case "upcoming": return appointments.filter((a) => a.status === "CONFIRMED" || a.status === "PENDING").length;
-    case "past": return appointments.filter((a) => a.status === "COMPLETED").length;
-    case "cancelled": return appointments.filter((a) => a.status === "CANCELLED").length;
+    case "upcoming":
+      return appointments.filter(
+        (a) => a.status === "CONFIRMED" || a.status === "PENDING",
+      ).length;
+    case "past":
+      return appointments.filter((a) => a.status === "COMPLETED").length;
+    case "cancelled":
+      return appointments.filter((a) => a.status === "CANCELLED").length;
   }
 };
 
-export function AppointmentTabs({ activeTab, appointments, onTabChange }: AppointmentTabsProps) {
+export function AppointmentTabs({
+  activeTab,
+  appointments,
+  onTabChange,
+}: AppointmentTabsProps) {
   return (
     <div className="mb-6 flex gap-1 border-b-2 border-gray-200 overflow-x-auto">
       {TABS.map((tab) => (
         <button
           key={tab.key}
+          title={`Visualizar ${tab.label.toLowerCase()}`}
           className={
             activeTab === tab.key
               ? "px-3 sm:px-6 py-3 border-none border-b-2 border-[#006fee] bg-none text-sm sm:text-[0.95rem] font-semibold text-[#006fee] cursor-pointer -mb-0.5 whitespace-nowrap"

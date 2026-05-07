@@ -12,6 +12,7 @@ import {
   MagnifyingGlass,
   Stethoscope,
   SignOut,
+  Plus,
 } from "@phosphor-icons/react";
 
 type NavItem = {
@@ -71,6 +72,12 @@ const MobileNav = ({ role }: { role: string }) => {
             activeIcon: <Users size={22} weight="fill" />,
           },
           {
+            name: "Agendar",
+            href: "/dashboard/manager/appointments/new",
+            icon: <Plus size={22} />,
+            activeIcon: <Plus size={22} weight="fill" />,
+          },
+          {
             name: "Consultas",
             href: "/dashboard/manager/appointments",
             icon: <CalendarBlank size={22} />,
@@ -124,6 +131,7 @@ const MobileNav = ({ role }: { role: string }) => {
           <Link
             key={item.href}
             href={item.href}
+            title={`Acessar ${item.name}`}
             className={`flex flex-1 flex-col items-center justify-center gap-0.5 py-3 text-xs font-medium no-underline transition-colors ${
               isActive ? "text-sky-600" : "text-slate-400"
             }`}
@@ -135,6 +143,7 @@ const MobileNav = ({ role }: { role: string }) => {
       })}
       <button
         onClick={handleLogout}
+        title="Sair do sistema"
         className="flex flex-1 flex-col items-center justify-center gap-0.5 py-3 text-xs font-medium text-slate-400 transition-colors hover:text-red-500"
       >
         <SignOut size={22} />

@@ -155,6 +155,13 @@ const AppointmentsPage = () => {
         ? "Baixar Relatório de Realizadas"
         : "Baixar Relatório de Canceladas";
 
+  const reportHint =
+    activeTab === "upcoming"
+      ? "Fazer download do relatório de consultas futuras e pendentes"
+      : activeTab === "past"
+        ? "Fazer download do histórico de consultas já realizadas"
+        : "Fazer download do histórico de consultas canceladas";
+
   return (
     <section
       className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
@@ -177,6 +184,7 @@ const AppointmentsPage = () => {
         <Button
           size={isMobile ? "default" : "lg"}
           onClick={() => router.push("/dashboard/patient/search")}
+          title="Buscar médicos e agendar uma nova consulta"
           className={isMobile ? "w-full" : ""}
         >
           <SearchIcon />
@@ -196,6 +204,7 @@ const AppointmentsPage = () => {
             size="lg"
             onClick={handleDownloadReport}
             disabled={isDownloadingReport}
+            title={reportHint}
           >
             {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
           </Button>
@@ -231,6 +240,7 @@ const AppointmentsPage = () => {
             size="default"
             onClick={handleDownloadReport}
             disabled={isDownloadingReport}
+            title={reportHint}
             className="w-full"
           >
             {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}

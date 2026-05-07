@@ -1,53 +1,122 @@
-import { UseFormRegister, FieldErrors } from "react-hook-form";
+import {
+  UseFormRegister,
+  FieldErrors,
+  Controller,
+  Control,
+} from "react-hook-form";
 import { PatientProfileSchema } from "../patient-profile.validation";
+import { formatCpf } from "@/lib/cpf";
+import ptBr from "react-phone-number-input/locale/pt-BR";
+import PhoneInput from "react-phone-number-input";
 
 type PatientInfoFormProps = {
   register: UseFormRegister<PatientProfileSchema>;
+  control: Control<PatientProfileSchema>;
   errors: FieldErrors<PatientProfileSchema>;
   email: string;
+  cpf: string;
   isEditing: boolean;
 };
 
-export function PatientInfoForm({ register, errors, email, isEditing }: PatientInfoFormProps) {
+export const formatPhoneNumber = (val?: string | null) => {
+  if (!val) return undefined;
+  const cleaned = val.replace(/[^\d+]/g, "");
+  if (!cleaned.startsWith("+")) {
+    return `+55${cleaned.replace(/\D/g, "")}`;
+  }
+  return cleaned;
+};
+
+export function PatientInfoForm({ register, control, errors, email, cpf, isEditing }: PatientInfoFormProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold text-gray-700">Nome Completo</label>
+        <label className="text-sm font-semibold text-gray-700">
+          Nome Completo
+        </label>
         <input
           type="text"
           className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
           disabled={!isEditing}
           {...register("name")}
         />
-        {errors.name && <span className="text-xs text-red-600 mt-0.5">{errors.name.message}</span>}
+        {errors.name && (
+          <span className="text-xs text-red-600 mt-0.5">
+            {errors.name.message}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold text-gray-700">Email</label>
-        <input type="email" className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" value={email} disabled readOnly />
+        <input type="email" className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed" value={email ?? ""} disabled readOnly />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-semibold text-gray-700">CPF</label>
+        <input
+          type="text"
+          className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+          value={formatCpf(cpf ?? "")}
+          disabled
+          readOnly
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold text-gray-700">Telefone</label>
-        <input
-          type="tel"
-          className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
-          placeholder="(11) 99999-9999"
-          disabled={!isEditing}
-          {...register("phone")}
+        <Controller
+          name="phone"
+          control={control}
+          render={({ field }) => {
+            let safeValue = field.value
+              ? field.value.replace(/[^\d+]/g, "")
+              : "";
+            if (safeValue && !safeValue.startsWith("+")) {
+              safeValue = `+55${safeValue}`;
+            }
+            return (
+              <PhoneInput
+                id="phone"
+                placeholder="(71) 99999-9999"
+                international
+                countryCallingCodeEditable={false}
+                labels={ptBr}
+                defaultCountry="BR"
+                value={safeValue || undefined}
+                onChange={(val) => field.onChange(val || "")}
+                onBlur={field.onBlur}
+                ref={field.ref}
+                disabled={!isEditing}
+                className={`w-full flex items-center border border-gray-200 rounded-lg overflow-hidden transition-colors duration-200 focus-within:border-[#006fee] focus-within:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] ${
+                  !isEditing ? "bg-gray-50" : "bg-white"
+                } [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-200 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2.5 [&_.PhoneInputInput]:px-3 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-[0.95rem] [&_.PhoneInputInput]:text-gray-900 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput:disabled]:text-gray-500 [&_.PhoneInputInput:disabled]:cursor-not-allowed`}
+              />
+            );
+          }}
         />
-        {errors.phone && <span className="text-xs text-red-600 mt-0.5">{errors.phone.message}</span>}
+        {errors.phone && (
+          <span className="text-xs text-red-600 mt-0.5">
+            {errors.phone.message}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-semibold text-gray-700">Data de Nascimento</label>
+        <label className="text-sm font-semibold text-gray-700">
+          Data de Nascimento
+        </label>
         <input
           type="date"
           className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
           disabled={!isEditing}
           {...register("dateOfBirth")}
         />
-        {errors.dateOfBirth && <span className="text-xs text-red-600 mt-0.5">{errors.dateOfBirth.message}</span>}
+        {errors.dateOfBirth && (
+          <span className="text-xs text-red-600 mt-0.5">
+            {errors.dateOfBirth.message}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -58,12 +127,16 @@ export function PatientInfoForm({ register, errors, email, isEditing }: PatientI
           {...register("gender")}
         >
           <option value="">Selecione</option>
-          <option value="Masculino">Masculino</option>
-          <option value="Feminino">Feminino</option>
-          <option value="Outro">Outro</option>
-          <option value="Prefiro não informar">Prefiro não informar</option>
+          <option value="MALE">Masculino</option>
+          <option value="FEMALE">Feminino</option>
+          <option value="OTHER">Outro</option>
+          <option value="UNDISCLOSED">Prefiro não informar</option>
         </select>
-        {errors.gender && <span className="text-xs text-red-600 mt-0.5">{errors.gender.message}</span>}
+        {errors.gender && (
+          <span className="text-xs text-red-600 mt-0.5">
+            {errors.gender.message}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -75,7 +148,11 @@ export function PatientInfoForm({ register, errors, email, isEditing }: PatientI
           disabled={!isEditing}
           {...register("address")}
         />
-        {errors.address && <span className="text-xs text-red-600 mt-0.5">{errors.address.message}</span>}
+        {errors.address && (
+          <span className="text-xs text-red-600 mt-0.5">
+            {errors.address.message}
+          </span>
+        )}
       </div>
     </div>
   );

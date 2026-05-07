@@ -43,7 +43,7 @@ export function BlockScheduleModal({ isOpen, onOpenChange, selectedDate }: Block
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" aria-label="Modal de bloqueio de agenda">
         <DialogHeader>
           <DialogTitle>Bloquear Agenda</DialogTitle>
           <DialogDescription>
@@ -60,6 +60,7 @@ export function BlockScheduleModal({ isOpen, onOpenChange, selectedDate }: Block
                 checked={isFullDay}
                 onChange={(e) => setIsFullDay(e.target.checked)}
                 className="w-4 h-4"
+                title="Marque para bloquear o dia inteiro"
               />
               <Label htmlFor="fullDay">Bloquear o dia inteiro</Label>
             </div>
@@ -73,6 +74,8 @@ export function BlockScheduleModal({ isOpen, onOpenChange, selectedDate }: Block
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
+                    title="Defina o início do bloqueio"
+                    aria-label="Horário de início do bloqueio"
                   />
                 </div>
                 <div className="flex-1 space-y-2">
@@ -82,6 +85,8 @@ export function BlockScheduleModal({ isOpen, onOpenChange, selectedDate }: Block
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
+                    title="Defina o término do bloqueio"
+                    aria-label="Horário de término do bloqueio"
                   />
                 </div>
               </div>
@@ -91,6 +96,7 @@ export function BlockScheduleModal({ isOpen, onOpenChange, selectedDate }: Block
               onClick={handleCreateBlock}
               disabled={isCreating || (!isFullDay && (!startTime || !endTime))}
               className="w-full mt-2"
+              title="Confirmar o bloqueio da agenda para o período selecionado"
             >
               {isCreating ? "Bloqueando..." : "Confirmar Bloqueio"}
             </Button>
@@ -104,7 +110,7 @@ export function BlockScheduleModal({ isOpen, onOpenChange, selectedDate }: Block
           ) : blocks?.length === 0 ? (
             <p className="text-sm text-gray-500">Nenhum bloqueio ativo.</p>
           ) : (
-            <ul className="space-y-2 max-h-40 overflow-y-auto">
+            <ul className="space-y-2 max-h-40 overflow-y-auto" aria-label="Lista de bloqueios de agenda ativos">
               {blocks?.map((block: any) => (
                 <li key={block.id} className="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-md border">
                   <span>
@@ -116,6 +122,8 @@ export function BlockScheduleModal({ isOpen, onOpenChange, selectedDate }: Block
                     size="icon"
                     onClick={() => deleteBlock(block.id)}
                     disabled={isDeleting}
+                    title="Remover este bloqueio de agenda"
+                    aria-label={`Excluir bloqueio do dia ${format(new Date(block.date + "T00:00:00"), "dd/MM/yyyy")}`}
                     className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
                   >
                     <Trash2 className="w-4 h-4" />
