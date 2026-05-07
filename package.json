@@ -9,7 +9,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "@types/pdfkit": "^0.17.5",
+    "@types/pdfkit": "^0.17.6",
     "@types/zxcvbn": "^4.4.5",
     "prettier": "^3.7.4",
     "turbo": "^2.7.2",
