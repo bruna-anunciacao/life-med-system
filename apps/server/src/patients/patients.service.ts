@@ -18,6 +18,7 @@ import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import PDFKit from 'pdfkit';
 
 type PDFDocumentType = PDFKit.PDFDocument;
 
