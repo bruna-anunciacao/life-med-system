@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import PDFDocument from 'pdfkit';
-import type PDFKit from 'pdfkit';
 import { AppointmentReportItemDto } from './dto/appointment-made.dto';
+
+type PDFDocumentType = PDFKit.PDFDocument;
 
 const STATUS_LABELS: Record<string, string> = {
   COMPLETED: 'Concluída',
@@ -20,7 +21,7 @@ const MODALITY_LABELS: Record<string, string> = {
 export class ReportsService {
   generateDoneAppointmentsPdf(
     appointments: AppointmentReportItemDto[],
-  ): PDFKit.PDFDocument {
+  ): PDFDocumentType {
     return this.generateAppointmentsPdf(
       'Relatório de Consultas Concluídas',
       'COMPLETED',
@@ -30,7 +31,7 @@ export class ReportsService {
 
   generatePendingAppointmentsPdf(
     appointments: AppointmentReportItemDto[],
-  ): PDFKit.PDFDocument {
+  ): PDFDocumentType {
     return this.generateAppointmentsPdf(
       'Relatório de Consultas Pendentes',
       'PENDING',
@@ -40,7 +41,7 @@ export class ReportsService {
 
   generateCancelledAppointmentsPdf(
     appointments: AppointmentReportItemDto[],
-  ): PDFKit.PDFDocument {
+  ): PDFDocumentType {
     return this.generateAppointmentsPdf(
       'Relatório de Consultas Canceladas',
       'CANCELLED',
@@ -52,7 +53,7 @@ export class ReportsService {
     title: string,
     status: 'COMPLETED' | 'PENDING' | 'CANCELLED',
     appointments: AppointmentReportItemDto[],
-  ): PDFKit.PDFDocument {
+  ): PDFDocumentType {
     if (!appointments.length) {
       throw new NotFoundException(
         'Nenhum agendamento encontrado para os filtros informados',
