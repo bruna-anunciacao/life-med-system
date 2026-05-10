@@ -11,8 +11,20 @@ export class UpdatePatientDto {
 
   @IsString({ message: 'Gênero deve ser texto' })
   @IsOptional()
-  @IsIn(['M', 'F', 'O'], {
-    message: 'Gênero deve ser M, F ou O',
-  })
+  @IsIn(
+    [
+      'MALE',
+      'FEMALE',
+      'OTHER',
+      'UNDISCLOSED',
+      'Masculino',
+      'Feminino',
+      'Outro',
+      'Prefiro não informar',
+    ],
+    {
+      message: 'Gênero deve ser Masculino, Feminino, Outro ou Prefiro não informar',
+    },
+  )
   gender?: string;
 }

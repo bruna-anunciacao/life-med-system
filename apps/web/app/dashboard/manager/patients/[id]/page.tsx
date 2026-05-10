@@ -11,15 +11,21 @@ import { managerService } from "@/services/manager-service";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { editPatientSchema, type EditPatientSchema } from "./edit-patient.validation";
+import {
+  editPatientSchema,
+  type EditPatientSchema,
+} from "./edit-patient.validation";
 import { AddressForm } from "@/components/address/AddressForm";
 import ptBr from "react-phone-number-input/locale/pt-BR";
 import PhoneInput from "react-phone-number-input";
+import { useQueryClient } from "@tanstack/react-query";
+import { applyCpfMask } from "@/lib/cpf";
 
 export default function PatientDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const patientId = params.id as string;
+  const queryClient = useQueryClient();
 
   const { data: patient, isLoading, error } = useGetPatientQuery(patientId);
   const [isEditing, setIsEditing] = useState(false);
@@ -38,23 +44,35 @@ export default function PatientDetailsPage() {
   useEffect(() => {
     if (patient) {
       reset({
+        name: patient.name || "",
+        email: patient.email || "",
+        cpf: patient.cpf ? applyCpfMask(patient.cpf) : "",
         phone: patient.phone || "",
         dateOfBirth: patient.dateOfBirth
           ? String(patient.dateOfBirth).split("T")[0]
           : "",
-        gender: (patient.gender as "M" | "F" | "O" | "") || "",
-      });
-    }
-  }, [patient, reset]);
+        gender: (patient.gender as string) || "",
 
   const onSubmit = async (data: EditPatientSchema) => {
     try {
       setIsSaving(true);
-      await managerService.updatePatient(patientId, data);
+
+      const dataToSubmit = {
+        ...data,
+        cpf: data.cpf ? data.cpf.replace(/\D/g, "") : data.cpf,
+      };
+
+      await managerService.updatePatient(patientId, dataToSubmit);
+
+      await queryClient.invalidateQueries({ queryKey: ["patient", patientId] });
+      await queryClient.invalidateQueries({ queryKey: ["patients"] });
+
       toast.success("Paciente atualizado com sucesso!");
       setIsEditing(false);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao atualizar paciente");
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao atualizar paciente",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -63,14 +81,17 @@ export default function PatientDetailsPage() {
   const handleCancelEdit = () => {
     if (patient) {
       reset({
+        name: patient.name || "",
+        email: patient.email || "",
+        cpf: patient.cpf ? applyCpfMask(patient.cpf) : "",
         phone: patient.phone || "",
         dateOfBirth: patient.dateOfBirth
           ? String(patient.dateOfBirth).split("T")[0]
           : "",
-        gender: (patient.gender as "M" | "F" | "O" | "") || "",
-      });
-    }
-    setIsEditing(false);
+        gender: (patient.gender as string) || "",
+
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = applyCpfMask(e.target.value);
   };
 
   if (isLoading) {
@@ -87,9 +108,9 @@ export default function PatientDetailsPage() {
     return (
       <section className="min-h-screen w-full bg-slate-50 p-8">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            onClick={() => router.back()} 
-            variant="outline" 
+          <Button
+            onClick={() => router.back()}
+            variant="outline"
             className="mb-6"
             title="Voltar para a página anterior"
           >
@@ -98,8 +119,13 @@ export default function PatientDetailsPage() {
           </Button>
           <Card className="bg-white">
             <CardContent className="p-6">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800" role="alert">
-                {error instanceof Error ? error.message : "Erro ao carregar dados do paciente"}
+              <div
+                className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800"
+                role="alert"
+              >
+                {error instanceof Error
+                  ? error.message
+                  : "Erro ao carregar dados do paciente"}
               </div>
             </CardContent>
           </Card>
@@ -111,9 +137,9 @@ export default function PatientDetailsPage() {
   return (
     <section className="min-h-screen w-full bg-slate-50 p-8">
       <div className="max-w-4xl mx-auto">
-        <Button 
-          onClick={() => router.back()} 
-          variant="outline" 
+        <Button
+          onClick={() => router.back()}
+          variant="outline"
           className="mb-6"
           title="Voltar para a lista de pacientes"
         >
@@ -128,12 +154,19 @@ export default function PatientDetailsPage() {
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">
                   Detalhes do Paciente
                 </h1>
-                <p className="text-slate-600">{patient.email || "Email não informado"}</p>
+                <p className="text-slate-600">
+                  {patient.email || "Email não informado"}
+                </p>
               </div>
               <Button
-                onClick={() => setIsEditing(!isEditing)}
+                onClick={() =>
+                  isEditing ? handleCancelEdit() : setIsEditing(true)
+                }
                 variant={isEditing ? "outline" : "default"}
-                title={isEditing ? "Cancelar alterações" : "Habilitar modo de edição"}
+                title={
+                  isEditing ? "Cancelar alterações" : "Habilitar modo de edição"
+                }
+                disabled={isSaving}
               >
                 {isEditing ? "Cancelar" : "Editar"}
               </Button>
@@ -141,19 +174,81 @@ export default function PatientDetailsPage() {
 
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="name"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Nome Completo
+                  </label>
                   <input
-                    type="email"
-                    value={patient.email || ""}
-                    disabled
-                    title="O e-mail não pode ser alterado por este formulário"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 cursor-not-allowed"
+                    id="name"
+                    {...register("name")}
+                    disabled={!isEditing}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                    }`}
+                    title="Nome do paciente"
                   />
+                  {errors.name && (
+                    <p className="text-xs text-red-600">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="cpf"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    CPF
+                  </label>
+                  <input
+                    id="cpf"
+                    {...register("cpf", {
+                      onChange: handleCpfChange,
+                    })}
+                    disabled={!isEditing}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                    }`}
+                    title="CPF do paciente"
+                  />
+                  {errors.cpf && (
+                    <p className="text-xs text-red-600">{errors.cpf.message}</p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    {...register("email")}
+                    disabled={!isEditing}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                      isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                    }`}
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-red-600">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Telefone
+                  </label>
                   <Controller
                     name="phone"
                     control={control}
@@ -187,50 +282,66 @@ export default function PatientDetailsPage() {
                     }}
                   />
                   {errors.phone && (
-                    <p className="text-xs text-red-600 mt-1">{errors.phone.message}</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.phone.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="dateOfBirth"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     Data de Nascimento
                   </label>
                   <input
                     id="dateOfBirth"
                     type="date"
                     disabled={!isEditing}
-                    title="Selecione a data de nascimento do paciente"
                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
+                      isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
                     }`}
                     {...register("dateOfBirth")}
                   />
                   {errors.dateOfBirth && (
-                    <p className="text-xs text-red-600 mt-1">{errors.dateOfBirth.message}</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.dateOfBirth.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2">Gênero</label>
+                  <label
+                    htmlFor="gender"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Gênero
+                  </label>
                   <select
                     id="gender"
                     disabled={!isEditing}
-                    title="Selecione o gênero do paciente"
                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
+                      isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
                     }`}
                     {...register("gender")}
                   >
                     <option value="">Selecione...</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
-                    <option value="O">Outro</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Feminino">Feminino</option>
+                    <option value="Outro">Outro</option>
+                    <option value="Prefiro não informar">
+                      Prefiro não informar
+                    </option>
                   </select>
                   {errors.gender && (
-                    <p className="text-xs text-red-600 mt-1">{errors.gender.message}</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      {errors.gender.message}
+                    </p>
                   )}
                 </div>
               </div>
+
 
               {isEditing && (
                 <div className="flex gap-4 mt-6">
@@ -289,12 +400,24 @@ export default function PatientDetailsPage() {
                   )}
                 </div>
 
-                <Link 
+                <Link
                   href={`/dashboard/manager/patients/${patient.id}/questionnaire`}
-                  title={patient.questionnaire ? "Editar as respostas do questionário" : "Iniciar preenchimento do questionário"}
+                  title={
+                    patient.questionnaire
+                      ? "Editar as respostas do questionário"
+                      : "Iniciar preenchimento do questionário"
+                  }
                 >
-                  <Button>
-                    {patient.questionnaire ? "Editar questionário" : "Preencher questionário"}
+                  <Button
+                    title={
+                      patient.questionnaire
+                        ? "Editar questionário"
+                        : "Preencher questionário"
+                    }
+                  >
+                    {patient.questionnaire
+                      ? "Editar questionário"
+                      : "Preencher questionário"}
                   </Button>
                 </Link>
               </div>
@@ -309,11 +432,15 @@ export default function PatientDetailsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-slate-600">ID do Paciente</p>
-                <p className="font-mono text-sm text-gray-900 break-all">{patient.id}</p>
+                <p className="font-mono text-sm text-gray-900 break-all">
+                  {patient.id}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">Status</p>
-                <p className="font-medium text-gray-900">{patient.status || "Ativo"}</p>
+                <p className="font-medium text-gray-900">
+                  {patient.status || "Ativo"}
+                </p>
               </div>
               {patient.createdAt && (
                 <div>
