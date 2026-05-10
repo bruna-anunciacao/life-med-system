@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { AddressForm } from "@/components/address/AddressForm";
 import { usePatientProfileForm } from "./usePatientProfileForm";
 import { PatientInfoForm } from "./components/PatientInfoForm";
 
@@ -100,6 +101,12 @@ const PatientProfilePage = () => {
               </div>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="border border-gray-200 rounded-xl bg-white mt-8">
+        <CardContent className="p-12 space-y-6">
+          <AddressForm userId={user?.id || ""} />
         </CardContent>
       </Card>
     </section>

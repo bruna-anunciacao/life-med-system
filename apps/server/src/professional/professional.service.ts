@@ -24,7 +24,6 @@ export class ProfessionalService {
       where: { userId },
       select: {
         modality: true,
-        address: true,
         payments: true,
         price: true,
       },
@@ -41,7 +40,6 @@ export class ProfessionalService {
 
     return {
       modality: profile.modality,
-      address: profile.address || '',
       payments: profile.payments || ['pix'],
       price: profile.price || 0,
       availability: availability.map((a) => ({
@@ -197,12 +195,13 @@ export class ProfessionalService {
         professionalProfile: {
           include: { specialities: true },
         },
+        address: true,
       },
     });
   }
 
   async updateSettings(userId: string, dto: UpdateProfessionalSettingsDto) {
-    const { modality, availability, address, payments, price } = dto;
+    const { modality, availability, payments, price } = dto;
 
     if (!availability.length) {
       throw new BadRequestException('At least one availability is required');
@@ -230,7 +229,6 @@ export class ProfessionalService {
           modality,
           payments,
           price,
-          ...(modality === 'CLINIC' && { address }),
         },
       });
 

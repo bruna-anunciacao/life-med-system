@@ -17,7 +17,6 @@ export function useScheduleModalForm(onSuccessCallback?: () => void) {
     resolver: zodResolver(scheduleModalSchema),
     defaultValues: {
       modality: "VIRTUAL",
-      address: "",
       price: 0,
       payments: ["pix"],
       availability: [],

@@ -51,11 +51,6 @@ export const editPatientSchema = z.object({
       error: () => ({ message: "Selecione um gênero válido" }),
     },
   ),
-  address: z
-    .string()
-    .max(200, "Endereço deve ter no máximo 200 caracteres")
-    .optional()
-    .or(z.literal("")),
 });
 
 export type EditPatientSchema = z.infer<typeof editPatientSchema>;

@@ -10,7 +10,6 @@ import {
   UserRole,
   UserStatus,
 } from '@prisma/client';
-import type PDFKit from 'pdfkit';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { ReportsService } from '../reports/reports.service';
@@ -19,6 +18,9 @@ import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import PDFKit from 'pdfkit';
+
+type PDFDocumentType = PDFKit.PDFDocument;
 
 @Injectable()
 export class PatientsService {
@@ -33,7 +35,7 @@ export class PatientsService {
   async exportDoneAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFKit.PDFDocument> {
+  ): Promise<PDFDocumentType> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.COMPLETED,
@@ -46,7 +48,7 @@ export class PatientsService {
   async exportPendingAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFKit.PDFDocument> {
+  ): Promise<PDFDocumentType> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.PENDING,
@@ -59,7 +61,7 @@ export class PatientsService {
   async exportCancelledAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFKit.PDFDocument> {
+  ): Promise<PDFDocumentType> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.CANCELLED,
@@ -180,12 +182,25 @@ export class PatientsService {
             phone: dto.phone,
             dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
             gender: dto.gender,
-            address: dto.address,
           },
         },
+        ...(dto.address && {
+          address: {
+            create: {
+              zipCode: dto.address.zipCode,
+              street: dto.address.street,
+              number: dto.address.number,
+              complement: dto.address.complement,
+              district: dto.address.district,
+              city: dto.address.city,
+              state: dto.address.state,
+            },
+          },
+        }),
       },
       include: {
         patientProfile: true,
+        address: true,
       },
     });
 
@@ -204,6 +219,7 @@ export class PatientsService {
       name: user.name,
       role: user.role,
       patientProfile: user.patientProfile,
+      address: user.address,
     };
   }
 
@@ -238,10 +254,6 @@ export class PatientsService {
               dto.gender !== undefined
                 ? dto.gender
                 : patient.patientProfile?.gender,
-            address:
-              dto.address !== undefined
-                ? dto.address
-                : patient.patientProfile?.address,
             dateOfBirth: dto.dateOfBirth
               ? new Date(dto.dateOfBirth)
               : dto.dateOfBirth === null
@@ -319,7 +331,6 @@ export class PatientsService {
       phone: patient.patientProfile?.phone,
       dateOfBirth: patient.patientProfile?.dateOfBirth,
       gender: patient.patientProfile?.gender,
-      address: patient.patientProfile?.address,
       patientProfile: patient.patientProfile,
       questionnaire: patient.patientProfile?.questionnaire ?? null,
     };

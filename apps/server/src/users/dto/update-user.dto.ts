@@ -78,16 +78,6 @@ export class UpdateUserDto {
   gender?: string;
 
   @ApiPropertyOptional({
-    example: 'Rua das Flores, 123, Salvador – BA',
-    description: 'Endereço completo',
-    maxLength: 200,
-  })
-  @IsOptional()
-  @IsString({ message: 'Endereço deve ser texto' })
-  @MaxLength(200, { message: 'Endereço deve ter no máximo 200 caracteres' })
-  address?: string;
-
-  @ApiPropertyOptional({
     example: '12345678900',
     description: 'CPF (11–14 chars)',
     minLength: 11,

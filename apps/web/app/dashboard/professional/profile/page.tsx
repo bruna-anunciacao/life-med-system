@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
+import { AddressForm } from "@/components/address/AddressForm";
 import { ProfileAvatar } from "./components/ProfileAvatar";
 import { ProfessionalInfoForm } from "./components/ProfessionalInfoForm";
 import { SocialLinksForm } from "./components/SocialLinksForm";
@@ -111,6 +112,12 @@ export default function PerfilPage() {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="border border-gray-200 rounded-xl bg-white mt-8">
+        <CardContent className="p-12 space-y-6">
+          <AddressForm userId={user?.id || ""} />
         </CardContent>
       </Card>
     </div>
