@@ -69,16 +69,6 @@ export class RegisterManagerDto {
   phone!: string;
 
   @ApiProperty({
-    example: 'Av. Sete de Setembro, 500, Salvador-BA',
-    description: 'Endereço do gestor',
-    required: false,
-  })
-  @IsString({ message: 'Endereço deve ser texto' })
-  @IsOptional()
-  @MaxLength(255, { message: 'Endereço deve ter no máximo 255 caracteres' })
-  address?: string;
-
-  @ApiProperty({
     example: 'Gestor responsável pela unidade norte.',
     description: 'Bio do gestor',
     required: false,

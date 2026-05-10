@@ -24,7 +24,6 @@ type UserProfile = {
     phone?: string;
     dateOfBirth?: string;
     gender?: string;
-    address?: string;
     cpf?: string;
   };
   professionalProfile?: {
@@ -115,7 +114,6 @@ export function useAdminUserForm() {
         phone: data.phone || undefined,
         dateOfBirth: data.dateOfBirth || undefined,
         gender: data.gender || undefined,
-        address: data.address || undefined,
         cpf: data.cpf || undefined,
       });
       toast.success("Dados do usuário atualizados com sucesso.");

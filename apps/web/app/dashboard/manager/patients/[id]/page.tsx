@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { editPatientSchema, type EditPatientSchema } from "./edit-patient.validation";
+import { AddressForm } from "@/components/address/AddressForm";
 import ptBr from "react-phone-number-input/locale/pt-BR";
 import PhoneInput from "react-phone-number-input";
 
@@ -42,7 +43,6 @@ export default function PatientDetailsPage() {
           ? String(patient.dateOfBirth).split("T")[0]
           : "",
         gender: (patient.gender as "M" | "F" | "O" | "") || "",
-        address: patient.address || "",
       });
     }
   }, [patient, reset]);
@@ -68,7 +68,6 @@ export default function PatientDetailsPage() {
           ? String(patient.dateOfBirth).split("T")[0]
           : "",
         gender: (patient.gender as "M" | "F" | "O" | "") || "",
-        address: patient.address || "",
       });
     }
     setIsEditing(false);
@@ -233,24 +232,6 @@ export default function PatientDetailsPage() {
                 </div>
               </div>
 
-              <div className="mt-6">
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">Endereço</label>
-                <textarea
-                  id="address"
-                  disabled={!isEditing}
-                  rows={4}
-                  placeholder="Rua, número, bairro..."
-                  title="Insira o endereço completo do paciente"
-                  className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors resize-none ${
-                    isEditing ? "bg-white text-gray-700 focus:ring-2 focus:ring-blue-500" : "bg-gray-50 text-gray-700"
-                  }`}
-                  {...register("address")}
-                />
-                {errors.address && (
-                  <p className="text-xs text-red-600 mt-1">{errors.address.message}</p>
-                )}
-              </div>
-
               {isEditing && (
                 <div className="flex gap-4 mt-6">
                   <Button
@@ -273,6 +254,12 @@ export default function PatientDetailsPage() {
                 </div>
               )}
             </form>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white mb-4">
+          <CardContent className="p-8">
+            <AddressForm userId={patient?.id || ""} />
           </CardContent>
         </Card>
 
@@ -314,7 +301,6 @@ export default function PatientDetailsPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card className="bg-white mt-6">
           <CardContent className="p-8">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">

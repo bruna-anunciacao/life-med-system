@@ -14,7 +14,6 @@ export interface AdminUser {
     phone?: string;
     dateOfBirth?: string;
     gender?: string;
-    address?: string;
     questionnaireCompleted: boolean;
   } | null;
   professionalProfile?: {
@@ -23,7 +22,6 @@ export interface AdminUser {
     modality?: string;
     bio?: string;
     photoUrl?: string;
-    address?: string;
     specialities?: { id: string; name: string }[];
   } | null;
 }

@@ -59,7 +59,6 @@ export class UsersService {
       phone,
       dateOfBirth,
       gender,
-      address,
       cpf,
       ...userData
     } = dto;
@@ -119,7 +118,7 @@ export class UsersService {
     if (
       user.role === 'PATIENT' &&
       user.patientProfile &&
-      (phone || dateOfBirth || gender || address || cpf)
+      (phone || dateOfBirth || gender || cpf)
     ) {
       await this.prisma.patientProfile.update({
         where: { userId: userId },
@@ -127,7 +126,6 @@ export class UsersService {
           phone,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
           gender,
-          address,
         },
       });
     }
@@ -157,7 +155,6 @@ export class UsersService {
       phone,
       dateOfBirth,
       gender,
-      address,
       cpf,
       ...userData
     } = dto;
@@ -232,7 +229,7 @@ export class UsersService {
     if (
       user.role === 'PATIENT' &&
       user.patientProfile &&
-      (phone || dateOfBirth || gender || address || cpf)
+      (phone || dateOfBirth || gender || cpf)
     ) {
       await this.prisma.patientProfile.update({
         where: { userId: targetId },
@@ -240,7 +237,6 @@ export class UsersService {
           phone,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
           gender,
-          address,
         },
       });
     }

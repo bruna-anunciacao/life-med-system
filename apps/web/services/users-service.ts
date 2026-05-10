@@ -9,7 +9,6 @@ export interface UpdateProfileDto {
   phone?: string;
   dateOfBirth?: string;
   gender?: string;
-  address?: string;
   cpf?: string;
   professionalLicense?: string;
   specialty?: string[];

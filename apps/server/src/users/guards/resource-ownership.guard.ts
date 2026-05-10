@@ -17,7 +17,7 @@ export class ResourceOwnershipGuard implements CanActivate {
       return false;
     }
 
-    if (user.role === UserRole.ADMIN) {
+    if (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) {
       return true;
     }
 

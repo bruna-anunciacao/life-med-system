@@ -32,13 +32,4 @@ export class UpdatePatientDto {
     message: 'Gênero deve ser M, F ou O',
   })
   gender?: string;
-
-  @ApiProperty({
-    example: 'Rua das Flores, 123, Salvador-BA',
-    description: 'Endereço do paciente',
-    required: false,
-  })
-  @IsString({ message: 'Endereço deve ser texto' })
-  @IsOptional()
-  address?: string;
 }

@@ -182,12 +182,25 @@ export class PatientsService {
             phone: dto.phone,
             dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
             gender: dto.gender,
-            address: dto.address,
           },
         },
+        ...(dto.address && {
+          address: {
+            create: {
+              zipCode: dto.address.zipCode,
+              street: dto.address.street,
+              number: dto.address.number,
+              complement: dto.address.complement,
+              district: dto.address.district,
+              city: dto.address.city,
+              state: dto.address.state,
+            },
+          },
+        }),
       },
       include: {
         patientProfile: true,
+        address: true,
       },
     });
 
@@ -206,6 +219,7 @@ export class PatientsService {
       name: user.name,
       role: user.role,
       patientProfile: user.patientProfile,
+      address: user.address,
     };
   }
 
@@ -231,7 +245,6 @@ export class PatientsService {
           ? new Date(dto.dateOfBirth)
           : patient.patientProfile.dateOfBirth,
         gender: dto.gender ?? patient.patientProfile.gender,
-        address: dto.address ?? patient.patientProfile.address,
       },
       include: {
         user: true,
@@ -296,7 +309,6 @@ export class PatientsService {
       phone: patient.patientProfile?.phone,
       dateOfBirth: patient.patientProfile?.dateOfBirth,
       gender: patient.patientProfile?.gender,
-      address: patient.patientProfile?.address,
       patientProfile: patient.patientProfile,
       questionnaire: patient.patientProfile?.questionnaire ?? null,
     };
