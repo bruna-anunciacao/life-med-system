@@ -264,6 +264,7 @@ export class PatientsService {
       },
       include: {
         patientProfile: true,
+        address: true,
       },
     });
 
@@ -275,7 +276,7 @@ export class PatientsService {
       phone: updatedUser.patientProfile?.phone,
       dateOfBirth: updatedUser.patientProfile?.dateOfBirth,
       gender: updatedUser.patientProfile?.gender,
-      address: updatedUser.patientProfile?.address,
+      address: updatedUser.address,
       patientProfile: updatedUser.patientProfile,
     };
   }
