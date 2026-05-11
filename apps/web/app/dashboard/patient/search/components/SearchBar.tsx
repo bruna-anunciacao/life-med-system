@@ -12,19 +12,16 @@ const SPECIALTIES = [
   "Psiquiatria",
 ];
 
-const LOCATIONS = [
-  "Todas",
-  "Belo Horizonte - MG",
-  "Curitiba - PR",
-  "Rio de Janeiro - RJ",
-  "São Paulo - SP",
-  "Salvador - BA",
-];
+export type Location = {
+  city: string;
+  state: string;
+};
 
 type SearchBarProps = {
   search: string;
   selectedSpecialty: string;
   selectedLocation: string;
+  locations: Location[];
   resultsCount: number;
   isLoading: boolean;
   onSearchChange: (value: string) => void;
@@ -36,6 +33,7 @@ export function SearchBar({
   search,
   selectedSpecialty,
   selectedLocation,
+  locations,
   resultsCount,
   isLoading,
   onSearchChange,
@@ -65,9 +63,10 @@ export function SearchBar({
           title="Selecione a localidade desejada"
           className="w-full md:w-64 px-4 py-3 border border-gray-200 rounded-xl bg-white text-base text-gray-700 outline-none transition-colors duration-200 focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] cursor-pointer"
         >
-          {LOCATIONS.map((loc) => (
-            <option key={loc} value={loc}>
-              {loc === "Todas" ? "Todas as localidades" : loc}
+          <option value="Todas">Todas as localidades</option>
+          {locations.map((loc) => (
+            <option key={`${loc.city}-${loc.state}`} value={`${loc.city} - ${loc.state}`}>
+              {loc.city} - {loc.state}
             </option>
           ))}
         </select>

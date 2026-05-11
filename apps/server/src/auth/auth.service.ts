@@ -258,7 +258,6 @@ export class AuthService {
         managerProfile: {
           create: {
             phone: dto.phone,
-            address: dto.address,
             bio: dto.bio,
           },
         },

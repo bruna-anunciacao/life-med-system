@@ -3,7 +3,6 @@ import { AxiosError } from "axios";
 
 export interface UpdateSettingsPayload {
   modality: string;
-  address?: string;
   payments: string[];
   price: number;
   availability: {

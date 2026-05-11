@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { useAddressCep } from '@/hooks/useAddressCep';
+import { AddressFields } from '@/components/address';
 import { newPatientSchema, type NewPatientSchema } from './new-patient.validation';
 import ptBr from "react-phone-number-input/locale/pt-BR";
 import PhoneInput from "react-phone-number-input";
@@ -20,13 +22,37 @@ export default function NewPatientPage() {
     register,
     handleSubmit,
     control,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<NewPatientSchema>({
     resolver: zodResolver(newPatientSchema),
   });
 
+  const { isFetchingZipCode } = useAddressCep({
+    control,
+    setValue,
+    setError,
+    clearErrors,
+    fieldPrefix: 'address',
+  });
+
   const onSubmit = (data: NewPatientSchema) => {
-    createPatient(data, {
+    const formattedData = {
+      ...data,
+      address: {
+        zipCode: data.address.zipCode,
+        street: data.address.street,
+        number: data.address.number,
+        complement: data.address.complement || undefined,
+        district: data.address.district,
+        city: data.address.city,
+        state: data.address.state,
+      },
+    };
+
+    createPatient(formattedData, {
       onSuccess: (patient) => {
         toast.success('Paciente cadastrado com sucesso!');
         router.push(`/dashboard/manager/patients/${patient.id}/questionnaire`);
@@ -157,19 +183,18 @@ export default function NewPatientPage() {
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label htmlFor="address">Endereço (opcional)</Label>
-            <textarea
-              id="address"
-              placeholder="Rua, número, complemento, cidade..."
-              title="Insira o endereço residencial completo"
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              {...register('address')}
+          <div className="pt-4 border-t border-gray-200">
+            <div className="mb-6">
+              <h2 className="text-base font-semibold text-gray-700">Endereço</h2>
+              <p className="text-sm text-gray-500">Cadastre o endereço de localização do paciente.</p>
+            </div>
+            
+            <AddressFields
+              register={register}
+              errors={errors}
+              isFetchingZipCode={isFetchingZipCode}
+              fieldPrefix="address"
             />
-            {errors.address && (
-              <p className="text-xs text-red-600">{errors.address.message}</p>
-            )}
           </div>
 
           <div className="flex gap-4">

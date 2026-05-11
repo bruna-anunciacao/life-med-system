@@ -5,8 +5,11 @@ import {
   IsString,
   IsDateString,
   IsIn,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
+import { CreateAddressDto  } from '../../addresses/dto/create-address.dto';
 
 export class CreatePatientDto {
   @ApiProperty({
@@ -61,12 +64,8 @@ export class CreatePatientDto {
   })
   gender?: string;
 
-  @ApiProperty({
-    example: 'Rua das Flores, 123, Salvador-BA',
-    description: 'Endereço do paciente',
-    required: false,
-  })
-  @IsString({ message: 'Endereço deve ser texto' })
-  @IsOptional()
-  address?: string;
+  @ApiProperty({ type: CreateAddressDto, required: false, description: 'Endereço do paciente' })
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto;
 }

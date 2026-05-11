@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { professionalsService } from "../../../../services/professionals-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useLocationsQuery } from "@/queries/useLocationsQuery";
 import { SearchBar } from "./components/SearchBar";
 import { DoctorCard } from "./components/DoctorCard";
 import { EmptySearch } from "./components/EmptySearch";
@@ -26,12 +27,16 @@ type Professional = {
     modality?: string;
     bio?: string;
     photoUrl?: string;
-    address?: string;
+  } | null;
+  address?: {
+    city: string;
+    state: string;
   } | null;
 };
 
 const SearchDoctorsPage = () => {
   const isMobile = useIsMobile();
+  const { data: locations = [] } = useLocationsQuery();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
@@ -76,9 +81,9 @@ const SearchDoctorsPage = () => {
 
       const matchesLocation =
         selectedLocation === "Todas" ||
-        (p.professionalProfile?.address || "")
-          .toLowerCase()
-          .includes(selectedLocation.toLowerCase());
+        (p.address?.city && p.address?.state
+          ? `${p.address.city} - ${p.address.state}` === selectedLocation
+          : false);
 
       return matchesSearch && matchesSpecialty && matchesLocation;
     });
@@ -108,6 +113,7 @@ const SearchDoctorsPage = () => {
           search={search}
           selectedSpecialty={selectedSpecialty}
           selectedLocation={selectedLocation}
+          locations={locations}
           resultsCount={filtered.length}
           isLoading={isLoading}
           onSearchChange={setSearch}

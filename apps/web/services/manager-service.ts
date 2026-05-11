@@ -8,14 +8,21 @@ export interface CreatePatientDto {
   cpf?: string;
   dateOfBirth?: string;
   gender?: string;
-  address?: string;
+  address: {
+    zipCode: string;
+    street: string;
+    number: string;
+    complement?: string;
+    district: string;
+    city: string;
+    state: string;
+  };
 }
 
 export interface UpdatePatientDto {
   phone?: string;
   dateOfBirth?: string;
   gender?: string;
-  address?: string;
 }
 
 export interface QuestionnaireSummary {
@@ -41,13 +48,11 @@ export interface ManagerPatientResponse {
   phone?: string;
   dateOfBirth?: string;
   gender?: string;
-  address?: string;
   patientProfile?: {
     id: string;
     phone?: string;
     dateOfBirth?: string;
     gender?: string;
-    address?: string;
     questionnaireCompleted?: boolean;
   };
   questionnaire?: QuestionnaireSummary | null;

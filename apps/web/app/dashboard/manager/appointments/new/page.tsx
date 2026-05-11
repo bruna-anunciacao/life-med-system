@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { managerService } from "../../../../../services/manager-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useLocationsQuery } from "@/queries/useLocationsQuery";
 import { SearchBar } from "../../../patient/search/components/SearchBar";
 import { DoctorCard } from "../../../patient/search/components/DoctorCard";
 import { EmptySearch } from "../../../patient/search/components/EmptySearch";
@@ -24,13 +25,17 @@ type Professional = {
     modality?: string;
     bio?: string;
     photoUrl?: string;
-    address?: string;
     specialities?: { id: string; name: string }[];
+  } | null;
+  address?: {
+    city: string;
+    state: string;
   } | null;
 };
 
 const NewApointmentPage = () => {
   const isMobile = useIsMobile();
+  const { data: locations = [] } = useLocationsQuery();
   const { data: patients = [] } = useListPatientsQuery();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
@@ -63,19 +68,19 @@ const NewApointmentPage = () => {
       const term = search.toLowerCase();
       const matchesSearch =
         p.name.toLowerCase().includes(term) ||
-        (p.professionalProfile?.specialty || "").toLowerCase().includes(term);
+        (p.professionalProfile?.specialities?.[0]?.name || "").toLowerCase().includes(term);
 
       const matchesSpecialty =
         selectedSpecialty === "Todas" ||
-        (p.professionalProfile?.specialty || "")
+        (p.professionalProfile?.specialities?.[0]?.name || "")
           .toLowerCase()
           .includes(selectedSpecialty.toLowerCase());
 
       const matchesLocation =
         selectedLocation === "Todas" ||
-        (p.professionalProfile?.address || "")
-          .toLowerCase()
-          .includes(selectedLocation.toLowerCase());
+        (p.address?.city && p.address?.state
+          ? `${p.address.city} - ${p.address.state}` === selectedLocation
+          : false);
 
       return matchesSearch && matchesSpecialty && matchesLocation;
     });
@@ -96,6 +101,7 @@ const NewApointmentPage = () => {
         search={search}
         selectedSpecialty={selectedSpecialty}
         selectedLocation={selectedLocation}
+        locations={locations}
         resultsCount={filtered.length}
         isLoading={isLoading}
         onSearchChange={setSearch}

@@ -184,7 +184,6 @@ async function main() {
             phone: '(11) 99999-0000',
             dateOfBirth: new Date('1990-01-01'),
             gender: 'Masculino',
-            address: 'Rua Principal, 123, Bairro Centro'
           },
         },
       },
