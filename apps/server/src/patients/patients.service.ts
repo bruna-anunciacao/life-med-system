@@ -35,7 +35,7 @@ export class PatientsService {
   async exportDoneAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFDocumentType> {
+  ): Promise<PDFDocumentType | null> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.COMPLETED,
@@ -48,7 +48,7 @@ export class PatientsService {
   async exportPendingAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFDocumentType> {
+  ): Promise<PDFDocumentType | null> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.PENDING,
@@ -61,7 +61,7 @@ export class PatientsService {
   async exportCancelledAppointmentsReport(
     patientId: string,
     query: ExportAppointmentsQueryDto,
-  ): Promise<PDFDocumentType> {
+  ): Promise<PDFDocumentType | null> {
     const appointments = await this.findPatientAppointmentsByStatus(
       patientId,
       AppointmentStatus.CANCELLED,
