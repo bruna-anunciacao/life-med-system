@@ -291,8 +291,8 @@ export default function PatientDetailsPage() {
                       id="dateOfBirth"
                       type="date"
                       disabled={!isEditing}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                        isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors text-gray-900 disabled:opacity-100 disabled:[color-scheme:light] ${
+                        isEditing ? "bg-white" : "bg-gray-50"
                       }`}
                       {...register("dateOfBirth")}
                     />

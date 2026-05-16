@@ -91,7 +91,7 @@ export function PatientInfoForm({ register, control, errors, email, cpf, isEditi
         </label>
         <input
           type="date"
-          className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+          className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-100 disabled:[color-scheme:light]"
           disabled={!isEditing}
           {...register("dateOfBirth")}
         />
