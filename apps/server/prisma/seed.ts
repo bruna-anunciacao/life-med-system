@@ -286,6 +286,117 @@ async function main() {
   }
 
   console.log(`  ${appointmentsCreated} Consultas criadas.`);
+
+  // ─────────────────────────────────────────
+  // 7. QUESTIONÁRIO DE VULNERABILIDADE
+  // ─────────────────────────────────────────
+  console.log('⏳ Criando Questionário de Vulnerabilidade...');
+
+  const QUESTIONNAIRE_ID = generateUUID('99999999', 1);
+  const SEED_QUESTIONS = [
+    {
+      id: generateUUID('99999999', 10),
+      label: 'Qual é a renda mensal da família?',
+      order: 1,
+      options: [
+        { id: generateUUID('99999999', 11), label: 'Até 1 salário mínimo', score: 3, order: 1 },
+        { id: generateUUID('99999999', 12), label: 'Entre 1 e 2 salários mínimos', score: 2, order: 2 },
+        { id: generateUUID('99999999', 13), label: 'Entre 2 e 3 salários mínimos', score: 1, order: 3 },
+        { id: generateUUID('99999999', 14), label: 'Acima de 3 salários mínimos', score: 0, order: 4 },
+      ],
+    },
+    {
+      id: generateUUID('99999999', 20),
+      label: 'Quantas pessoas dependem dessa renda?',
+      order: 2,
+      options: [
+        { id: generateUUID('99999999', 21), label: 'Até 2 pessoas', score: 0, order: 1 },
+        { id: generateUUID('99999999', 22), label: '3 ou mais pessoas', score: 1, order: 2 },
+      ],
+    },
+    {
+      id: generateUUID('99999999', 30),
+      label: 'Você ou alguém da família está desempregado?',
+      order: 3,
+      options: [
+        { id: generateUUID('99999999', 31), label: 'Sim', score: 2, order: 1 },
+        { id: generateUUID('99999999', 32), label: 'Não', score: 0, order: 2 },
+      ],
+    },
+    {
+      id: generateUUID('99999999', 40),
+      label: 'Possui CadÚnico?',
+      order: 4,
+      options: [
+        { id: generateUUID('99999999', 41), label: 'Sim', score: 4, order: 1 },
+        { id: generateUUID('99999999', 42), label: 'Não', score: 0, order: 2 },
+      ],
+    },
+    {
+      id: generateUUID('99999999', 50),
+      label: 'Sua moradia é própria?',
+      order: 5,
+      options: [
+        { id: generateUUID('99999999', 51), label: 'Sim', score: 0, order: 1 },
+        { id: generateUUID('99999999', 52), label: 'Não', score: 1, order: 2 },
+      ],
+    },
+    {
+      id: generateUUID('99999999', 60),
+      label: 'A casa possui água encanada?',
+      order: 6,
+      options: [
+        { id: generateUUID('99999999', 61), label: 'Sim', score: 0, order: 1 },
+        { id: generateUUID('99999999', 62), label: 'Não', score: 1, order: 2 },
+      ],
+    },
+    {
+      id: generateUUID('99999999', 70),
+      label: 'Há saneamento básico (esgoto)?',
+      order: 7,
+      options: [
+        { id: generateUUID('99999999', 71), label: 'Sim', score: 0, order: 1 },
+        { id: generateUUID('99999999', 72), label: 'Não', score: 1, order: 2 },
+      ],
+    },
+  ];
+
+  await prisma.questionnaire.upsert({
+    where: { id: QUESTIONNAIRE_ID },
+    update: { vulnerabilityThreshold: 6 },
+    create: {
+      id: QUESTIONNAIRE_ID,
+      vulnerabilityThreshold: 6,
+    },
+  });
+
+  for (const q of SEED_QUESTIONS) {
+    await prisma.question.upsert({
+      where: { id: q.id },
+      update: { label: q.label, order: q.order, isActive: true },
+      create: {
+        id: q.id,
+        questionnaireId: QUESTIONNAIRE_ID,
+        label: q.label,
+        order: q.order,
+      },
+    });
+    for (const opt of q.options) {
+      await prisma.questionOption.upsert({
+        where: { id: opt.id },
+        update: { label: opt.label, score: opt.score, order: opt.order, isActive: true },
+        create: {
+          id: opt.id,
+          questionId: q.id,
+          label: opt.label,
+          score: opt.score,
+          order: opt.order,
+        },
+      });
+    }
+  }
+  console.log('  Questionário de Vulnerabilidade criado/atualizado.');
+
   console.log('🎉 Seed finalizado com sucesso!');
 }
 

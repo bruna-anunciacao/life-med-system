@@ -7,7 +7,7 @@ import { useUserQuery } from "@/queries/useUserQuery";
 import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
 import { useListAppointmentsQuery } from "@/queries/useListAppointmentsQuery";
 import { LoadingPage } from "@/components/shared/LoadingPage";
-import { Users, Calendar, FileText, Plus } from "lucide-react";
+import { Users, Calendar, FileText, Plus, ClipboardList } from "lucide-react";
 import Link from "next/link";
 
 const ManagerDashboard = () => {
@@ -62,6 +62,13 @@ const ManagerDashboard = () => {
       icon: <Users size={20} />,
       color: "bg-purple-600 hover:bg-purple-700",
       hint: "Visualizar a lista completa de pacientes cadastrados",
+    },
+    {
+      label: "Gerenciar Questionário",
+      href: "/dashboard/manager/questionnaire",
+      icon: <ClipboardList size={20} />,
+      color: "bg-amber-600 hover:bg-amber-700",
+      hint: "Editar perguntas e pontuação do questionário de vulnerabilidade",
     },
   ];
 

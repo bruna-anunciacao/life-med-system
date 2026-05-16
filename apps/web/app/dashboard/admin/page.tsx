@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Stethoscope } from "lucide-react";
+import { ClipboardList, Plus, Stethoscope } from "lucide-react";
 import { adminService } from "../../../services/admin-service";
 import { toast } from "sonner";
 import { UsersTable } from "./components/UsersTable";
@@ -40,6 +40,14 @@ const AdminDashboard = () => {
       >
         <Stethoscope className="h-3.5 w-3.5" />
         Gerenciar Especialidades
+      </Link>
+      <Link
+        href="/dashboard/admin/questionnaire"
+        title="Editar o questionário de vulnerabilidade"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <ClipboardList className="h-3.5 w-3.5" />
+        Gerenciar Questionário
       </Link>
     </div>
   );
