@@ -210,7 +210,7 @@ export default function NewPatientPage() {
               type="button"
               variant="secondary"
               title="Cancelar e voltar para a tela anterior"
-              onClick={() => router.back()}
+              onClick={() => router.push("/dashboard/manager/patients")}
               className="flex-1"
             >
               Cancelar

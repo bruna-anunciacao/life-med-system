@@ -116,10 +116,10 @@ export default function PatientDetailsPage() {
       <section className="min-h-screen w-full bg-slate-50 p-8">
         <div className="max-w-4xl mx-auto">
           <Button
-            onClick={() => router.back()}
+            onClick={() => router.push("/dashboard/manager/patients")}
             variant="outline"
             className="mb-6"
-            title="Voltar para a página anterior"
+            title="Voltar para a lista de pacientes"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
@@ -145,7 +145,7 @@ export default function PatientDetailsPage() {
     <section className="min-h-screen w-full bg-slate-50 p-8">
       <div className="max-w-4xl mx-auto">
         <Button
-          onClick={() => router.back()}
+          onClick={() => router.push("/dashboard/manager/patients")}
           variant="outline"
           className="mb-6"
           title="Voltar para a lista de pacientes"
