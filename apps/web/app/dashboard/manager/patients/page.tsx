@@ -10,9 +10,9 @@ import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { formatPhoneNumber } from '@/app/utils/formatPhone';
-import { Search, Users, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Users, UserCheck, ClipboardCheck, ClipboardList, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
 
-type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender';
+type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender' | 'questionnaire';
 type SortDir = 'asc' | 'desc';
 
 type Patient = {
@@ -20,10 +20,13 @@ type Patient = {
   name: string;
   email: string;
   cpf?: string;
+  status?: string;
   patientProfile?: {
     phone?: string;
     dateOfBirth?: string;
     gender?: string;
+    questionnaireCompleted?: boolean;
+    questionnaire?: { id: string } | null;
   };
 };
 
@@ -104,8 +107,19 @@ export default function PatientsPage() {
         return p.patientProfile?.dateOfBirth ?? '';
       case 'gender':
         return p.patientProfile?.gender ?? '';
+      case 'questionnaire':
+        return p.patientProfile?.questionnaire ? '1' : '0';
     }
   }
+
+  const stats = useMemo(() => {
+    const list = patients as Patient[];
+    const total = list.length;
+    const active = list.filter((p) => !p.status || p.status === 'VERIFIED').length;
+    const withQuestionnaire = list.filter((p) => Boolean(p.patientProfile?.questionnaire)).length;
+    const withoutQuestionnaire = total - withQuestionnaire;
+    return { total, active, withQuestionnaire, withoutQuestionnaire };
+  }, [patients]);
 
   const sortedPatients = useMemo(() => {
     if (!sortField) return filteredPatients;
@@ -161,27 +175,77 @@ export default function PatientsPage() {
           }}
         />
 
-        {!isMobile && filteredPatients.length > 0 && (
-          <div className="mb-6 flex items-center gap-2 text-sm text-gray-600">
-            <Users className="w-4 h-4 text-blue-500" />
-            <span>
-              {searchTerm ? 'Resultados' : 'Total de pacientes'}:{' '}
-              <span className="font-semibold text-gray-900">{filteredPatients.length}</span>
-            </span>
+        {patients.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Total</p>
+                  <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                </div>
+                <Users className="w-7 h-7 text-blue-500 opacity-25" />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Ativos</p>
+                  <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</p>
+                </div>
+                <UserCheck className="w-7 h-7 text-emerald-500 opacity-25" />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Com questionário</p>
+                  <p className="text-2xl font-bold text-blue-600 mt-1">{stats.withQuestionnaire}</p>
+                </div>
+                <ClipboardCheck className="w-7 h-7 text-blue-500 opacity-25" />
+              </div>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Sem questionário</p>
+                  <p className="text-2xl font-bold text-amber-600 mt-1">{stats.withoutQuestionnaire}</p>
+                </div>
+                <ClipboardList className="w-7 h-7 text-amber-500 opacity-25" />
+              </div>
+            </div>
           </div>
         )}
 
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
             <input
               type="text"
-              placeholder="Buscar por nome..."
+              placeholder="Buscar paciente por nome..."
               defaultValue={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+              className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white placeholder:text-gray-400"
+              aria-label="Buscar paciente por nome"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => handleSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+                aria-label="Limpar busca"
+                title="Limpar busca"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
+          {searchTerm && (
+            <p className="mt-2 text-xs text-gray-500">
+              {filteredPatients.length}{' '}
+              {filteredPatients.length === 1 ? 'resultado' : 'resultados'} para{' '}
+              <span className="font-medium text-gray-700">&quot;{searchTerm}&quot;</span>
+            </p>
+          )}
         </div>
 
         {filteredPatients.length === 0 ? (
@@ -201,7 +265,7 @@ export default function PatientsPage() {
           )
         ) : isMobile ? (
           <div className="space-y-3">
-            {filteredPatients.map((patient) => (
+            {sortedPatients.map((patient) => (
               <div
                 key={patient.id}
                 className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition"
@@ -218,6 +282,17 @@ export default function PatientsPage() {
                     </h3>
                     <p className="text-xs text-gray-500 truncate">{patient.email}</p>
                   </div>
+                  {patient.patientProfile?.questionnaire ? (
+                    <span className="inline-flex items-center gap-1 self-start rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
+                      <ClipboardCheck className="w-3 h-3" />
+                      Respondido
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 self-start rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
+                      <ClipboardList className="w-3 h-3" />
+                      Pendente
+                    </span>
+                  )}
                 </div>
                 <div className="space-y-1.5 mb-3">
                   {patient.patientProfile?.phone && (
@@ -283,6 +358,13 @@ export default function PatientsPage() {
                   >
                     Gênero <SortIcon field="gender" />
                   </th>
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                    onClick={() => toggleSort('questionnaire')}
+                    title="Ordenar por questionário"
+                  >
+                    Questionário <SortIcon field="questionnaire" />
+                  </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Ações
                   </th>
@@ -312,6 +394,19 @@ export default function PatientsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {patient.patientProfile?.gender ?? '-'}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      {patient.patientProfile?.questionnaire ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs font-medium">
+                          <ClipboardCheck className="w-3 h-3" />
+                          Respondido
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-xs font-medium">
+                          <ClipboardList className="w-3 h-3" />
+                          Pendente
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       <Link

@@ -449,7 +449,11 @@ export default function PatientDetailsPage() {
                 <div>
                   <p className="text-sm text-slate-600">Status</p>
                   <p className="font-medium text-gray-900">
-                    {patient.status || "Ativo"}
+                    {patient.status === "BLOCKED"
+                      ? "Bloqueado"
+                      : patient.status === "PENDING"
+                        ? "Pendente"
+                        : "Ativo"}
                   </p>
                 </div>
                 {patient.createdAt && (
