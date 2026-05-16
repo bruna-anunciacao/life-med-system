@@ -12,16 +12,18 @@ export class SpecialityService {
   constructor(private prisma: PrismaService) {}
 
   async create(createSpecialityDto: CreateSpecialityDto) {
-    const existingSpeciality = await this.prisma.speciality.findUnique({
-      where: { name: createSpecialityDto.name },
+    const name = createSpecialityDto.name.trim();
+
+    const existingSpeciality = await this.prisma.speciality.findFirst({
+      where: { name: { equals: name, mode: 'insensitive' } },
     });
 
     if (existingSpeciality) {
-      throw new ConflictException('Speciality already exists');
+      throw new ConflictException('Especialidade já cadastrada');
     }
 
     return this.prisma.speciality.create({
-      data: createSpecialityDto,
+      data: { ...createSpecialityDto, name },
     });
   }
 
@@ -53,9 +55,23 @@ export class SpecialityService {
       throw new NotFoundException('Speciality not found');
     }
 
+    const data = { ...updateSpecialityDto };
+    if (data.name !== undefined) {
+      data.name = data.name.trim();
+      const duplicate = await this.prisma.speciality.findFirst({
+        where: {
+          name: { equals: data.name, mode: 'insensitive' },
+          NOT: { id },
+        },
+      });
+      if (duplicate) {
+        throw new ConflictException('Especialidade já cadastrada');
+      }
+    }
+
     return this.prisma.speciality.update({
       where: { id },
-      data: updateSpecialityDto,
+      data,
     });
   }
 
