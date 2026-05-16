@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Fuse from 'fuse.js';
 import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
@@ -10,7 +10,10 @@ import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { formatPhoneNumber } from '@/app/utils/formatPhone';
-import { Search, Users, FileText, Clock } from 'lucide-react';
+import { Search, Users, FileText, Clock, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+
+type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender';
+type SortDir = 'asc' | 'desc';
 
 type Patient = {
   id: string;
@@ -76,6 +79,49 @@ export default function PatientsPage() {
     if (!searchTerm.trim()) return patients as Patient[];
     return fuse.search(searchTerm).map((r) => r.item);
   }, [searchTerm, fuse, patients]);
+
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  function toggleSort(field: SortField) {
+    if (sortField === field) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  }
+
+  function getSortValue(p: Patient, field: SortField): string {
+    switch (field) {
+      case 'name':
+        return p.name ?? '';
+      case 'email':
+        return p.email ?? '';
+      case 'phone':
+        return p.patientProfile?.phone ?? '';
+      case 'dateOfBirth':
+        return p.patientProfile?.dateOfBirth ?? '';
+      case 'gender':
+        return p.patientProfile?.gender ?? '';
+    }
+  }
+
+  const sortedPatients = useMemo(() => {
+    if (!sortField) return filteredPatients;
+    return [...filteredPatients].sort((a, b) => {
+      const cmp = getSortValue(a, sortField).localeCompare(getSortValue(b, sortField));
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredPatients, sortField, sortDir]);
+
+  function SortIcon({ field }: { field: SortField }) {
+    if (sortField !== field)
+      return <ArrowUpDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-400" />;
+    return sortDir === 'asc'
+      ? <ArrowUp className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />
+      : <ArrowDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />;
+  }
 
   function handleSearch(value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -234,20 +280,40 @@ export default function PatientsPage() {
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Nome
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                    onClick={() => toggleSort('name')}
+                    title="Ordenar por nome"
+                  >
+                    Nome <SortIcon field="name" />
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Email
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                    onClick={() => toggleSort('email')}
+                    title="Ordenar por email"
+                  >
+                    Email <SortIcon field="email" />
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Telefone
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                    onClick={() => toggleSort('phone')}
+                    title="Ordenar por telefone"
+                  >
+                    Telefone <SortIcon field="phone" />
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Data de Nascimento
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                    onClick={() => toggleSort('dateOfBirth')}
+                    title="Ordenar por data de nascimento"
+                  >
+                    Data de Nascimento <SortIcon field="dateOfBirth" />
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Gênero
+                  <th
+                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                    onClick={() => toggleSort('gender')}
+                    title="Ordenar por gênero"
+                  >
+                    Gênero <SortIcon field="gender" />
                   </th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                     Ações
@@ -255,7 +321,7 @@ export default function PatientsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredPatients.map((patient) => (
+                {sortedPatients.map((patient) => (
                   <tr key={patient.id} className="hover:bg-slate-50 transition">
                     <td className="px-6 py-4 text-sm">
                       <div className="flex items-center gap-3">

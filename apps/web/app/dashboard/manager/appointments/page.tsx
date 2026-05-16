@@ -9,7 +9,10 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { CancelConfirmDialog } from '@/app/dashboard/patient/appointments/components/CancelConfirmDialog';
-import { Calendar, Clock, X, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, X, CheckCircle, AlertCircle, XCircle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+
+type SortField = 'patient' | 'professional' | 'dateTime' | 'scheduledBy' | 'status';
+type SortDir = 'asc' | 'desc';
 
 export default function AppointmentsPage() {
   const isMobile = useIsMobile();
@@ -24,6 +27,49 @@ export default function AppointmentsPage() {
     if (!statusFilter) return appointments;
     return appointments.filter((apt: any) => apt.status === statusFilter);
   }, [appointments, statusFilter]);
+
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  function toggleSort(field: SortField) {
+    if (sortField === field) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  }
+
+  function getSortValue(apt: any, field: SortField): string {
+    switch (field) {
+      case 'patient':
+        return apt.patient?.name ?? apt.patient?.email ?? '';
+      case 'professional':
+        return apt.professional?.name ?? apt.professional?.email ?? '';
+      case 'dateTime':
+        return apt.dateTime ?? '';
+      case 'scheduledBy':
+        return apt.scheduledByManager?.user?.name ?? '';
+      case 'status':
+        return apt.status ?? '';
+    }
+  }
+
+  const sortedAppointments = useMemo(() => {
+    if (!sortField) return filteredAppointments;
+    return [...filteredAppointments].sort((a: any, b: any) => {
+      const cmp = getSortValue(a, sortField).localeCompare(getSortValue(b, sortField));
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [filteredAppointments, sortField, sortDir]);
+
+  function SortIcon({ field }: { field: SortField }) {
+    if (sortField !== field)
+      return <ArrowUpDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-400" />;
+    return sortDir === 'asc'
+      ? <ArrowUp className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />
+      : <ArrowDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />;
+  }
 
   const appointmentStats = useMemo(() => {
     return {
@@ -242,20 +288,40 @@ export default function AppointmentsPage() {
                 <table className="w-full">
                   <thead className="bg-slate-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                        Paciente
+                      <th
+                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                        onClick={() => toggleSort('patient')}
+                        title="Ordenar por paciente"
+                      >
+                        Paciente <SortIcon field="patient" />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                        Profissional
+                      <th
+                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                        onClick={() => toggleSort('professional')}
+                        title="Ordenar por profissional"
+                      >
+                        Profissional <SortIcon field="professional" />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                        Data/Hora
+                      <th
+                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                        onClick={() => toggleSort('dateTime')}
+                        title="Ordenar por data/hora"
+                      >
+                        Data/Hora <SortIcon field="dateTime" />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                        Agendado por
+                      <th
+                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                        onClick={() => toggleSort('scheduledBy')}
+                        title="Ordenar por agendado por"
+                      >
+                        Agendado por <SortIcon field="scheduledBy" />
                       </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                        Status
+                      <th
+                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
+                        onClick={() => toggleSort('status')}
+                        title="Ordenar por status"
+                      >
+                        Status <SortIcon field="status" />
                       </th>
                       <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                         Ações
@@ -263,7 +329,7 @@ export default function AppointmentsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredAppointments.map((appointment: any) => (
+                    {sortedAppointments.map((appointment: any) => (
                       <tr key={appointment.id} className="hover:bg-slate-50 transition">
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">
                           {appointment.patient?.name ||
