@@ -10,7 +10,7 @@ import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { formatPhoneNumber } from '@/app/utils/formatPhone';
-import { Search, Users, FileText, Clock, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Users, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender';
 type SortDir = 'asc' | 'desc';
@@ -161,45 +161,13 @@ export default function PatientsPage() {
           }}
         />
 
-        {/* Info Cards */}
         {!isMobile && filteredPatients.length > 0 && (
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Total de Pacientes</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{filteredPatients.length}</p>
-                </div>
-                <Users className="w-8 h-8 text-blue-500 opacity-20" />
-              </div>
-            </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Cadastrados</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{filteredPatients.length}</p>
-                </div>
-                <FileText className="w-8 h-8 text-green-500 opacity-20" />
-              </div>
-            </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Ativos</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{filteredPatients.length}</p>
-                </div>
-                <Clock className="w-8 h-8 text-purple-500 opacity-20" />
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 shadow-sm text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs opacity-90 font-medium">Resultados</p>
-                  <p className="text-2xl font-bold mt-1">{filteredPatients.length}</p>
-                </div>
-                <Search className="w-8 h-8 opacity-30" />
-              </div>
-            </div>
+          <div className="mb-6 flex items-center gap-2 text-sm text-gray-600">
+            <Users className="w-4 h-4 text-blue-500" />
+            <span>
+              {searchTerm ? 'Resultados' : 'Total de pacientes'}:{' '}
+              <span className="font-semibold text-gray-900">{filteredPatients.length}</span>
+            </span>
           </div>
         )}
 
