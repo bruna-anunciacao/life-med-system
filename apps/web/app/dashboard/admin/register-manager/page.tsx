@@ -64,17 +64,21 @@ export default function RegisterManagerPage() {
   return (
     <section className="px-4 py-4 sm:px-6 sm:py-6">
       <div className="mx-auto max-w-3xl space-y-6">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground">Cadastrar gestor</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Crie uma conta de gestor vinculada à administração do sistema.
-            </p>
-          </div>
-          <Button type="button" variant="outline" onClick={() => router.push("/dashboard/admin")}> 
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push("/dashboard/admin")}
+          title="Voltar para a tela do administrador"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Cadastrar gestor</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Crie uma conta de gestor vinculada à administração do sistema.
+          </p>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
