@@ -1,6 +1,7 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
+import { PhoneInputBR } from "@/components/ui/phone-input-br";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -34,6 +35,7 @@ export default function RegisterManagerPage() {
     handleSubmit,
     setValue,
     watch,
+    control,
     formState: { errors },
   } = form;
 
@@ -104,7 +106,19 @@ export default function RegisterManagerPage() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="phone">Telefone</Label>
-                <Input id="phone" type="tel" placeholder="+5571999999999" {...register("phone")} />
+                <Controller
+                  name="phone"
+                  control={control}
+                  render={({ field }) => (
+                    <PhoneInputBR
+                      id="phone"
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      ref={field.ref}
+                    />
+                  )}
+                />
                 {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
               </div>
             </div>

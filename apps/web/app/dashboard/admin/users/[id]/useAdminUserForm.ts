@@ -107,11 +107,12 @@ export function useAdminUserForm() {
     if (!user) return;
     try {
       setIsSaving(true);
+      const normalizedPhone = data.phone || undefined;
       await usersService.updateUser(user.id, {
         name: data.name,
         email: data.email,
         status: data.status as UpdateProfileDto["status"],
-        phone: data.phone || undefined,
+        phone: normalizedPhone,
         dateOfBirth: data.dateOfBirth || undefined,
         gender: data.gender || undefined,
         cpf: data.cpf || undefined,
