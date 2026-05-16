@@ -295,7 +295,11 @@ export class PatientsService {
       include: {
         patientProfile: {
           include: {
-            questionnaire: true,
+            questionnaire: {
+              include: {
+                answers: { include: { question: true, option: true } },
+              },
+            },
           },
         },
       },
@@ -309,7 +313,11 @@ export class PatientsService {
       include: {
         patientProfile: {
           include: {
-            questionnaire: true,
+            questionnaire: {
+              include: {
+                answers: { include: { question: true, option: true } },
+              },
+            },
           },
         },
       },

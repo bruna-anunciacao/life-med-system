@@ -118,19 +118,77 @@ model PatientProfile {
   @@map("patient_profiles")
 }
 
+model Questionnaire {
+  id                     String   @id @default(uuid())
+  vulnerabilityThreshold Int      @map("vulnerability_threshold")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  questions Question[]
+  responses VulnerabilityQuestionnaire[]
+
+  @@map("questionnaires")
+}
+
+model Question {
+  id              String  @id @default(uuid())
+  questionnaireId String  @map("questionnaire_id")
+  label           String
+  order           Int
+  isActive        Boolean @default(true) @map("is_active")
+
+  questionnaire Questionnaire         @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  options       QuestionOption[]
+  answers       QuestionnaireAnswer[]
+
+  @@index([questionnaireId, order])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String  @id @default(uuid())
+  questionId String  @map("question_id")
+  label      String
+  score      Int
+  order      Int
+  isActive   Boolean @default(true) @map("is_active")
+
+  question Question              @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers  QuestionnaireAnswer[]
+
+  @@index([questionId, order])
+  @@map("question_options")
+}
+
 model VulnerabilityQuestionnaire {
   id               String                  @id @default(uuid())
   patientProfileId String                  @unique @map("patient_profile_id")
   patientProfile   PatientProfile          @relation(fields: [patientProfileId], references: [id], onDelete: Cascade)
+  questionnaireId  String                  @map("questionnaire_id")
+  questionnaire    Questionnaire           @relation(fields: [questionnaireId], references: [id])
   answeredBy       QuestionnaireAnsweredBy @map("answered_by")
   answeredByUserId String                  @map("answered_by_user_id")
   answeredByUser   User                    @relation(fields: [answeredByUserId], references: [id])
   totalScore       Int                     @map("total_score")
   isVulnerable     Boolean                 @default(false) @map("is_vulnerable")
   responseDate     DateTime                @default(now()) @map("response_date")
-  responses        Json?
+
+  answers QuestionnaireAnswer[]
 
   @@map("vulnerability_questionnaires")
+}
+
+model QuestionnaireAnswer {
+  id                           String @id @default(uuid())
+  vulnerabilityQuestionnaireId String @map("vulnerability_questionnaire_id")
+  questionId                   String @map("question_id")
+  optionId                     String @map("option_id")
+
+  vulnerabilityQuestionnaire VulnerabilityQuestionnaire @relation(fields: [vulnerabilityQuestionnaireId], references: [id], onDelete: Cascade)
+  question                   Question                   @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  option                     QuestionOption             @relation(fields: [optionId], references: [id], onDelete: Restrict)
+
+  @@unique([vulnerabilityQuestionnaireId, questionId])
+  @@map("questionnaire_answers")
 }
 
 model ManagerProfile {
