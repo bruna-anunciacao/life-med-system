@@ -165,6 +165,15 @@ export class PatientsService {
       throw new BadRequestException('Email já cadastrado');
     }
 
+    if (dto.cpf) {
+      const cpfExists = await this.prisma.user.findUnique({
+        where: { cpf: dto.cpf },
+      });
+      if (cpfExists) {
+        throw new BadRequestException('CPF já cadastrado');
+      }
+    }
+
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
@@ -235,6 +244,15 @@ export class PatientsService {
 
     if (!patient.patientProfile) {
       throw new NotFoundException('Perfil do paciente não encontrado');
+    }
+
+    if (dto.cpf !== undefined && dto.cpf && dto.cpf !== patient.cpf) {
+      const cpfExists = await this.prisma.user.findUnique({
+        where: { cpf: dto.cpf },
+      });
+      if (cpfExists && cpfExists.id !== patientId) {
+        throw new BadRequestException('CPF já cadastrado');
+      }
     }
 
     const updatedUser = await this.prisma.user.update({

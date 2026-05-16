@@ -53,7 +53,7 @@ model User {
   name          String
   role          UserRole   @default(PATIENT)
   status        UserStatus @default(PENDING)
-  cpf           String     @default("00000000000")
+  cpf           String?    @unique
   emailVerified Boolean    @default(false) @map("email_verified")
 
   createdAt DateTime @default(now()) @map("created_at")
