@@ -44,7 +44,7 @@ export function useUpdateAppointmentStatusMutation() {
       toast.success("Status atualizado com sucesso!");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erro ao atualizar status.");
+      toast.error(error.message || "Não foi possível atualizar o status da consulta. Tente novamente.");
     },
   });
 }
@@ -69,7 +69,7 @@ export function useCreateScheduleBlockMutation() {
       toast.success("Agenda bloqueada e consultas afetadas canceladas.");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erro ao bloquear agenda.");
+      toast.error(error.message || "Não foi possível bloquear a agenda. Verifique a data e tente novamente.");
     },
   });
 }
@@ -85,7 +85,7 @@ export function useDeleteScheduleBlockMutation() {
       toast.success("Bloqueio removido com sucesso.");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Erro ao remover bloqueio.");
+      toast.error(error.message || "Não foi possível remover o bloqueio da agenda. Tente novamente.");
     },
   });
 }

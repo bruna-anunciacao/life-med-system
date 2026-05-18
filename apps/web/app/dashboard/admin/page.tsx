@@ -16,11 +16,11 @@ const AdminDashboard = () => {
   ) => {
     try {
       await adminService.updateUser(userId, { status: newStatus });
-      toast.success("Status atualizado");
+      toast.success("Status do usuário atualizado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (error) {
       console.error(error);
-      toast.error("Erro ao atualizar status");
+      toast.error("Não foi possível atualizar o status do usuário. Tente novamente.");
     }
   };
 

@@ -23,7 +23,11 @@ export function useForgotPasswordForm() {
       form.reset();
       setSubmitted(true);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro desconhecido.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível enviar o e-mail de recuperação. Tente novamente.",
+      );
     } finally {
       setIsLoading(false);
     }
