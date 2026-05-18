@@ -85,7 +85,7 @@ const AddressSection = ({ isOpen, currentModality, isEditing, onEditingChange }:
   const onSubmit = async (data: AddressSchema) => {
     try {
       if (!user?.id) {
-        toast.error("Erro: usuário não identificado.");
+        toast.error("Sessão expirada. Faça login novamente para salvar o endereço.");
         return;
       }
 

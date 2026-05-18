@@ -16,7 +16,7 @@ export function VerifyEmailError({ message }: VerifyEmailErrorProps) {
     if (!resendEmail) return;
     resendMutation.mutate(resendEmail, {
       onSuccess: () => toast.success("Se o e-mail estiver cadastrado, um novo link foi enviado."),
-      onError: () => toast.error("Erro ao reenviar. Tente novamente."),
+      onError: () => toast.error("Não foi possível reenviar o e-mail de verificação. Tente novamente em instantes."),
     });
   };
 

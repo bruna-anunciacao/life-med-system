@@ -65,7 +65,7 @@ export function usePatientProfileForm() {
         gender: normalizeGender(data.patientProfile?.gender),
       });
     } catch {
-      toast.error("Erro ao carregar perfil.");
+      toast.error("Não foi possível carregar seus dados do perfil. Recarregue a página.");
     } finally {
       setIsLoading(false);
     }
@@ -102,7 +102,7 @@ export function usePatientProfileForm() {
       setIsEditing(false);
       await loadProfile();
     } catch {
-      toast.error("Erro ao salvar alterações.");
+      toast.error("Não foi possível salvar as alterações do perfil. Tente novamente.");
     } finally {
       setIsSaving(false);
     }

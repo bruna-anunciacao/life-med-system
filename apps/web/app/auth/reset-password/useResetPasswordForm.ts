@@ -30,7 +30,11 @@ export function useResetPasswordForm() {
       toast.success("Senha redefinida com sucesso!");
       setTimeout(() => router.push("/auth/login"), 1500);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro desconhecido.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível redefinir a senha. Verifique o link e tente novamente.",
+      );
     } finally {
       setIsLoading(false);
     }
