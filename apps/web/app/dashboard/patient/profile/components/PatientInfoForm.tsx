@@ -6,8 +6,7 @@ import {
 } from "react-hook-form";
 import { PatientProfileSchema } from "../patient-profile.validation";
 import { formatCpf } from "@/lib/cpf";
-import ptBr from "react-phone-number-input/locale/pt-BR";
-import PhoneInput from "react-phone-number-input";
+import { PhoneInputBR } from "@/components/ui/phone-input-br";
 
 type PatientInfoFormProps = {
   register: UseFormRegister<PatientProfileSchema>;
@@ -68,32 +67,16 @@ export function PatientInfoForm({ register, control, errors, email, cpf, isEditi
         <Controller
           name="phone"
           control={control}
-          render={({ field }) => {
-            let safeValue = field.value
-              ? field.value.replace(/[^\d+]/g, "")
-              : "";
-            if (safeValue && !safeValue.startsWith("+")) {
-              safeValue = `+55${safeValue}`;
-            }
-            return (
-              <PhoneInput
-                id="phone"
-                placeholder="(71) 99999-9999"
-                international
-                countryCallingCodeEditable={false}
-                labels={ptBr}
-                defaultCountry="BR"
-                value={safeValue || undefined}
-                onChange={(val) => field.onChange(val || "")}
-                onBlur={field.onBlur}
-                ref={field.ref}
-                disabled={!isEditing}
-                className={`w-full flex items-center border border-gray-200 rounded-lg overflow-hidden transition-colors duration-200 focus-within:border-[#006fee] focus-within:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] ${
-                  !isEditing ? "bg-gray-50" : "bg-white"
-                } [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-200 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2.5 [&_.PhoneInputInput]:px-3 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-[0.95rem] [&_.PhoneInputInput]:text-gray-900 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput:disabled]:text-gray-500 [&_.PhoneInputInput:disabled]:cursor-not-allowed`}
-              />
-            );
-          }}
+          render={({ field }) => (
+            <PhoneInputBR
+              id="phone"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              ref={field.ref}
+              disabled={!isEditing}
+            />
+          )}
         />
         {errors.phone && (
           <span className="text-xs text-red-600 mt-0.5">
@@ -108,7 +91,7 @@ export function PatientInfoForm({ register, control, errors, email, cpf, isEditi
         </label>
         <input
           type="date"
-          className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
+          className="px-3 py-2.5 border border-gray-200 rounded-lg bg-white text-[0.95rem] text-gray-900 transition-colors duration-200 focus:outline-none focus:border-[#006fee] focus:shadow-[0_0_0_3px_rgba(0,111,238,0.1)] disabled:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-100 disabled:[color-scheme:light]"
           disabled={!isEditing}
           {...register("dateOfBirth")}
         />

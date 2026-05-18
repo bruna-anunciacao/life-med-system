@@ -1,38 +1,30 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, QuestionnaireAnsweredBy, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { QuestionnaireDefinitionResponseDto } from './dto/questionnaire-response.dto';
 import {
-  DependentsBracket,
-  FamilyIncomeBracket,
-  SubmitQuestionnaireDto,
-} from './dto/submit-questionnaire.dto';
+  QuestionnaireDefinitionResponseDto,
+  QuestionnaireResponseDto,
+} from './dto/questionnaire-response.dto';
+import { SubmitQuestionnaireDto } from './dto/submit-questionnaire.dto';
 
-const VULNERABILITY_THRESHOLD = 6;
-
-const SCORE_MAP = {
-  familyIncomeBracket: {
-    [FamilyIncomeBracket.ATE_1_SM]: 3,
-    [FamilyIncomeBracket.ENTRE_1_E_2_SM]: 2,
-    [FamilyIncomeBracket.ENTRE_2_E_3_SM]: 1,
-    [FamilyIncomeBracket.ACIMA_3_SM]: 0,
-  },
-  dependentsBracket: {
-    [DependentsBracket.ATE_2]: 0,
-    [DependentsBracket.TRES_OU_MAIS]: 1,
-  },
-} as const;
-
-type QuestionnaireRecord = Prisma.VulnerabilityQuestionnaireGetPayload<{
+type QuestionnaireWithSchema = Prisma.QuestionnaireGetPayload<{
   include: {
-    patientProfile: {
-      include: {
-        user: true;
-      };
+    questions: {
+      include: { options: true };
+    };
+  };
+}>;
+
+type ResponseWithAnswers = Prisma.VulnerabilityQuestionnaireGetPayload<{
+  include: {
+    patientProfile: { include: { user: true } };
+    answers: {
+      include: { question: true; option: true };
     };
   };
 }>;
@@ -41,97 +33,64 @@ type QuestionnaireRecord = Prisma.VulnerabilityQuestionnaireGetPayload<{
 export class QuestionnaireService {
   constructor(private readonly prisma: PrismaService) {}
 
-  getQuestions(): QuestionnaireDefinitionResponseDto {
+  async getActiveQuestionnaire(): Promise<QuestionnaireWithSchema> {
+    const questionnaire = await this.prisma.questionnaire.findFirst({
+      include: {
+        questions: {
+          where: { isActive: true },
+          orderBy: { order: 'asc' },
+          include: {
+            options: {
+              where: { isActive: true },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+
+    if (!questionnaire) {
+      throw new NotFoundException('Questionário não configurado.');
+    }
+
+    return questionnaire;
+  }
+
+  async getQuestions(): Promise<QuestionnaireDefinitionResponseDto> {
+    const q = await this.getActiveQuestionnaire();
+    return this.toDefinition(q);
+  }
+
+  toDefinition(q: QuestionnaireWithSchema): QuestionnaireDefinitionResponseDto {
+    const maxPossibleScore = q.questions.reduce((sum, question) => {
+      const max = question.options.reduce(
+        (m, opt) => (opt.score > m ? opt.score : m),
+        0,
+      );
+      return sum + max;
+    }, 0);
+
     return {
-      vulnerabilityThreshold: VULNERABILITY_THRESHOLD,
-      questions: [
-        {
-          id: 'familyIncomeBracket',
-          label: 'Qual é a renda mensal da família?',
-          type: 'select',
-          options: [
-            {
-              value: FamilyIncomeBracket.ATE_1_SM,
-              label: 'Até 1 salário mínimo',
-            },
-            {
-              value: FamilyIncomeBracket.ENTRE_1_E_2_SM,
-              label: 'Entre 1 e 2 salários mínimos',
-            },
-            {
-              value: FamilyIncomeBracket.ENTRE_2_E_3_SM,
-              label: 'Entre 2 e 3 salários mínimos',
-            },
-            {
-              value: FamilyIncomeBracket.ACIMA_3_SM,
-              label: 'Acima de 3 salários mínimos',
-            },
-          ],
-        },
-        {
-          id: 'dependentsBracket',
-          label: 'Quantas pessoas dependem dessa renda?',
-          type: 'select',
-          options: [
-            { value: DependentsBracket.ATE_2, label: 'Até 2 pessoas' },
-            {
-              value: DependentsBracket.TRES_OU_MAIS,
-              label: '3 ou mais pessoas',
-            },
-          ],
-        },
-        {
-          id: 'hasUnemployedFamilyMember',
-          label: 'Você ou alguém da família está desempregado?',
-          type: 'boolean',
-          options: [
-            { value: 'true', label: 'Sim' },
-            { value: 'false', label: 'Não' },
-          ],
-        },
-        {
-          id: 'hasCadUnico',
-          label: 'Possui CadUnico?',
-          type: 'boolean',
-          options: [
-            { value: 'true', label: 'Sim' },
-            { value: 'false', label: 'Não' },
-          ],
-        },
-        {
-          id: 'ownsHome',
-          label: 'Sua moradia é própria?',
-          type: 'boolean',
-          options: [
-            { value: 'true', label: 'Sim' },
-            { value: 'false', label: 'Não' },
-          ],
-        },
-        {
-          id: 'hasPipedWater',
-          label: 'A casa possui água encanada?',
-          type: 'boolean',
-          options: [
-            { value: 'true', label: 'Sim' },
-            { value: 'false', label: 'Não' },
-          ],
-        },
-        {
-          id: 'hasBasicSanitation',
-          label: 'Há saneamento básico (esgoto)?',
-          type: 'boolean',
-          options: [
-            { value: 'true', label: 'Sim' },
-            { value: 'false', label: 'Não' },
-          ],
-        },
-      ],
+      id: q.id,
+      vulnerabilityThreshold: q.vulnerabilityThreshold,
+      maxPossibleScore,
+      questions: q.questions.map((question) => ({
+        id: question.id,
+        label: question.label,
+        order: question.order,
+        options: question.options.map((opt) => ({
+          id: opt.id,
+          label: opt.label,
+          score: opt.score,
+          order: opt.order,
+        })),
+      })),
     };
   }
 
   async submitSelf(patientUserId: string, dto: SubmitQuestionnaireDto) {
     const patientProfile = await this.getPatientProfileByUserId(patientUserId);
-
     const existing = await this.prisma.vulnerabilityQuestionnaire.findUnique({
       where: { patientProfileId: patientProfile.id },
     });
@@ -142,34 +101,12 @@ export class QuestionnaireService {
       );
     }
 
-    const payload = this.buildPersistencePayload(
+    return this.persistResponse({
       dto,
-      QuestionnaireAnsweredBy.PATIENT,
-      patientUserId,
-      patientProfile.id,
-    );
-
-    const questionnaire = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.vulnerabilityQuestionnaire.create({
-        data: payload,
-        include: {
-          patientProfile: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      await tx.patientProfile.update({
-        where: { id: patientProfile.id },
-        data: { questionnaireCompleted: true },
-      });
-
-      return created;
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUserId: patientUserId,
+      patientProfileId: patientProfile.id,
     });
-
-    return this.mapResponse(questionnaire);
   }
 
   async submitForManager(
@@ -178,7 +115,6 @@ export class QuestionnaireService {
     dto: SubmitQuestionnaireDto,
   ) {
     const patientProfile = await this.getPatientProfileByUserId(patientUserId);
-
     const existing = await this.prisma.vulnerabilityQuestionnaire.findUnique({
       where: { patientProfileId: patientProfile.id },
     });
@@ -189,34 +125,12 @@ export class QuestionnaireService {
       );
     }
 
-    const payload = this.buildPersistencePayload(
+    return this.persistResponse({
       dto,
-      QuestionnaireAnsweredBy.MANAGER,
-      managerUserId,
-      patientProfile.id,
-    );
-
-    const questionnaire = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.vulnerabilityQuestionnaire.create({
-        data: payload,
-        include: {
-          patientProfile: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      });
-
-      await tx.patientProfile.update({
-        where: { id: patientProfile.id },
-        data: { questionnaireCompleted: true },
-      });
-
-      return created;
+      answeredBy: QuestionnaireAnsweredBy.MANAGER,
+      answeredByUserId: managerUserId,
+      patientProfileId: patientProfile.id,
     });
-
-    return this.mapResponse(questionnaire);
   }
 
   async updateForManager(
@@ -235,43 +149,137 @@ export class QuestionnaireService {
       );
     }
 
-    const payload = this.buildPersistencePayload(
+    return this.persistResponse({
       dto,
-      QuestionnaireAnsweredBy.MANAGER,
-      managerUserId,
-      patientProfile.id,
-    );
+      answeredBy: QuestionnaireAnsweredBy.MANAGER,
+      answeredByUserId: managerUserId,
+      patientProfileId: patientProfile.id,
+      replaceExistingId: existing.id,
+    });
+  }
 
-    const questionnaire = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.vulnerabilityQuestionnaire.update({
-        where: { patientProfileId: patientProfile.id },
-        data: payload,
-        include: {
-          patientProfile: {
-            include: {
-              user: true,
-            },
+  async getPatientResponse(
+    patientUserId: string,
+  ): Promise<QuestionnaireResponseDto | null> {
+    const patientProfile = await this.getPatientProfileByUserId(patientUserId);
+    const response = await this.prisma.vulnerabilityQuestionnaire.findUnique({
+      where: { patientProfileId: patientProfile.id },
+      include: {
+        patientProfile: { include: { user: true } },
+        answers: { include: { question: true, option: true } },
+      },
+    });
+
+    if (!response) return null;
+    return this.mapResponse(response);
+  }
+
+  private async persistResponse(params: {
+    dto: SubmitQuestionnaireDto;
+    answeredBy: QuestionnaireAnsweredBy;
+    answeredByUserId: string;
+    patientProfileId: string;
+    replaceExistingId?: string;
+  }): Promise<QuestionnaireResponseDto> {
+    const {
+      dto,
+      answeredBy,
+      answeredByUserId,
+      patientProfileId,
+      replaceExistingId,
+    } = params;
+
+    const active = await this.getActiveQuestionnaire();
+    const questionsById = new Map(active.questions.map((q) => [q.id, q]));
+    if (dto.answers.length !== active.questions.length) {
+      throw new BadRequestException(
+        'É necessário responder todas as perguntas ativas.',
+      );
+    }
+
+    const answeredQuestionIds = new Set<string>();
+    let totalScore = 0;
+
+    for (const answer of dto.answers) {
+      if (answeredQuestionIds.has(answer.questionId)) {
+        throw new BadRequestException(
+          `Pergunta ${answer.questionId} respondida mais de uma vez.`,
+        );
+      }
+      answeredQuestionIds.add(answer.questionId);
+
+      const question = questionsById.get(answer.questionId);
+      if (!question) {
+        throw new BadRequestException(
+          `Pergunta ${answer.questionId} não pertence ao questionário ativo.`,
+        );
+      }
+      const option = question.options.find((o) => o.id === answer.optionId);
+      if (!option) {
+        throw new BadRequestException(
+          `Opção ${answer.optionId} inválida para a pergunta "${question.label}".`,
+        );
+      }
+      totalScore += option.score;
+    }
+
+    for (const question of active.questions) {
+      if (!answeredQuestionIds.has(question.id)) {
+        throw new BadRequestException(
+          `Pergunta "${question.label}" não foi respondida.`,
+        );
+      }
+    }
+
+    const isVulnerable = totalScore >= active.vulnerabilityThreshold;
+
+    const created = await this.prisma.$transaction(async (tx) => {
+      if (replaceExistingId) {
+        await tx.questionnaireAnswer.deleteMany({
+          where: { vulnerabilityQuestionnaireId: replaceExistingId },
+        });
+        await tx.vulnerabilityQuestionnaire.delete({
+          where: { id: replaceExistingId },
+        });
+      }
+
+      const response = await tx.vulnerabilityQuestionnaire.create({
+        data: {
+          patientProfileId,
+          questionnaireId: active.id,
+          answeredBy,
+          answeredByUserId,
+          totalScore,
+          isVulnerable,
+          responseDate: new Date(),
+          answers: {
+            create: dto.answers.map((a) => ({
+              questionId: a.questionId,
+              optionId: a.optionId,
+            })),
           },
+        },
+        include: {
+          patientProfile: { include: { user: true } },
+          answers: { include: { question: true, option: true } },
         },
       });
 
       await tx.patientProfile.update({
-        where: { id: patientProfile.id },
+        where: { id: patientProfileId },
         data: { questionnaireCompleted: true },
       });
 
-      return updated;
+      return response;
     });
 
-    return this.mapResponse(questionnaire);
+    return this.mapResponse(created);
   }
 
   private async getPatientProfileByUserId(patientUserId: string) {
     const patient = await this.prisma.user.findUnique({
       where: { id: patientUserId },
-      include: {
-        patientProfile: true,
-      },
+      include: { patientProfile: true },
     });
 
     if (
@@ -285,47 +293,24 @@ export class QuestionnaireService {
     return patient.patientProfile;
   }
 
-  private buildPersistencePayload(
-    dto: SubmitQuestionnaireDto,
-    answeredBy: QuestionnaireAnsweredBy,
-    answeredByUserId: string,
-    patientProfileId: string,
-  ): Prisma.VulnerabilityQuestionnaireUncheckedCreateInput {
-    const totalScore = this.calculateTotalScore(dto);
-
+  private mapResponse(
+    response: ResponseWithAnswers,
+  ): QuestionnaireResponseDto {
     return {
-      patientProfileId,
-      answeredBy,
-      answeredByUserId,
-      totalScore,
-      isVulnerable: totalScore >= VULNERABILITY_THRESHOLD,
-      responseDate: new Date(),
-      responses: dto as unknown as Prisma.InputJsonValue,
-    };
-  }
-
-  private calculateTotalScore(dto: SubmitQuestionnaireDto) {
-    return (
-      SCORE_MAP.familyIncomeBracket[dto.familyIncomeBracket] +
-      SCORE_MAP.dependentsBracket[dto.dependentsBracket] +
-      (dto.hasUnemployedFamilyMember ? 2 : 0) +
-      (dto.hasCadUnico ? 4 : 0) +
-      (dto.ownsHome ? 0 : 1) +
-      (dto.hasPipedWater ? 0 : 1) +
-      (dto.hasBasicSanitation ? 0 : 1)
-    );
-  }
-
-  private mapResponse(questionnaire: QuestionnaireRecord) {
-    return {
-      id: questionnaire.id,
-      patientId: questionnaire.patientProfile.userId,
-      answeredBy: questionnaire.answeredBy,
-      answeredByUserId: questionnaire.answeredByUserId,
-      totalScore: questionnaire.totalScore,
-      isVulnerable: questionnaire.isVulnerable,
-      responseDate: questionnaire.responseDate,
-      responses: questionnaire.responses as unknown as SubmitQuestionnaireDto,
+      id: response.id,
+      patientId: response.patientProfile.userId,
+      answeredBy: response.answeredBy,
+      answeredByUserId: response.answeredByUserId,
+      totalScore: response.totalScore,
+      isVulnerable: response.isVulnerable,
+      responseDate: response.responseDate,
+      answers: response.answers.map((a) => ({
+        questionId: a.questionId,
+        questionLabel: a.question.label,
+        optionId: a.optionId,
+        optionLabel: a.option.label,
+        score: a.option.score,
+      })),
     };
   }
 }

@@ -110,7 +110,7 @@ export const usersService = {
 
   async updateUser(id: string, data: UpdateProfileDto) {
     try {
-      const response = await api.patch(`/users/${id}`, data);
+      const response = await api.patch(`/admin/user/${id}`, data);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

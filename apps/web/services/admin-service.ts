@@ -9,6 +9,7 @@ export interface AdminUser {
   role: "PATIENT" | "PROFESSIONAL" | "MANAGER";
   status: "PENDING" | "COMPLETED" | "VERIFIED" | "BLOCKED";
   emailVerified: boolean;
+  createdAt?: string;
   patientProfile?: {
     id: string;
     phone?: string;

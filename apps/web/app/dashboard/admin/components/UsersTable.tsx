@@ -18,7 +18,15 @@ import { useAdminUsersTable, TypeFilter } from "@/queries/useAdminUsersTable";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { ArrowUpDown, ArrowUp, ArrowDown, Eye, Check, Ban, Pencil } from "lucide-react";
 
-type SortField = "name" | "status";
+type SortField =
+  | "name"
+  | "type"
+  | "speciality"
+  | "status"
+  | "createdAt"
+  | "phone"
+  | "dateOfBirth"
+  | "modality";
 type SortDir = "asc" | "desc";
 
 const TYPE_TABS: { label: string; value: TypeFilter }[] = [
@@ -80,10 +88,40 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
     }
   }
 
+  function getSortValue(u: AdminUser, field: SortField): string {
+    switch (field) {
+      case "name":
+        return u.name ?? "";
+      case "status":
+        return u.status ?? "";
+      case "type":
+        return TYPE_BADGE[u.role]?.label ?? u.role ?? "";
+      case "speciality":
+        return getSpeciality(u) ?? "";
+      case "createdAt":
+        return u.createdAt ?? "";
+      case "phone":
+        return u.patientProfile?.phone ?? "";
+      case "dateOfBirth":
+        return u.patientProfile?.dateOfBirth ?? "";
+      case "modality":
+        return u.professionalProfile?.modality ?? "";
+    }
+  }
+
+  function goToEdit(userId: string) {
+    router.push(`/dashboard/admin/users/${userId}?edit=1`);
+  }
+
+  function formatDate(dateString?: string) {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString("pt-BR");
+  }
+
   const sortedUsers = useMemo(() => {
     if (!sortField) return users;
     return [...users].sort((a, b) => {
-      const cmp = a[sortField].localeCompare(b[sortField]);
+      const cmp = getSortValue(a, sortField).localeCompare(getSortValue(b, sortField));
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [users, sortField, sortDir]);
@@ -152,8 +190,14 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
           {sortedUsers.map((user) => {
             const badge = TYPE_BADGE[user.role];
             const speciality = getSpeciality(user);
+            const stopClick = (e: React.MouseEvent) => e.stopPropagation();
             return (
-              <div key={user.id} className="flex items-start gap-3 px-4 py-4">
+              <div
+                key={user.id}
+                className="flex items-start gap-3 px-4 py-4 cursor-pointer active:bg-muted/40"
+                onClick={() => goToEdit(user.id)}
+                title={`Abrir perfil de ${user.name}`}
+              >
                 {/* Avatar */}
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">
                   {getInitials(user.name)}
@@ -168,8 +212,21 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">{user.email}</p>
-                  {speciality && (
-                    <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">{speciality}</p>
+                  {user.role === "PROFESSIONAL" && speciality && (
+                    <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                      {speciality}
+                      {user.professionalProfile?.modality && ` · ${user.professionalProfile.modality}`}
+                    </p>
+                  )}
+                  {user.role === "PATIENT" && user.patientProfile?.phone && (
+                    <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                      Tel: {user.patientProfile.phone}
+                    </p>
+                  )}
+                  {user.createdAt && (
+                    <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                      Cadastrado em {formatDate(user.createdAt)}
+                    </p>
                   )}
                   <div className="mt-2">
                     <StatusBadge status={user.status} type="user" />
@@ -177,7 +234,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col gap-0.5 shrink-0">
+                <div className="flex flex-col gap-0.5 shrink-0" onClick={stopClick}>
                   <Button
                     size="icon"
                     variant="ghost"
@@ -235,8 +292,55 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
               >
                 Usuário <SortIcon field="name" />
               </TableHead>
-              <TableHead className="text-center">Tipo</TableHead>
-              <TableHead className="text-center">Especialidade</TableHead>
+
+              {typeFilter === "all" && (
+                <TableHead
+                  className="text-center cursor-pointer select-none"
+                  onClick={() => toggleSort("type")}
+                  title="Ordenar por Tipo"
+                >
+                  Tipo <SortIcon field="type" />
+                </TableHead>
+              )}
+
+              {typeFilter === "PATIENT" && (
+                <>
+                  <TableHead
+                    className="text-center cursor-pointer select-none"
+                    onClick={() => toggleSort("phone")}
+                    title="Ordenar por Telefone"
+                  >
+                    Telefone <SortIcon field="phone" />
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer select-none"
+                    onClick={() => toggleSort("dateOfBirth")}
+                    title="Ordenar por Nascimento"
+                  >
+                    Nascimento <SortIcon field="dateOfBirth" />
+                  </TableHead>
+                </>
+              )}
+
+              {typeFilter === "PROFESSIONAL" && (
+                <>
+                  <TableHead
+                    className="text-center cursor-pointer select-none"
+                    onClick={() => toggleSort("speciality")}
+                    title="Ordenar por Especialidade"
+                  >
+                    Especialidade <SortIcon field="speciality" />
+                  </TableHead>
+                  <TableHead
+                    className="text-center cursor-pointer select-none"
+                    onClick={() => toggleSort("modality")}
+                    title="Ordenar por Modalidade"
+                  >
+                    Modalidade <SortIcon field="modality" />
+                  </TableHead>
+                </>
+              )}
+
               <TableHead
                 className="text-center cursor-pointer select-none"
                 onClick={() => toggleSort("status")}
@@ -244,6 +348,15 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
               >
                 Status <SortIcon field="status" />
               </TableHead>
+
+              <TableHead
+                className="text-center cursor-pointer select-none"
+                onClick={() => toggleSort("createdAt")}
+                title="Ordenar por data de cadastro"
+              >
+                Cadastrado em <SortIcon field="createdAt" />
+              </TableHead>
+
               <TableHead className="pr-6 text-center">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -251,28 +364,58 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
             {sortedUsers.map((user) => {
               const badge = TYPE_BADGE[user.role];
               const speciality = getSpeciality(user);
+              const stopClick = (e: React.MouseEvent) => e.stopPropagation();
               return (
-                <TableRow key={user.id}>
+                <TableRow
+                  key={user.id}
+                  className="cursor-pointer"
+                  onClick={() => goToEdit(user.id)}
+                  title={`Abrir perfil de ${user.name}`}
+                >
                   <TableCell className="pl-6">
                     <p className="font-medium text-foreground">{user.name}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
                   </TableCell>
 
-                  <TableCell className="text-center">
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
-                      {badge.label}
-                    </span>
-                  </TableCell>
+                  {typeFilter === "all" && (
+                    <TableCell className="text-center">
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                    </TableCell>
+                  )}
 
-                  <TableCell className="text-center text-sm text-muted-foreground">
-                    {speciality ?? <span className="text-muted-foreground/40">—</span>}
-                  </TableCell>
+                  {typeFilter === "PATIENT" && (
+                    <>
+                      <TableCell className="text-center text-sm text-muted-foreground">
+                        {user.patientProfile?.phone ?? <span className="text-muted-foreground/40">—</span>}
+                      </TableCell>
+                      <TableCell className="text-center text-sm text-muted-foreground">
+                        {formatDate(user.patientProfile?.dateOfBirth) ?? <span className="text-muted-foreground/40">—</span>}
+                      </TableCell>
+                    </>
+                  )}
+
+                  {typeFilter === "PROFESSIONAL" && (
+                    <>
+                      <TableCell className="text-center text-sm text-muted-foreground">
+                        {speciality ?? <span className="text-muted-foreground/40">—</span>}
+                      </TableCell>
+                      <TableCell className="text-center text-sm text-muted-foreground">
+                        {user.professionalProfile?.modality ?? <span className="text-muted-foreground/40">—</span>}
+                      </TableCell>
+                    </>
+                  )}
 
                   <TableCell className="text-center">
                     <StatusBadge status={user.status} type="user" />
                   </TableCell>
 
-                  <TableCell className="pr-6">
+                  <TableCell className="text-center text-sm text-muted-foreground">
+                    {formatDate(user.createdAt) ?? <span className="text-muted-foreground/40">—</span>}
+                  </TableCell>
+
+                  <TableCell className="pr-6" onClick={stopClick}>
                     <div className="flex items-center justify-center gap-0.5">
                       <Button
                         size="icon"
@@ -313,7 +456,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                         variant="ghost"
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         title={`Editar dados de ${user.name}`}
-                        onClick={() => router.push(`/dashboard/admin/users/${user.id}?edit=1`)}
+                        onClick={() => goToEdit(user.id)}
                       >
                         <Pencil />
                       </Button>

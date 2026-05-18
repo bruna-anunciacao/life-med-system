@@ -38,21 +38,25 @@ export class QuestionnaireController {
   @ApiOperation({
     summary: 'Listar definição do questionário de vulnerabilidade',
   })
-  @ApiResponse({
-    status: 200,
-    type: QuestionnaireDefinitionResponseDto,
-  })
+  @ApiResponse({ status: 200, type: QuestionnaireDefinitionResponseDto })
   getQuestions() {
     return this.questionnaireService.getQuestions();
+  }
+
+  @Get('questionnaire/me')
+  @UseGuards(JwtAuthGuard, PatientRoleGuard)
+  @ApiOperation({ summary: 'Resposta do paciente autenticado' })
+  @ApiResponse({ status: 200, type: QuestionnaireResponseDto })
+  getOwnResponse(@Request() req) {
+    return this.questionnaireService.getPatientResponse(
+      req.user.userId as string,
+    );
   }
 
   @Post('questionnaire')
   @UseGuards(JwtAuthGuard, PatientRoleGuard)
   @ApiOperation({ summary: 'Paciente envia seu próprio questionário' })
-  @ApiResponse({
-    status: 201,
-    type: QuestionnaireResponseDto,
-  })
+  @ApiResponse({ status: 201, type: QuestionnaireResponseDto })
   submitSelf(@Request() req, @Body() dto: SubmitQuestionnaireDto) {
     return this.questionnaireService.submitSelf(req.user.userId as string, dto);
   }
@@ -62,10 +66,7 @@ export class QuestionnaireController {
   @Roles(UserRole.MANAGER)
   @ApiOperation({ summary: 'Gestor cria questionário para um paciente' })
   @ApiParam({ name: 'patientId', description: 'ID do usuário paciente' })
-  @ApiResponse({
-    status: 201,
-    type: QuestionnaireResponseDto,
-  })
+  @ApiResponse({ status: 201, type: QuestionnaireResponseDto })
   submitForManager(
     @Request() req,
     @Param('patientId') patientId: string,
@@ -85,10 +86,7 @@ export class QuestionnaireController {
     summary: 'Gestor atualiza questionário existente de um paciente',
   })
   @ApiParam({ name: 'patientId', description: 'ID do usuário paciente' })
-  @ApiResponse({
-    status: 200,
-    type: QuestionnaireResponseDto,
-  })
+  @ApiResponse({ status: 200, type: QuestionnaireResponseDto })
   updateForManager(
     @Request() req,
     @Param('patientId') patientId: string,

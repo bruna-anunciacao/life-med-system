@@ -1,10 +1,17 @@
 import * as z from "zod";
+import { isValidPhoneBR } from "@/components/ui/phone-input-br";
 
 export const patientFormSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
   status: z.string().min(1, "Status é obrigatório"),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || isValidPhoneBR(val),
+      "Telefone deve ter 10 ou 11 dígitos",
+    ),
   dateOfBirth: z.string().optional(),
   gender: z.string().optional(),
   address: z.string().optional(),

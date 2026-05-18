@@ -3,8 +3,7 @@
 import { Controller, type Control, type FieldErrors, type UseFormRegister } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import PhoneInput from "react-phone-number-input";
-import ptBr from "react-phone-number-input/locale/pt-BR";
+import { PhoneInputBR } from "@/components/ui/phone-input-br";
 import type { RegisterFormData } from "../register-validation";
 
 type PatientFieldsProps = {
@@ -40,19 +39,13 @@ export function PatientFields({ register, control, errors, isLoading, onCpfChang
             name="phone"
             control={control}
             render={({ field }) => (
-              <PhoneInput
+              <PhoneInputBR
                 id="phone"
-                placeholder="71 99999 9999"
-                international
-                countryCallingCodeEditable={false}
-                labels={ptBr}
-                title="Insira seu número de celular com DDD"
-                aria-label="Telefone celular do paciente"
-                className="w-full h-9 flex items-center border border-input rounded-md bg-white text-[#334155] overflow-hidden [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-[#e2e8f0] [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:px-4 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-sm [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none"
                 value={field.value as string}
                 onChange={field.onChange}
+                onBlur={field.onBlur}
+                ref={field.ref}
                 disabled={isLoading}
-                defaultCountry="BR"
               />
             )}
           />

@@ -9,6 +9,7 @@ import { UserProfileHeader } from "./components/UserProfileHeader";
 import { PatientProfileForm } from "./components/PatientProfileForm";
 import { ProfessionalProfileForm } from "./components/ProfessionalProfileForm";
 import { useAdminUserForm } from "./useAdminUserForm";
+import { ArrowLeft } from "lucide-react";
 
 const AdminUserProfilePage = () => {
   const {
@@ -36,18 +37,18 @@ const AdminUserProfilePage = () => {
   if (!user) {
     return (
       <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
-        <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
-            <p className="mt-1 text-base text-gray-500">{error ?? "Usuário não encontrado."}</p>
-          </div>
-          <Button 
-            size="lg" 
-            onClick={() => router.back()}
-            title="Voltar para a tela anterior"
-          >
-            Voltar
-          </Button>
+        <Button
+          onClick={() => router.push("/dashboard/admin")}
+          variant="outline"
+          className="mb-6"
+          title="Voltar para a listagem de usuários"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
+          <p className="mt-1 text-base text-gray-500">{error ?? "Usuário não encontrado."}</p>
         </div>
       </section>
     );
@@ -62,41 +63,42 @@ const AdminUserProfilePage = () => {
 
   return (
     <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
-      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
-          <p className="mt-1 text-base text-gray-500">Visualização e edição de dados cadastrais.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button 
-            size="lg" 
-            onClick={() => router.back()}
-            title="Voltar para a listagem de usuários"
-          >
-            Voltar
-          </Button>
-          {canEditProfile && (
-            <Button 
-              size="lg" 
-              onClick={() => (isEditing ? handleCancel() : setIsEditing(true))} 
-              disabled={isSaving}
-              title={isEditing ? "Cancelar alterações e sair do modo de edição" : "Habilitar edição dos dados do usuário"}
-            >
-              {isEditing ? "Cancelar edição" : "Editar dados"}
-            </Button>
-          )}
-        </div>
+      <Button
+        onClick={() => router.push("/dashboard/admin")}
+        variant="outline"
+        className="mb-6"
+        title="Voltar para a listagem de usuários"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Button>
+
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
+        <p className="mt-1 text-base text-gray-500">Visualização e edição de dados cadastrais.</p>
       </div>
 
       <Card className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-12 space-y-8">
-          <UserProfileHeader
-            name={user.name}
-            email={user.email}
-            role={user.role}
-            specialty={user.professionalProfile?.specialities?.[0]?.name}
-            photoUrl={fullPhotoUrl}
-          />
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <UserProfileHeader
+              name={user.name}
+              email={user.email}
+              role={user.role}
+              specialty={user.professionalProfile?.specialities?.[0]?.name}
+              photoUrl={fullPhotoUrl}
+            />
+            {canEditProfile && (
+              <Button
+                size="lg"
+                onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
+                disabled={isSaving}
+                title={isEditing ? "Cancelar alterações e sair do modo de edição" : "Habilitar edição dos dados do usuário"}
+              >
+                {isEditing ? "Cancelar edição" : "Editar dados"}
+              </Button>
+            )}
+          </div>
 
           <Separator />
 
