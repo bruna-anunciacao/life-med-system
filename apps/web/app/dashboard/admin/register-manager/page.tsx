@@ -25,7 +25,6 @@ export default function RegisterManagerPage() {
       cpf: "",
       password: "",
       phone: "",
-      address: "",
       bio: "",
     },
   });
@@ -46,7 +45,6 @@ export default function RegisterManagerPage() {
         cpf: data.cpf.replace(/\D/g, ""),
         password: data.password,
         phone: data.phone.trim(),
-        address: data.address?.trim() || undefined,
         bio: data.bio?.trim() || undefined,
       });
 
@@ -107,22 +105,14 @@ export default function RegisterManagerPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <PasswordField
-                name="password"
-                label="Senha inicial"
-                register={register}
-                errors={errors}
-                showStrengthMeter
-                currentValue={watch("password")}
-              />
-
-              <div className="space-y-1.5">
-                <Label htmlFor="address">Endereço (opcional)</Label>
-                <Input id="address" placeholder="Av. Sete de Setembro, 500" {...register("address")} />
-                {errors.address && <p className="text-xs text-red-600">{errors.address.message}</p>}
-              </div>
-            </div>
+            <PasswordField
+              name="password"
+              label="Senha inicial"
+              register={register}
+              errors={errors}
+              showStrengthMeter
+              currentValue={watch("password")}
+            />
 
             <div className="space-y-1.5">
               <Label htmlFor="bio">Bio (opcional)</Label>

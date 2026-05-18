@@ -51,7 +51,10 @@ export default function PatientDetailsPage() {
         dateOfBirth: patient.dateOfBirth
           ? String(patient.dateOfBirth).split("T")[0]
           : "",
-        gender: (patient.gender as string) || "",
+        gender: (patient.gender as EditPatientSchema["gender"]) || "",
+      });
+    }
+  }, [patient, reset]);
 
   const onSubmit = async (data: EditPatientSchema) => {
     try {
@@ -88,7 +91,11 @@ export default function PatientDetailsPage() {
         dateOfBirth: patient.dateOfBirth
           ? String(patient.dateOfBirth).split("T")[0]
           : "",
-        gender: (patient.gender as string) || "",
+        gender: (patient.gender as EditPatientSchema["gender"]) || "",
+      });
+    }
+    setIsEditing(false);
+  };
 
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.target.value = applyCpfMask(e.target.value);
@@ -164,7 +171,9 @@ export default function PatientDetailsPage() {
                 }
                 variant={isEditing ? "outline" : "default"}
                 title={
-                  isEditing ? "Cancelar alterações" : "Habilitar modo de edição"
+                  isEditing
+                    ? "Cancelar alterações"
+                    : "Habilitar modo de edição"
                 }
                 disabled={isSaving}
               >
@@ -173,295 +182,296 @@ export default function PatientDetailsPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="name"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Nome Completo
-                  </label>
-                  <input
-                    id="name"
-                    {...register("name")}
-                    disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
-                    }`}
-                    title="Nome do paciente"
-                  />
-                  {errors.name && (
-                    <p className="text-xs text-red-600">
-                      {errors.name.message}
-                    </p>
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="name"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Nome Completo
+                    </label>
+                    <input
+                      id="name"
+                      {...register("name")}
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                        isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                      }`}
+                      title="Nome do paciente"
+                    />
+                    {errors.name && (
+                      <p className="text-xs text-red-600">
+                        {errors.name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="cpf"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      CPF
+                    </label>
+                    <input
+                      id="cpf"
+                      {...register("cpf", {
+                        onChange: handleCpfChange,
+                      })}
+                      disabled={!isEditing}
+                      placeholder="000.000.000-00"
+                      maxLength={14}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                        isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                      }`}
+                      title="CPF do paciente"
+                    />
+                    {errors.cpf && (
+                      <p className="text-xs text-red-600">
+                        {errors.cpf.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label
+                      htmlFor="email"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      {...register("email")}
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                        isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                      }`}
+                    />
+                    {errors.email && (
+                      <p className="text-xs text-red-600">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Telefone
+                    </label>
+                    <Controller
+                      name="phone"
+                      control={control}
+                      render={({ field }) => {
+                        let safeValue = field.value
+                          ? field.value.replace(/[^\d+]/g, "")
+                          : "";
+
+                        if (safeValue && !safeValue.startsWith("+")) {
+                          safeValue = `+55${safeValue}`;
+                        }
+
+                        return (
+                          <PhoneInput
+                            id="phone"
+                            placeholder="(71) 99999-9999"
+                            international
+                            countryCallingCodeEditable={false}
+                            labels={ptBr}
+                            defaultCountry="BR"
+                            value={safeValue || undefined}
+                            onChange={(val) => field.onChange(val || "")}
+                            onBlur={field.onBlur}
+                            ref={field.ref}
+                            disabled={!isEditing}
+                            className={`w-full flex items-center border border-gray-300 rounded-lg overflow-hidden transition-colors duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 ${
+                              !isEditing ? "bg-gray-50" : "bg-white"
+                            } [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-300 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:px-4 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-base [&_.PhoneInputInput]:text-gray-700 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput:disabled]:text-gray-500 [&_.PhoneInputInput:disabled]:cursor-not-allowed`}
+                          />
+                        );
+                      }}
+                    />
+                    {errors.phone && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {errors.phone.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="dateOfBirth"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Data de Nascimento
+                    </label>
+                    <input
+                      id="dateOfBirth"
+                      type="date"
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                        isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
+                      }`}
+                      {...register("dateOfBirth")}
+                    />
+                    {errors.dateOfBirth && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {errors.dateOfBirth.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="gender"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Gênero
+                    </label>
+                    <select
+                      id="gender"
+                      disabled={!isEditing}
+                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
+                        isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
+                      }`}
+                      {...register("gender")}
+                    >
+                      <option value="">Selecione...</option>
+                      <option value="Masculino">Masculino</option>
+                      <option value="Feminino">Feminino</option>
+                      <option value="Outro">Outro</option>
+                      <option value="Prefiro não informar">
+                        Prefiro não informar
+                      </option>
+                    </select>
+                    {errors.gender && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {errors.gender.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="cpf"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    CPF
-                  </label>
-                  <input
-                    id="cpf"
-                    {...register("cpf", {
-                      onChange: handleCpfChange,
-                    })}
-                    disabled={!isEditing}
-                    placeholder="000.000.000-00"
-                    maxLength={14}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
-                    }`}
-                    title="CPF do paciente"
-                  />
-                  {errors.cpf && (
-                    <p className="text-xs text-red-600">{errors.cpf.message}</p>
-                  )}
-                </div>
+                {isEditing && (
+                  <div className="flex gap-4 mt-6">
+                    <Button
+                      type="submit"
+                      disabled={isSaving}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      title="Confirmar e salvar as alterações realizadas"
+                    >
+                      {isSaving ? "Salvando..." : "Salvar Alterações"}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      variant="outline"
+                      className="flex-1"
+                      title="Descartar alterações e voltar para visualização"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                )}
+              </form>
+            </CardContent>
+          </Card>
 
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="email"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Email
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    {...register("email")}
-                    disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
-                    }`}
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-red-600">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
+          <Card className="bg-white mb-4">
+            <CardContent className="p-8">
+              <AddressForm userId={patient?.id || ""} />
+            </CardContent>
+          </Card>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Telefone
-                  </label>
-                  <Controller
-                    name="phone"
-                    control={control}
-                    render={({ field }) => {
-                      let safeValue = field.value
-                        ? field.value.replace(/[^\d+]/g, "")
-                        : "";
-
-                      if (safeValue && !safeValue.startsWith("+")) {
-                        safeValue = `+55${safeValue}`;
-                      }
-
-                      return (
-                        <PhoneInput
-                          id="phone"
-                          placeholder="(71) 99999-9999"
-                          international
-                          countryCallingCodeEditable={false}
-                          labels={ptBr}
-                          defaultCountry="BR"
-                          value={safeValue || undefined}
-                          onChange={(val) => field.onChange(val || "")}
-                          onBlur={field.onBlur}
-                          ref={field.ref}
-                          disabled={!isEditing}
-                          className={`w-full flex items-center border border-gray-300 rounded-lg overflow-hidden transition-colors duration-200 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 ${
-                            !isEditing ? "bg-gray-50" : "bg-white"
-                          } [&_.PhoneInputCountry]:max-w-[40%] [&_.PhoneInputCountry]:px-3 [&_.PhoneInputCountry]:flex [&_.PhoneInputCountry]:flex-row-reverse [&_.PhoneInputCountry]:items-center [&_.PhoneInputCountry]:justify-start [&_.PhoneInputCountry]:gap-1 [&_.PhoneInputCountry]:border-r [&_.PhoneInputCountry]:border-gray-300 [&_.PhoneInputCountrySelect]:max-w-[80%] [&_.PhoneInputCountryIcon]:w-5 [&_.PhoneInputCountryIcon]:h-[14px] [&_.PhoneInputCountryIcon]:flex [&_.PhoneInputCountryIcon]:justify-center [&_.PhoneInputCountryIcon]:items-center [&_.PhoneInputCountryIcon]:overflow-hidden [&_.PhoneInputCountryIcon_img]:w-full [&_.PhoneInputCountryIcon_img]:h-full [&_.PhoneInputCountryIcon_img]:object-cover [&_.PhoneInputInput]:h-full [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:px-4 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:border-none [&_.PhoneInputInput]:text-base [&_.PhoneInputInput]:text-gray-700 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput:disabled]:text-gray-500 [&_.PhoneInputInput:disabled]:cursor-not-allowed`}
-                        />
-                      );
-                    }}
-                  />
-                  {errors.phone && (
-                    <p className="text-xs text-red-600 mt-1">
-                      {errors.phone.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="dateOfBirth"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Data de Nascimento
-                  </label>
-                  <input
-                    id="dateOfBirth"
-                    type="date"
-                    disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
-                    }`}
-                    {...register("dateOfBirth")}
-                  />
-                  {errors.dateOfBirth && (
-                    <p className="text-xs text-red-600 mt-1">
-                      {errors.dateOfBirth.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="gender"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Gênero
-                  </label>
-                  <select
-                    id="gender"
-                    disabled={!isEditing}
-                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                      isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
-                    }`}
-                    {...register("gender")}
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="Masculino">Masculino</option>
-                    <option value="Feminino">Feminino</option>
-                    <option value="Outro">Outro</option>
-                    <option value="Prefiro não informar">
-                      Prefiro não informar
-                    </option>
-                  </select>
-                  {errors.gender && (
-                    <p className="text-xs text-red-600 mt-1">
-                      {errors.gender.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-
-              {isEditing && (
-                <div className="flex gap-4 mt-6">
-                  <Button
-                    type="submit"
-                    disabled={isSaving}
-                    className="flex-1 bg-green-600 hover:bg-green-700"
-                    title="Confirmar e salvar as alterações realizadas"
-                  >
-                    {isSaving ? "Salvando..." : "Salvar Alterações"}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={handleCancelEdit}
-                    variant="outline"
-                    className="flex-1"
-                    title="Descartar alterações e voltar para visualização"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white mb-4">
-          <CardContent className="p-8">
-            <AddressForm userId={patient?.id || ""} />
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white">
-          <CardContent className="p-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Questionário de Vulnerabilidade
-            </h2>
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm text-slate-600">
-                    Status do questionário
-                  </p>
-                  <p className="font-medium text-slate-900">
-                    {patient.patientProfile?.questionnaireCompleted
-                      ? "Respondido"
-                      : "Pendente"}
-                  </p>
-                  {patient.questionnaire && (
+          <Card className="bg-white">
+            <CardContent className="p-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Questionário de Vulnerabilidade
+              </h2>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="space-y-1">
                     <p className="text-sm text-slate-600">
-                      Pontuação: {patient.questionnaire.totalScore} |{" "}
-                      {patient.questionnaire.isVulnerable
-                        ? "Vulnerável"
-                        : "Não vulnerável"}
+                      Status do questionário
                     </p>
-                  )}
-                </div>
+                    <p className="font-medium text-slate-900">
+                      {patient.patientProfile?.questionnaireCompleted
+                        ? "Respondido"
+                        : "Pendente"}
+                    </p>
+                    {patient.questionnaire && (
+                      <p className="text-sm text-slate-600">
+                        Pontuação: {patient.questionnaire.totalScore} |{" "}
+                        {patient.questionnaire.isVulnerable
+                          ? "Vulnerável"
+                          : "Não vulnerável"}
+                      </p>
+                    )}
+                  </div>
 
-                <Link
-                  href={`/dashboard/manager/patients/${patient.id}/questionnaire`}
-                  title={
-                    patient.questionnaire
-                      ? "Editar as respostas do questionário"
-                      : "Iniciar preenchimento do questionário"
-                  }
-                >
-                  <Button
+                  <Link
+                    href={`/dashboard/manager/patients/${patient.id}/questionnaire`}
                     title={
                       patient.questionnaire
-                        ? "Editar questionário"
-                        : "Preencher questionário"
+                        ? "Editar as respostas do questionário"
+                        : "Iniciar preenchimento do questionário"
                     }
                   >
-                    {patient.questionnaire
-                      ? "Editar questionário"
-                      : "Preencher questionário"}
-                  </Button>
-                </Link>
+                    <Button
+                      title={
+                        patient.questionnaire
+                          ? "Editar questionário"
+                          : "Preencher questionário"
+                      }
+                    >
+                      {patient.questionnaire
+                        ? "Editar questionário"
+                        : "Preencher questionário"}
+                    </Button>
+                  </Link>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white mt-6">
-          <CardContent className="p-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Informações do Sistema
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-slate-600">ID do Paciente</p>
-                <p className="font-mono text-sm text-gray-900 break-all">
-                  {patient.id}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Status</p>
-                <p className="font-medium text-gray-900">
-                  {patient.status || "Ativo"}
-                </p>
-              </div>
-              {patient.createdAt && (
+            </CardContent>
+          </Card>
+          <Card className="bg-white mt-6">
+            <CardContent className="p-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Informações do Sistema
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-slate-600">Data de Cadastro</p>
-                  <p className="font-medium text-gray-900">
-                    {new Date(patient.createdAt).toLocaleDateString("pt-BR")}
+                  <p className="text-sm text-slate-600">ID do Paciente</p>
+                  <p className="font-mono text-sm text-gray-900 break-all">
+                    {patient.id}
                   </p>
                 </div>
-              )}
-              {patient.updatedAt && (
                 <div>
-                  <p className="text-sm text-slate-600">Última Atualização</p>
+                  <p className="text-sm text-slate-600">Status</p>
                   <p className="font-medium text-gray-900">
-                    {new Date(patient.updatedAt).toLocaleDateString("pt-BR")}
+                    {patient.status || "Ativo"}
                   </p>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </section>
-  );
+                {patient.createdAt && (
+                  <div>
+                    <p className="text-sm text-slate-600">Data de Cadastro</p>
+                    <p className="font-medium text-gray-900">
+                      {new Date(patient.createdAt).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                )}
+                {patient.updatedAt && (
+                  <div>
+                    <p className="text-sm text-slate-600">Última Atualização</p>
+                    <p className="font-medium text-gray-900">
+                      {new Date(patient.updatedAt).toLocaleDateString("pt-BR")}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    );
 }

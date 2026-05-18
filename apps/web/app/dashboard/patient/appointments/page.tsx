@@ -119,6 +119,8 @@ const AppointmentsPage = () => {
     },
   );
 
+  const hasReportData = filtered.length > 0;
+
   const handleDownloadReport = async () => {
     try {
       setIsDownloadingReport(true);
@@ -203,8 +205,8 @@ const AppointmentsPage = () => {
           <Button
             size="lg"
             onClick={handleDownloadReport}
-            disabled={isDownloadingReport}
-            title={reportHint}
+            disabled={isDownloadingReport || !hasReportData}
+            title={hasReportData ? reportHint : "Nenhum dado disponível para baixar"}
           >
             {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
           </Button>
@@ -239,8 +241,8 @@ const AppointmentsPage = () => {
           <Button
             size="default"
             onClick={handleDownloadReport}
-            disabled={isDownloadingReport}
-            title={reportHint}
+            disabled={isDownloadingReport || !hasReportData}
+            title={hasReportData ? reportHint : "Nenhum dado disponível para baixar"}
             className="w-full"
           >
             {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}

@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Request, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query, Request, Res } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -13,6 +13,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { PatientRoleGuard } from './guards/patient-role.guard';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import type { Response } from 'express';
+import type PDFKit from 'pdfkit';
 import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Patients')
@@ -62,14 +63,11 @@ export class PatientsController {
       query,
     );
 
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        'attachment; filename=relatorio-consultas-concluidas.pdf',
-    });
-
-    doc.pipe(res);
-    doc.end();
+    this.sendPdfOrNoContent(
+      res,
+      doc,
+      'relatorio-consultas-concluidas.pdf',
+    );
   }
 
   @Get('export/pending-appointments')
@@ -112,14 +110,11 @@ export class PatientsController {
       query,
     );
 
-    res.set({
-      'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        'attachment; filename=relatorio-consultas-pendentes.pdf',
-    });
-
-    doc.pipe(res);
-    doc.end();
+    this.sendPdfOrNoContent(
+      res,
+      doc,
+      'relatorio-consultas-pendentes.pdf',
+    );
   }
 
   @Get('export/cancelled-appointments')
@@ -162,10 +157,26 @@ export class PatientsController {
       query,
     );
 
+    this.sendPdfOrNoContent(
+      res,
+      doc,
+      'relatorio-consultas-canceladas.pdf',
+    );
+  }
+
+  private sendPdfOrNoContent(
+    res: Response,
+    doc: PDFKit.PDFDocument | null,
+    filename: string,
+  ): void {
+    if (!doc) {
+      res.status(HttpStatus.NO_CONTENT).end();
+      return;
+    }
+
     res.set({
       'Content-Type': 'application/pdf',
-      'Content-Disposition':
-        'attachment; filename=relatorio-consultas-canceladas.pdf',
+      'Content-Disposition': `attachment; filename=${filename}`,
     });
 
     doc.pipe(res);

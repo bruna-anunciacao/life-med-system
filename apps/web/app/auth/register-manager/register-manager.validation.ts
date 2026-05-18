@@ -18,7 +18,6 @@ export const registerManagerSchema = z.object({
     .string()
     .min(1, 'Telefone é obrigatório')
     .regex(/^\+[1-9]\d{6,14}$/, 'Telefone deve estar no formato internacional (ex: +5571999999999)'),
-  address: z.string().max(255, 'Endereço deve ter no máximo 255 caracteres').optional().or(z.literal('')),
   bio: z.string().max(500, 'Bio deve ter no máximo 500 caracteres').optional().or(z.literal('')),
 });
 
