@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from 'src/mail/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -158,6 +158,15 @@ export class UsersService {
       cpf,
       ...userData
     } = dto;
+
+    if (cpf !== undefined && cpf && cpf !== user.cpf) {
+      const cpfExists = await this.prisma.user.findUnique({
+        where: { cpf },
+      });
+      if (cpfExists && cpfExists.id !== targetId) {
+        throw new BadRequestException('CPF já cadastrado');
+      }
+    }
 
     let newStatus = status ? status : user.status;
 

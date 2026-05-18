@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { isValidPhoneBR } from "@/components/ui/phone-input-br";
 
 export const editPatientSchema = z.object({
   name: z
@@ -9,19 +10,11 @@ export const editPatientSchema = z.object({
   cpf: z.string().optional().nullable().or(z.literal("")),
   phone: z
     .string()
-    .transform((val) => {
-      if (!val) return "";
-      let cleaned = val.replace(/[^\d+]/g, "");
-      if (cleaned && !cleaned.startsWith("+")) {
-        cleaned = `+55${cleaned}`;
-      }
-      return cleaned;
-    })
-    .refine((val) => val === "" || /^\+[1-9]\d{6,14}$/.test(val), {
-      message:
-        "Telefone deve estar no formato internacional (ex: +5571999999999)",
-    })
-    .or(z.literal("")),
+    .optional()
+    .refine(
+      (val) => !val || isValidPhoneBR(val),
+      "Telefone deve ter 10 ou 11 dígitos",
+    ),
   dateOfBirth: z
     .string()
     .refine((val) => {

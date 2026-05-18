@@ -195,8 +195,8 @@ export function ManagerBookingModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent
         className={`${
-          isMobile ? "w-[95vw]" : "w-[720px]"
-        } !max-w-none p-0 overflow-hidden shadow-2xl rounded-xl max-h-[92vh] flex flex-col`}
+          isMobile ? "w-[95vw]" : "w-[900px]"
+        } !max-w-none p-0 overflow-hidden shadow-2xl rounded-xl h-[90vh] max-h-[90vh] flex flex-col`}
       >
         {/* Header limpo */}
         <DialogHeader className="px-6 py-4 bg-white border-b border-gray-200">

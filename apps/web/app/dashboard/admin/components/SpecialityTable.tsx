@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -8,7 +8,9 @@ import { useCreateSpeciality } from "@/queries/useCreateSpeciality";
 import { useUpdateSpeciality } from "@/queries/useUpdateSpeciality";
 import { useDeleteSpeciality } from "@/queries/useDeleteSpeciality";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Stethoscope, Plus, Pencil, Trash2 } from "lucide-react";
+import { Stethoscope, Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
+type SortDir = "asc" | "desc";
 
 interface Speciality {
   id: string;
@@ -30,6 +32,28 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
   const { mutate: deleteSpeciality, isPending: isDeleting } = useDeleteSpeciality();
 
   const isSaving = isCreating || isUpdating;
+
+  const [sortDir, setSortDir] = useState<SortDir | null>(null);
+
+  const sortedSpecialities = useMemo(() => {
+    if (!sortDir) return specialities;
+    return [...specialities].sort((a, b) => {
+      const cmp = a.name.localeCompare(b.name);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [specialities, sortDir]);
+
+  function toggleSort() {
+    setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+  }
+
+  const SortIcon = () => {
+    if (!sortDir)
+      return <ArrowUpDown className="ml-1.5 inline h-3.5 w-3.5 text-muted-foreground/50" />;
+    return sortDir === "asc"
+      ? <ArrowUp className="ml-1.5 inline h-3.5 w-3.5 text-foreground" />
+      : <ArrowDown className="ml-1.5 inline h-3.5 w-3.5 text-foreground" />;
+  };
 
   function openCreate() {
     setEditingId(null);
@@ -158,12 +182,18 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <th className="px-6 py-3 text-left">Nome da especialidade</th>
+                  <th
+                    className="px-6 py-3 text-left cursor-pointer select-none"
+                    onClick={toggleSort}
+                    title="Ordenar por nome da especialidade"
+                  >
+                    Nome da especialidade <SortIcon />
+                  </th>
                   <th className="px-6 py-3 text-center">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {specialities.map((spec) => (
+                {sortedSpecialities.map((spec) => (
                   <tr key={spec.id} className="hover:bg-muted/30 transition-colors">
                     <td className="px-6 py-3.5">
                       <div className="flex items-center gap-3">

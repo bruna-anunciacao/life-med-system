@@ -25,6 +25,14 @@ export interface UpdatePatientDto {
   gender?: string;
 }
 
+export interface QuestionnaireAnswerSummary {
+  id: string;
+  questionId: string;
+  optionId: string;
+  question?: { id: string; label: string };
+  option?: { id: string; label: string; score: number };
+}
+
 export interface QuestionnaireSummary {
   id: string;
   answeredBy: "PATIENT" | "MANAGER";
@@ -32,7 +40,7 @@ export interface QuestionnaireSummary {
   totalScore: number;
   isVulnerable: boolean;
   responseDate: string;
-  responses: Record<string, unknown>;
+  answers?: QuestionnaireAnswerSummary[];
 }
 
 export interface ManagerPatientResponse {

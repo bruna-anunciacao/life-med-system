@@ -12,6 +12,7 @@ const QUESTIONNAIRE_REDIRECT_PATH = '/dashboard/patient/questionnaire';
 const WHITELIST = new Set([
   'GET:/users/me',
   'GET:/questionnaire/questions',
+  'GET:/questionnaire/me',
   'POST:/questionnaire',
 ]);
 
@@ -30,7 +31,6 @@ export class QuestionnaireCompletionGuard implements CanActivate {
     }
 
     const routeKey = `${request.method.toUpperCase()}:${request.originalUrl.split('?')[0]}`;
-
     if (WHITELIST.has(routeKey)) {
       return true;
     }

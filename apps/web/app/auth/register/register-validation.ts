@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { passwordValidation } from "@/lib/password";
+import { isValidPhoneBR } from "@/components/ui/phone-input-br";
 
 const nameValidation = z
   .string()
@@ -9,10 +10,7 @@ const nameValidation = z
 const phoneValidation = z
   .string()
   .min(1, "Celular é obrigatório")
-  .regex(
-    /^\+[1-9]\d{6,14}$/,
-    "Celular deve estar no formato internacional (ex: +5571999999999)",
-  );
+  .refine(isValidPhoneBR, "Celular deve ter 10 ou 11 dígitos");
 
 const cpfValidation = z
   .string()
