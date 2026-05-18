@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { CPF_INVALID_MESSAGE, isValidCpf } from "@/lib/cpf";
 
 export const editPatientSchema = z.object({
   name: z
@@ -6,7 +7,12 @@ export const editPatientSchema = z.object({
     .min(3, "Nome deve ter pelo menos 3 caracteres")
     .max(100, "Nome muito longo"),
   email: z.email("E-mail inválido"),
-  cpf: z.string().optional().nullable().or(z.literal("")),
+  cpf: z
+    .string()
+    .optional()
+    .nullable()
+    .or(z.literal(""))
+    .refine((val) => !val || isValidCpf(val), { message: CPF_INVALID_MESSAGE }),
   phone: z
     .string()
     .transform((val) => {

@@ -1,5 +1,6 @@
 import * as z from 'zod';
 import { addressSchema } from '@/components/address/address.validation';
+import { CPF_INVALID_MESSAGE, isValidCpf } from '@/lib/cpf';
 
 export const newPatientSchema = z.object({
   name: z
@@ -11,7 +12,11 @@ export const newPatientSchema = z.object({
     .string()
     .min(1, 'Telefone é obrigatório')
     .regex(/^\+[1-9]\d{6,14}$/, 'Telefone deve estar no formato internacional (ex: +5571999999999)'),
-  cpf: z.string().optional().or(z.literal('')),
+  cpf: z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .refine((val) => !val || isValidCpf(val), { message: CPF_INVALID_MESSAGE }),
   dateOfBirth: z
     .string()
     .refine((val) => {

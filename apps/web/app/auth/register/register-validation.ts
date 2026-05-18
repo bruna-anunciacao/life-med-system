@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { passwordValidation } from "@/lib/password";
+import { requiredCpfField } from "@/lib/cpf";
 
 const nameValidation = z
   .string()
@@ -14,19 +15,7 @@ const phoneValidation = z
     "Celular deve estar no formato internacional (ex: +5571999999999)",
   );
 
-const cpfValidation = z
-  .string()
-  .min(1, "CPF é obrigatório")
-  .refine(
-    (val) => {
-      // Aceita 11 dígitos (somente números) ou 14 caracteres (com máscara)
-      const onlyDigits = val.replace(/\D/g, "");
-      return (
-        onlyDigits.length === 11 || val.length === 14 // 000.000.000-00
-      );
-    },
-    { message: "CPF deve ter 11 dígitos ou estar no formato 000.000.000-00" },
-  );
+const cpfValidation = requiredCpfField();
 
 export const registerPatientValidation = z
   .object({
