@@ -58,7 +58,7 @@ async function main() {
     },
     create: {
       email: 'admin@lifemed.com',
-      cpf: '00000000000',
+      cpf: null,
       password: hashedPassword,
       name: 'Administrador do Sistema',
       role: UserRole.ADMIN,
