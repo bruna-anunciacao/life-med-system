@@ -54,9 +54,31 @@ export const usersService = {
     }
   },
 
-  async updateProfile(data: UpdateProfileDto) {
+  async updateProfile(data: UpdateProfileDto, photo?: File) {
     try {
-      const response = await api.patch("/users/me", data);
+      let body: FormData | UpdateProfileDto;
+      let headers: Record<string, string> = {};
+
+      if (photo) {
+        const formData = new FormData();
+        formData.append("photo", photo);
+        Object.entries(data).forEach(([key, value]) => {
+          if (value === undefined || value === null) return;
+          if (Array.isArray(value)) {
+            value.forEach((v) => formData.append(key, v));
+          } else if (typeof value === "object") {
+            formData.append(key, JSON.stringify(value));
+          } else {
+            formData.append(key, String(value));
+          }
+        });
+        body = formData;
+      } else {
+        body = data;
+        headers = { "Content-Type": "application/json" };
+      }
+
+      const response = await api.patch("/users/me", body, { headers });
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

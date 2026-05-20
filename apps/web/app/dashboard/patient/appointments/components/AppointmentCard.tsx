@@ -16,6 +16,7 @@ type AppointmentCardProps = {
   appointment: Appointment;
   onCancel: (id: string) => void;
   onRebook: () => void;
+  onDetails: (appointment: Appointment) => void;
   isMobile?: boolean;
 };
 
@@ -23,6 +24,7 @@ export function AppointmentCard({
   appointment: appt,
   onCancel,
   onRebook,
+  onDetails,
   isMobile = false,
 }: AppointmentCardProps) {
   const { day, month, year } = formatDate(appt.dateTime);
@@ -111,6 +113,7 @@ export function AppointmentCard({
                   size="sm"
                   className="flex-1 text-xs"
                   title="Ver detalhes da consulta"
+                  onClick={() => onDetails(appt)}
                 >
                   Detalhes
                 </Button>
@@ -130,6 +133,7 @@ export function AppointmentCard({
                 size="sm"
                 className="flex-1 text-xs"
                 title="Ver detalhes da consulta finalizada"
+                onClick={() => onDetails(appt)}
               >
                 Ver Detalhes
               </Button>
@@ -227,7 +231,11 @@ export function AppointmentCard({
             )}
           {(appt.status === "CONFIRMED" || appt.status === "PENDING") && (
             <>
-              <Button size="sm" title="Ver detalhes da consulta">
+              <Button
+                size="sm"
+                title="Ver detalhes da consulta"
+                onClick={() => onDetails(appt)}
+              >
                 Detalhes
               </Button>
               <Button
@@ -241,7 +249,11 @@ export function AppointmentCard({
             </>
           )}
           {appt.status === "COMPLETED" && (
-            <Button size="sm" title="Ver detalhes da consulta finalizada">
+            <Button
+              size="sm"
+              title="Ver detalhes da consulta finalizada"
+              onClick={() => onDetails(appt)}
+            >
               Ver Detalhes
             </Button>
           )}

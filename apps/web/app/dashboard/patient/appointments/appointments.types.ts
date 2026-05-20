@@ -2,7 +2,11 @@ export type Appointment = {
   id: string;
   professionalId: string;
   doctorName: string;
+  doctorEmail: string;
   specialty: string;
+  specialties: string[];
+  photoUrl?: string | null;
+  bio?: string | null;
   dateTime: string;
   status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
   modality: "VIRTUAL" | "CLINIC" | "HOME_VISIT";

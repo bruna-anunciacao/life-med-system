@@ -11,6 +11,7 @@ import { Appointment, TabKey } from "./appointments.types";
 import { AppointmentTabs } from "./components/AppointmentTabs";
 import { AppointmentCard } from "./components/AppointmentCard";
 import { EmptyAppointments } from "./components/EmptyAppointments";
+import { AppointmentDetailsModal } from "./components/AppointmentDetailsModal";
 import { patientsService } from "@/services/patients-service";
 import { CancelConfirmDialog } from "./components/CancelConfirmDialog";
 import {
@@ -23,7 +24,11 @@ function mapApiToAppointment(appt: AppointmentResponse): Appointment {
     id: appt.id,
     professionalId: appt.professional.id,
     doctorName: appt.professional.name,
-    specialty: "",
+    doctorEmail: appt.professional.email,
+    specialty: appt.professional.specialties?.[0] ?? "",
+    specialties: appt.professional.specialties ?? [],
+    photoUrl: appt.professional.photoUrl,
+    bio: appt.professional.bio,
     dateTime: appt.dateTime,
     status: appt.status,
     modality: appt.modality,
@@ -57,6 +62,9 @@ const AppointmentsPage = () => {
     null,
   );
   const [isCancelling, setIsCancelling] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<Appointment | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -84,6 +92,11 @@ const AppointmentsPage = () => {
   const handleCancelClick = (id: string) => {
     setAppointmentToCancel(id);
     setIsCancelModalOpen(true);
+  };
+
+  const handleDetailsClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setIsDetailsModalOpen(true);
   };
 
   const confirmCancel = async (reason?: string) => {
@@ -230,6 +243,7 @@ const AppointmentsPage = () => {
               appointment={appt}
               onCancel={handleCancelClick}
               onRebook={() => router.push("/dashboard/patient/search")}
+              onDetails={handleDetailsClick}
               isMobile={isMobile}
             />
           ))}
@@ -254,6 +268,11 @@ const AppointmentsPage = () => {
         onOpenChange={setIsCancelModalOpen}
         onConfirm={confirmCancel}
         isLoading={isCancelling}
+      />
+      <AppointmentDetailsModal
+        appointment={selectedAppointment}
+        open={isDetailsModalOpen}
+        onOpenChange={setIsDetailsModalOpen}
       />
     </section>
   );

@@ -10,6 +10,15 @@ export const api = axios.create({
   },
 });
 
+// Allow FormData requests to override the default Content-Type so multipart
+// boundaries are set correctly by the browser.
+api.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
+  return config;
+});
+
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("auth-token");
