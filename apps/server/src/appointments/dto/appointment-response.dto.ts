@@ -19,6 +19,30 @@ export class ProfessionalResponseDto {
     description: 'Email do profissional',
   })
   email!: string;
+
+  @ApiProperty({
+    example: ['Cardiologia'],
+    description: 'Especialidades do profissional',
+    type: [String],
+    required: false,
+  })
+  specialties?: string[];
+
+  @ApiProperty({
+    example: 'https://cdn.lifemed.com/foto.jpg',
+    description: 'URL da foto do profissional',
+    nullable: true,
+    required: false,
+  })
+  photoUrl?: string | null;
+
+  @ApiProperty({
+    example: 'Médico especialista com 10 anos de experiência.',
+    description: 'Biografia do profissional',
+    nullable: true,
+    required: false,
+  })
+  bio?: string | null;
 }
 
 export class PatientResponseDto {

@@ -269,7 +269,13 @@ export class AppointmentsService {
         where,
         include: {
           patient: true,
-          professional: true,
+          professional: {
+            include: {
+              professionalProfile: {
+                include: { specialities: true },
+              },
+            },
+          },
         },
         orderBy: { dateTime: 'asc' },
         skip,
@@ -312,7 +318,13 @@ export class AppointmentsService {
         where,
         include: {
           patient: true,
-          professional: true,
+          professional: {
+            include: {
+              professionalProfile: {
+                include: { specialities: true },
+              },
+            },
+          },
         },
         orderBy: { dateTime: 'asc' },
         skip,
@@ -654,6 +666,13 @@ export class AppointmentsService {
         id: appointment.professional.id,
         name: appointment.professional.name,
         email: appointment.professional.email,
+        specialties:
+          appointment.professional.professionalProfile?.specialities?.map(
+            (s: { name: string }) => s.name,
+          ) ?? [],
+        photoUrl:
+          appointment.professional.professionalProfile?.photoUrl ?? null,
+        bio: appointment.professional.professionalProfile?.bio ?? null,
       },
       patient: {
         id: appointment.patient.id,
