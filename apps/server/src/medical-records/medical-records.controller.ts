@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -18,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { UserRole } from '@prisma/client';
+import type { Response } from 'express';
 import { MedicalRecordsService } from './medical-records.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
@@ -26,6 +28,7 @@ import {
   MedicalRecordPatientResponseDto,
 } from './dto/medical-record-response.dto';
 import { ProfessionalRoleGuard } from '../professional/guards/professional-role.guard';
+import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
 
 @ApiTags('Medical Records')
 @ApiBearerAuth('access-token')
@@ -86,6 +89,36 @@ export class MedicalRecordsController {
     @Param('patientId') patientId: string,
   ) {
     return this.service.findByPatient(patientId, req.user.userId);
+  }
+
+  @Get('appointment/:appointmentId/pdf')
+  @UseGuards(PatientRoleGuard)
+  @ApiOperation({
+    summary: 'Exportar prontuário em PDF (somente paciente dono)',
+    description:
+      'Gera PDF do prontuário sem incluir notas internas (LGPD). Apenas o paciente dono pode acessar.',
+  })
+  @ApiParam({ name: 'appointmentId', description: 'ID da consulta' })
+  @ApiResponse({ status: 200, description: 'PDF do prontuário.' })
+  @ApiResponse({ status: 403, description: 'Não é o paciente da consulta.' })
+  @ApiResponse({ status: 404, description: 'Prontuário não encontrado.' })
+  async exportPatientPdf(
+    @Request() req: { user: { userId: string } },
+    @Param('appointmentId') appointmentId: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const doc = await this.service.generatePatientPdf(
+      appointmentId,
+      req.user.userId,
+    );
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=prontuario-${appointmentId}.pdf`,
+    });
+
+    doc.pipe(res);
+    doc.end();
   }
 
   @Patch(':id')
