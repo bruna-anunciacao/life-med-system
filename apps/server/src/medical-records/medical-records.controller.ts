@@ -1,0 +1,106 @@
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
+import { UserRole } from '@prisma/client';
+import { MedicalRecordsService } from './medical-records.service';
+import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
+import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
+import {
+  MedicalRecordResponseDto,
+  MedicalRecordPatientResponseDto,
+} from './dto/medical-record-response.dto';
+import { ProfessionalRoleGuard } from '../professional/guards/professional-role.guard';
+
+@ApiTags('Medical Records')
+@ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'))
+@Controller('medical-records')
+export class MedicalRecordsController {
+  constructor(private readonly service: MedicalRecordsService) {}
+
+  @Post()
+  @UseGuards(ProfessionalRoleGuard)
+  @ApiOperation({ summary: 'Criar prontuário médico para uma consulta' })
+  @ApiBody({ type: CreateMedicalRecordDto })
+  @ApiResponse({ status: 201, type: MedicalRecordResponseDto })
+  @ApiResponse({
+    status: 403,
+    description: 'Não é o profissional da consulta.',
+  })
+  @ApiResponse({ status: 404, description: 'Consulta não encontrada.' })
+  create(
+    @Request() req: { user: { userId: string } },
+    @Body() dto: CreateMedicalRecordDto,
+  ) {
+    return this.service.create(req.user.userId, dto);
+  }
+
+  @Get('appointment/:appointmentId')
+  @ApiOperation({
+    summary: 'Buscar prontuário por consulta',
+    description:
+      'Profissional com vínculo recebe todos os campos. Paciente dono não recebe internalNotes (LGPD).',
+  })
+  @ApiParam({ name: 'appointmentId', description: 'ID da consulta' })
+  @ApiResponse({ status: 200, type: MedicalRecordResponseDto })
+  @ApiResponse({ status: 403, description: 'Acesso negado.' })
+  @ApiResponse({ status: 404, description: 'Prontuário não encontrado.' })
+  findByAppointment(
+    @Request() req: { user: { userId: string; role: UserRole } },
+    @Param('appointmentId') appointmentId: string,
+  ): Promise<MedicalRecordResponseDto | MedicalRecordPatientResponseDto> {
+    return this.service.findByAppointment(
+      appointmentId,
+      req.user.userId,
+      req.user.role,
+    );
+  }
+
+  @Get('patient/:patientId')
+  @UseGuards(ProfessionalRoleGuard)
+  @ApiOperation({
+    summary: 'Listar prontuários de um paciente',
+    description: 'Requer vínculo de consulta com o paciente.',
+  })
+  @ApiParam({ name: 'patientId', description: 'ID do paciente' })
+  @ApiResponse({ status: 200, type: [MedicalRecordResponseDto] })
+  @ApiResponse({ status: 403, description: 'Sem vínculo com este paciente.' })
+  findByPatient(
+    @Request() req: { user: { userId: string } },
+    @Param('patientId') patientId: string,
+  ) {
+    return this.service.findByPatient(patientId, req.user.userId);
+  }
+
+  @Patch(':id')
+  @UseGuards(ProfessionalRoleGuard)
+  @ApiOperation({ summary: 'Atualizar prontuário (somente autor)' })
+  @ApiParam({ name: 'id', description: 'ID do prontuário' })
+  @ApiBody({ type: UpdateMedicalRecordDto })
+  @ApiResponse({ status: 200, type: MedicalRecordResponseDto })
+  @ApiResponse({ status: 403, description: 'Não é o autor do prontuário.' })
+  @ApiResponse({ status: 404, description: 'Prontuário não encontrado.' })
+  update(
+    @Request() req: { user: { userId: string } },
+    @Param('id') id: string,
+    @Body() dto: UpdateMedicalRecordDto,
+  ) {
+    return this.service.update(id, req.user.userId, dto);
+  }
+}

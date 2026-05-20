@@ -66,6 +66,9 @@ model User {
   appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
   appointmentsAsPatient Appointment[] @relation("PatientAppointments")
 
+  medicalRecordsAsPatient MedicalRecord[] @relation("PatientMedicalRecords")
+  medicalRecordsAsAuthor  MedicalRecord[] @relation("AuthorMedicalRecords")
+
   availability       Availability[]
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
@@ -222,6 +225,31 @@ model Availability {
   @@map("availability")
 }
 
+model MedicalRecord {
+  id String @id @default(uuid())
+
+  appointmentId String @unique @map("appointment_id")
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  patientId String @map("patient_id")
+  patient   User   @relation("PatientMedicalRecords", fields: [patientId], references: [id])
+
+  authorId String @map("author_id")
+  author   User   @relation("AuthorMedicalRecords", fields: [authorId], references: [id])
+
+  chiefComplaint String? @map("chief_complaint") @db.Text
+  diagnosis      String? @db.Text
+  treatmentPlan  String? @map("treatment_plan") @db.Text
+  prescriptions  String? @db.Text
+  internalNotes  String? @map("internal_notes") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([patientId, createdAt])
+  @@map("medical_records")
+}
+
 model Appointment {
   id String @id @default(uuid())
 
@@ -247,6 +275,8 @@ model Appointment {
   googleEventId String? @map("google_event_id")
 
   createdAt DateTime @default(now()) @map("created_at")
+
+  medicalRecord MedicalRecord?
 
   @@map("appointments")
 }
