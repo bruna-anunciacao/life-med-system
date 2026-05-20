@@ -24,8 +24,6 @@ function mapApiToAppointment(appt: AppointmentResponse): Appointment {
     id: appt.id,
     professionalId: appt.professional.id,
     doctorName: appt.professional.name,
-    doctorEmail: appt.professional.email,
-    specialty: appt.professional.specialties?.[0] ?? "",
     specialties: appt.professional.specialties ?? [],
     photoUrl: appt.professional.photoUrl,
     bio: appt.professional.bio,

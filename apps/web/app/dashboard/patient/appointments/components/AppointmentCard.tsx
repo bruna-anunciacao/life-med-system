@@ -28,6 +28,7 @@ export function AppointmentCard({
   isMobile = false,
 }: AppointmentCardProps) {
   const { day, month, year } = formatDate(appt.dateTime);
+  const specialtyLabel = appt.specialties.join(", ");
 
   if (isMobile) {
     return (
@@ -56,9 +57,9 @@ export function AppointmentCard({
               </h3>
               <p
                 className="text-xs text-gray-500"
-                title={`Especialidade: ${appt.specialty}`}
+                title={`Especialidade: ${specialtyLabel}`}
               >
-                {appt.specialty}
+                {specialtyLabel}
               </p>
             </div>
             <Badge
@@ -181,9 +182,9 @@ export function AppointmentCard({
           </h3>
           <p
             className="text-sm text-gray-500"
-            title={`Especialidade: ${appt.specialty}`}
+            title={`Especialidade: ${specialtyLabel}`}
           >
-            {appt.specialty}
+            {specialtyLabel}
           </p>
           <div className="mt-1 flex flex-wrap gap-2 items-center">
             <span
