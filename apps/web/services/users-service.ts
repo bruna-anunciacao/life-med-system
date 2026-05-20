@@ -25,6 +25,37 @@ export interface UpdateProfileDto {
 
 export const AUTH_TOKEN_KEY = "auth-token";
 
+const ALLOWED_PHOTO_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
+
+function validateProfilePhoto(photo: File): void {
+  if (!ALLOWED_PHOTO_MIME_TYPES.includes(photo.type)) {
+    throw new Error("Formato de imagem não permitido. Use JPEG, PNG ou WebP.");
+  }
+  if (photo.size > MAX_PHOTO_SIZE_BYTES) {
+    throw new Error("A imagem deve ter no máximo 5 MB.");
+  }
+}
+
+function buildProfileFormData(
+  data: UpdateProfileDto,
+  photo: File,
+): FormData {
+  const formData = new FormData();
+  formData.append("photo", photo);
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    if (Array.isArray(value)) {
+      value.forEach((v) => formData.append(key, v));
+    } else if (typeof value === "object") {
+      formData.append(key, JSON.stringify(value));
+    } else {
+      formData.append(key, String(value));
+    }
+  });
+  return formData;
+}
+
 export const usersService = {
   async getUser() {
     try {
@@ -54,9 +85,17 @@ export const usersService = {
     }
   },
 
-  async updateProfile(data: UpdateProfileDto) {
+  async updateProfile(data: UpdateProfileDto, photo?: File) {
     try {
-      const response = await api.patch("/users/me", data);
+      if (photo) {
+        validateProfilePhoto(photo);
+      }
+
+      const body: FormData | UpdateProfileDto = photo
+        ? buildProfileFormData(data, photo)
+        : data;
+
+      const response = await api.patch("/users/me", body);
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

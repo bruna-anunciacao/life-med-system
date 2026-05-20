@@ -89,22 +89,29 @@ export function useProfileForm() {
   const onSubmit = async (data: ProfileSchema) => {
     try {
       setIsSaving(true);
-      await usersService.updateProfile({
-        ...data,
-        specialty: [data.primarySpecialty, data.secondarySpecialty].filter((val): val is string => Boolean(val)),
-        modality: data.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
-        socialLinks: {
-          linkedin: data.socialLinks.referenceLink,
-          instagram: data.socialLinks.instagram,
-          other: data.socialLinks.other,
+      await usersService.updateProfile(
+        {
+          ...data,
+          specialty: [data.primarySpecialty, data.secondarySpecialty].filter(
+            (val): val is string => Boolean(val),
+          ),
+          modality: data.modality as "VIRTUAL" | "HOME_VISIT" | "CLINIC",
+          socialLinks: {
+            linkedin: data.socialLinks.referenceLink,
+            instagram: data.socialLinks.instagram,
+            other: data.socialLinks.other,
+          },
         },
-      });
+        selectedFile ?? undefined,
+      );
       toast.success("Perfil atualizado com sucesso!");
       setIsEditing(false);
       setSelectedFile(null);
       await loadProfile();
     } catch {
-      toast.error("Não foi possível salvar as alterações do perfil. Tente novamente.");
+      toast.error(
+        "Não foi possível salvar as alterações do perfil. Tente novamente.",
+      );
     } finally {
       setIsSaving(false);
     }

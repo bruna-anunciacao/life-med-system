@@ -234,7 +234,6 @@ export class MedicalRecordsService {
 
     return this.pdfService.generate(input);
   }
-
   private async hasPriorAppointment(
     professionalId: string,
     patientId: string,

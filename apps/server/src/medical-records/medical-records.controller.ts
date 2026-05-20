@@ -120,7 +120,6 @@ export class MedicalRecordsController {
     doc.pipe(res);
     doc.end();
   }
-
   @Patch(':id')
   @UseGuards(ProfessionalRoleGuard)
   @ApiOperation({ summary: 'Atualizar prontuário (somente autor)' })

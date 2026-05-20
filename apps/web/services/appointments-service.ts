@@ -35,6 +35,9 @@ export interface AppointmentResponse {
     id: string;
     name: string;
     email: string;
+    specialties?: string[];
+    photoUrl?: string | null;
+    bio?: string | null;
   };
   patient: {
     id: string;
