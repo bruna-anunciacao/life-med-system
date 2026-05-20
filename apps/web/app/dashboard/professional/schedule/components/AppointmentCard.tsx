@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVerticalIcon } from "../../../../utils/icons";
 import { ConfirmModal } from "./ConfirmModal";
+import { MedicalRecordModal } from "./MedicalRecordModal";
 
 type Appointment = {
   id: string;
@@ -18,6 +19,8 @@ type Appointment = {
   notes?: string;
   patient: { name: string };
 };
+
+const RECORD_ELIGIBLE_STATUSES = new Set(["CONFIRMED", "COMPLETED"]);
 
 const STATUS_CLASS: Record<string, string> = {
   CONFIRMED: "bg-green-100 text-green-700 hover:bg-green-100",
@@ -57,9 +60,11 @@ export function AppointmentCard({
 }: AppointmentCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string>("");
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
 
   const initials = appointment.patient.name.charAt(0).toUpperCase();
   const statusKey = appointment.status.toLowerCase();
+  const canOpenRecord = RECORD_ELIGIBLE_STATUSES.has(appointment.status);
 
   const handleOpenModal = (status: string) => {
     setPendingStatus(status);
@@ -134,6 +139,12 @@ export function AppointmentCard({
                   <>
                     <DropdownMenuItem
                       className="cursor-pointer rounded-md focus:bg-gray-50"
+                      onClick={() => setIsRecordModalOpen(true)}
+                    >
+                      Prontuário
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-gray-50"
                       onClick={() => handleOpenModal("COMPLETED")}
                     >
                       Realizado
@@ -154,6 +165,12 @@ export function AppointmentCard({
                 )}
                 {appointment.status === "COMPLETED" && (
                   <>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md focus:bg-gray-50"
+                      onClick={() => setIsRecordModalOpen(true)}
+                    >
+                      Prontuário
+                    </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer rounded-md focus:bg-gray-50"
                       onClick={() => handleOpenModal("NO_SHOW")}
@@ -196,6 +213,14 @@ export function AppointmentCard({
         pendingStatus={pendingStatus}
         onConfirm={handleConfirm}
       />
+      {canOpenRecord && (
+        <MedicalRecordModal
+          appointmentId={appointment.id}
+          patientName={appointment.patient.name}
+          open={isRecordModalOpen}
+          onOpenChange={setIsRecordModalOpen}
+        />
+      )}
     </>
   );
 }
