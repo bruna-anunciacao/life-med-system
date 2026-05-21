@@ -49,6 +49,12 @@ export class AuthService {
       throw new UnauthorizedException('Credenciais inválidas');
     }
 
+    if (user.status === UserStatus.BLOCKED) {
+      throw new UnauthorizedException(
+        'Sua conta está bloqueada. Entre em contato com o administrador.',
+      );
+    }
+
     if (!user.emailVerified) {
       throw new UnauthorizedException(
         'Sua conta ainda não foi aprovada. Aguarde a verificação do administrador.',
