@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { professionalsService } from "../../../../services/professionals-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useLocationsQuery } from "@/queries/useLocationsQuery";
 import { SearchBar } from "./components/SearchBar";
 import { DoctorCard } from "./components/DoctorCard";
 import { EmptySearch } from "./components/EmptySearch";
@@ -14,6 +13,8 @@ import {
   SeeProfileModal,
 } from "./components/SeeProfileModal";
 import { BookingModal } from "./components/BookingModal";
+import { AddressData } from "./components/addressMaps";
+import { getAvailableLocations, getLocationValue } from "./components/locationFilters";
 
 type Professional = {
   id: string;
@@ -28,15 +29,11 @@ type Professional = {
     bio?: string;
     photoUrl?: string;
   } | null;
-  address?: {
-    city: string;
-    state: string;
-  } | null;
+  address?: AddressData | null;
 };
 
 const SearchDoctorsPage = () => {
   const isMobile = useIsMobile();
-  const { data: locations = [] } = useLocationsQuery();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("Todas");
@@ -63,8 +60,15 @@ const SearchDoctorsPage = () => {
     load();
   }, []);
 
-  const filtered = professionals
-    .filter((p) => p.status !== "PENDING" && p.status !== "BLOCKED")
+  const visibleProfessionals = professionals.filter(
+    (p) => p.status !== "PENDING" && p.status !== "BLOCKED",
+  );
+  const locations = useMemo(
+    () => getAvailableLocations(professionals),
+    [professionals],
+  );
+
+  const filtered = visibleProfessionals
     .filter((p) => {
       const term = search.toLowerCase();
       const matchesSearch =
@@ -82,7 +86,10 @@ const SearchDoctorsPage = () => {
       const matchesLocation =
         selectedLocation === "Todas" ||
         (p.address?.city && p.address?.state
-          ? `${p.address.city} - ${p.address.state}` === selectedLocation
+          ? getLocationValue({
+              city: p.address.city.trim(),
+              state: p.address.state.trim(),
+            }) === selectedLocation
           : false);
 
       return matchesSearch && matchesSpecialty && matchesLocation;

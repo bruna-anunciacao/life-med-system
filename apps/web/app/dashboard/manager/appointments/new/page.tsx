@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { managerService } from "../../../../../services/manager-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useLocationsQuery } from "@/queries/useLocationsQuery";
 import { SearchBar } from "../../../patient/search/components/SearchBar";
 import { DoctorCard } from "../../../patient/search/components/DoctorCard";
 import { EmptySearch } from "../../../patient/search/components/EmptySearch";
 import { ProfessionalData, SeeProfileModal } from "../../../patient/search/components/SeeProfileModal";
 import { ManagerBookingModal } from "./components/ManagerBookingModal";
 import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
+import { AddressData } from "../../../patient/search/components/addressMaps";
+import {
+  getAvailableLocations,
+  getLocationValue,
+} from "../../../patient/search/components/locationFilters";
 
 type Professional = {
   id: string;
@@ -27,15 +31,11 @@ type Professional = {
     photoUrl?: string;
     specialities?: { id: string; name: string }[];
   } | null;
-  address?: {
-    city: string;
-    state: string;
-  } | null;
+  address?: AddressData | null;
 };
 
 const NewApointmentPage = () => {
   const isMobile = useIsMobile();
-  const { data: locations = [] } = useLocationsQuery();
   const { data: patients = [] } = useListPatientsQuery();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [search, setSearch] = useState("");
@@ -62,8 +62,15 @@ const NewApointmentPage = () => {
     load();
   }, []);
 
-  const filtered = professionals
-    .filter((p) => p.status !== "PENDING" && p.status !== "BLOCKED")
+  const visibleProfessionals = professionals.filter(
+    (p) => p.status !== "PENDING" && p.status !== "BLOCKED",
+  );
+  const locations = useMemo(
+    () => getAvailableLocations(professionals),
+    [professionals],
+  );
+
+  const filtered = visibleProfessionals
     .filter((p) => {
       const term = search.toLowerCase();
       const matchesSearch =
@@ -79,7 +86,10 @@ const NewApointmentPage = () => {
       const matchesLocation =
         selectedLocation === "Todas" ||
         (p.address?.city && p.address?.state
-          ? `${p.address.city} - ${p.address.state}` === selectedLocation
+          ? getLocationValue({
+              city: p.address.city.trim(),
+              state: p.address.state.trim(),
+            }) === selectedLocation
           : false);
 
       return matchesSearch && matchesSpecialty && matchesLocation;

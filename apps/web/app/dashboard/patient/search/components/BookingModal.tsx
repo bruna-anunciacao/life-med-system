@@ -23,7 +23,9 @@ import {
   CurrencyDollar,
   UserCircle,
 } from "@phosphor-icons/react";
+import { ExternalLink, MapPin } from "lucide-react";
 import { ProfessionalData, SeeProfileModal } from "./SeeProfileModal";
+import { AddressData, formatAddress, getGoogleMapsUrl } from "./addressMaps";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -33,6 +35,7 @@ interface BookingModalProps {
   professional: {
     id: string;
     name: string;
+    address?: AddressData | null;
     professionalProfile?: {
       specialities?: { id: string; name: string }[];
       price?: number | null;
@@ -181,6 +184,8 @@ export function BookingModal({
   const { speciality, subspeciality } = getSpecialityInfo(
     professional.professionalProfile?.specialities,
   );
+  const formattedAddress = formatAddress(professional.address);
+  const googleMapsUrl = getGoogleMapsUrl(professional.address);
 
   return (
     <>
@@ -295,6 +300,25 @@ export function BookingModal({
                       currency: "BRL",
                     })}
                   </span>
+                </div>
+              )}
+
+              {formattedAddress && googleMapsUrl && (
+                <div className="mt-2 bg-gray-50 border border-gray-100 rounded-xl p-4">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                    <MapPin className="w-4 h-4 text-blue-600" aria-hidden="true" />
+                    Local da consulta
+                  </p>
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Abrir endereço no Google Maps"
+                    className="inline-flex items-start gap-1.5 text-sm leading-snug text-blue-600 hover:text-blue-700 hover:underline"
+                  >
+                    <span>{formattedAddress}</span>
+                    <ExternalLink className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+                  </a>
                 </div>
               )}
             </div>
