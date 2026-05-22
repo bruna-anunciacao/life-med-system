@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { UserStatus } from '@prisma/client';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -36,6 +37,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!user) {
       throw new UnauthorizedException('Usuário não encontrado');
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      throw new UnauthorizedException(
+        'Sua conta está bloqueada. Entre em contato com o administrador.',
+      );
     }
 
     return {
