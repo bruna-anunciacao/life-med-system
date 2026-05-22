@@ -15,6 +15,15 @@ export interface ProfessionalUser {
     socialLinks?: { linkedin?: string; instagram?: string };
     specialities?: { id: string; name: string }[];
   };
+  address?: {
+    zipCode?: string | null;
+    street?: string | null;
+    number?: string | null;
+    complement?: string | null;
+    district?: string | null;
+    city?: string | null;
+    state?: string | null;
+  } | null;
 }
 
 export const professionalsService = {

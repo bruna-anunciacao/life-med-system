@@ -14,6 +14,7 @@ import {
   SeeProfileModal,
 } from "./components/SeeProfileModal";
 import { BookingModal } from "./components/BookingModal";
+import { AddressData } from "./components/addressMaps";
 
 type Professional = {
   id: string;
@@ -28,10 +29,7 @@ type Professional = {
     bio?: string;
     photoUrl?: string;
   } | null;
-  address?: {
-    city: string;
-    state: string;
-  } | null;
+  address?: AddressData | null;
 };
 
 const SearchDoctorsPage = () => {

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { env } from "@/config/env";
+import { AddressData, formatAddress, getGoogleMapsUrl } from "./addressMaps";
 
 export interface ProfessionalData {
   id: string;
@@ -39,6 +40,7 @@ export interface ProfessionalData {
       other?: string;
     } | null;
   } | null;
+  address?: AddressData | null;
 }
 
 interface SeeProfileModalProps {
@@ -122,6 +124,8 @@ export function SeeProfileModal({
   const resolvedPhotoUrl = profile.photoUrl
     ? `${env.NEXT_PUBLIC_API_URL}${profile.photoUrl}`
     : null;
+  const formattedAddress = formatAddress(professional.address);
+  const googleMapsUrl = getGoogleMapsUrl(professional.address);
 
   return (
     <>
@@ -200,17 +204,30 @@ export function SeeProfileModal({
                   <h3 className="text-base font-semibold text-gray-900">
                     Local de Atendimento
                   </h3>
-                  <div 
-                    className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 h-full min-h-[90px]"
+                  <div
+                    className="flex items-start gap-3 bg-gray-50 p-4 rounded-xl border border-gray-100 h-full min-h-[90px]"
                     title={`Modalidade: ${modalityInfo.text}`}
                   >
                     <div className="bg-white p-2.5 rounded-lg shadow-sm border border-gray-100 shrink-0">
                       {modalityInfo.icon}
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-2">
                       <p className="font-semibold text-gray-900 text-[0.95rem]">
                         {modalityInfo.text}
                       </p>
+                      {formattedAddress && googleMapsUrl && (
+                        <a
+                          href={googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Abrir endereço no Google Maps"
+                          className="inline-flex items-start gap-1.5 text-[0.85rem] leading-snug text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+                          <span>{formattedAddress}</span>
+                          <ExternalLink className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
