@@ -12,6 +12,10 @@ import {
   MedicalRecordResponseDto,
   MedicalRecordPatientResponseDto,
 } from './dto/medical-record-response.dto';
+import {
+  MedicalRecordPdfService,
+  PatientMedicalRecordPdfInput,
+} from './medical-record-pdf.service';
 
 type MedicalRecordWithAuthor = Prisma.MedicalRecordGetPayload<{
   include: { author: true };
@@ -24,7 +28,10 @@ const VALID_LINK_STATUSES: AppointmentStatus[] = [
 
 @Injectable()
 export class MedicalRecordsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pdfService: MedicalRecordPdfService,
+  ) {}
 
   async create(
     authorId: string,
@@ -168,6 +175,65 @@ export class MedicalRecordsService {
     return this.toResponseDto(updated);
   }
 
+  async generatePatientPdf(
+    appointmentId: string,
+    patientId: string,
+  ): Promise<PDFKit.PDFDocument> {
+    const record = await this.prisma.medicalRecord.findUnique({
+      where: { appointmentId },
+      include: {
+        appointment: {
+          include: {
+            professional: {
+              include: {
+                professionalProfile: {
+                  include: { specialities: true },
+                },
+              },
+            },
+            patient: { include: { patientProfile: true } },
+          },
+        },
+      },
+    });
+
+    if (!record) {
+      throw new NotFoundException('Prontuário não encontrado.');
+    }
+
+    if (record.patientId !== patientId) {
+      throw new ForbiddenException('Acesso negado a este prontuário.');
+    }
+
+    const input: PatientMedicalRecordPdfInput = {
+      patient: {
+        name: record.appointment.patient.name,
+        cpf: record.appointment.patient.cpf,
+        dateOfBirth:
+          record.appointment.patient.patientProfile?.dateOfBirth ?? null,
+      },
+      appointment: {
+        dateTime: record.appointment.dateTime,
+        modality: record.appointment.modality,
+      },
+      professional: {
+        name: record.appointment.professional.name,
+        specialties:
+          record.appointment.professional.professionalProfile?.specialities.map(
+            (s) => s.name,
+          ) ?? [],
+      },
+      record: {
+        chiefComplaint: record.chiefComplaint,
+        diagnosis: record.diagnosis,
+        treatmentPlan: record.treatmentPlan,
+        prescriptions: record.prescriptions,
+        createdAt: record.createdAt,
+      },
+    };
+
+    return this.pdfService.generate(input);
+  }
   private async hasPriorAppointment(
     professionalId: string,
     patientId: string,

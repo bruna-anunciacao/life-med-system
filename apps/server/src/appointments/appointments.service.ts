@@ -193,22 +193,26 @@ export class AppointmentsService {
       where: {
         professionalId,
         date: appointmentDate.toISOString().split('T')[0],
-      }
+      },
     });
-    
+
     const aptTimeStr = new Intl.DateTimeFormat('pt-BR', {
       timeZone: 'America/Bahia',
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false
+      hour12: false,
     }).format(appointmentDate);
 
     for (const b of blocks) {
       if (!b.startTime || !b.endTime) {
-        throw new BadRequestException('Profissional não tem disponibilidade neste dia (agenda bloqueada)');
+        throw new BadRequestException(
+          'Profissional não tem disponibilidade neste dia (agenda bloqueada)',
+        );
       }
       if (aptTimeStr >= b.startTime && aptTimeStr < b.endTime) {
-        throw new BadRequestException(`Horário bloqueado pelo profissional (das ${b.startTime} às ${b.endTime})`);
+        throw new BadRequestException(
+          `Horário bloqueado pelo profissional (das ${b.startTime} às ${b.endTime})`,
+        );
       }
     }
   }
@@ -525,14 +529,14 @@ export class AppointmentsService {
       where: {
         professionalId,
         date: query.date,
-      }
+      },
     });
 
     const slots: { time: string; available: boolean }[] = [];
     for (let hour = startHour; hour < endHour; hour++) {
       for (const minutes of [0, 30]) {
         const time = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-        
+
         let isBlocked = false;
         for (const b of blocks) {
           if (!b.startTime || !b.endTime) {
@@ -544,7 +548,7 @@ export class AppointmentsService {
             break;
           }
         }
-        
+
         slots.push({ time, available: !bookedTimes.has(time) && !isBlocked });
       }
     }

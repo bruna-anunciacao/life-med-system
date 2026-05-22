@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import {
   getModalityLabel,
   getCardStatusClass,
 } from "../appointments.utils";
+import { MedicalRecordViewModal } from "./MedicalRecordViewModal";
 
 type AppointmentCardProps = {
   appointment: Appointment;
@@ -28,6 +30,8 @@ export function AppointmentCard({
   isMobile = false,
 }: AppointmentCardProps) {
   const { day, month, year } = formatDate(appt.dateTime);
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+  const canViewRecord = appt.status === "COMPLETED";
   const specialtyLabel = appt.specialties.join(", ");
 
   if (isMobile) {
@@ -130,14 +134,25 @@ export function AppointmentCard({
               </>
             )}
             {appt.status === "COMPLETED" && (
-              <Button
-                size="sm"
-                className="flex-1 text-xs"
-                title="Ver detalhes da consulta finalizada"
-                onClick={() => onDetails(appt)}
-              >
-                Ver Detalhes
-              </Button>
+              <>
+                <Button
+                  size="sm"
+                  className="flex-1 text-xs"
+                  title="Ver detalhes da consulta finalizada"
+                  onClick={() => onDetails(appt)}
+                >
+                  Ver Detalhes
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="flex-1 text-xs"
+                  title="Ver prontuário da consulta"
+                  onClick={() => setIsRecordModalOpen(true)}
+                >
+                  Prontuário
+                </Button>
+              </>
             )}
             {appt.status === "CANCELLED" && (
               <Button
@@ -152,6 +167,14 @@ export function AppointmentCard({
             )}
           </div>
         </CardContent>
+        {canViewRecord && (
+          <MedicalRecordViewModal
+            appointmentId={appt.id}
+            doctorName={appt.doctorName}
+            open={isRecordModalOpen}
+            onOpenChange={setIsRecordModalOpen}
+          />
+        )}
       </Card>
     );
   }
@@ -250,13 +273,23 @@ export function AppointmentCard({
             </>
           )}
           {appt.status === "COMPLETED" && (
-            <Button
-              size="sm"
-              title="Ver detalhes da consulta finalizada"
-              onClick={() => onDetails(appt)}
-            >
-              Ver Detalhes
-            </Button>
+            <>
+              <Button
+                size="sm"
+                title="Ver detalhes da consulta finalizada"
+                onClick={() => onDetails(appt)}
+              >
+                Ver Detalhes
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                title="Ver prontuário da consulta"
+                onClick={() => setIsRecordModalOpen(true)}
+              >
+                Prontuário
+              </Button>
+            </>
           )}
           {appt.status === "CANCELLED" && (
             <Button
@@ -270,6 +303,14 @@ export function AppointmentCard({
           )}
         </div>
       </CardContent>
+      {canViewRecord && (
+        <MedicalRecordViewModal
+          appointmentId={appt.id}
+          doctorName={appt.doctorName}
+          open={isRecordModalOpen}
+          onOpenChange={setIsRecordModalOpen}
+        />
+      )}
     </Card>
   );
 }

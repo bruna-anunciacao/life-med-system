@@ -48,6 +48,17 @@ export type UpdateMedicalRecordDto = Omit<
   "appointmentId"
 >;
 
+function downloadBlob(blob: Blob, filename: string): void {
+  const blobUrl = window.URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = blobUrl;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.URL.revokeObjectURL(blobUrl);
+}
+
 function extractErrorMessage(error: unknown, fallback: string): never {
   if (error instanceof AxiosError && error.response) {
     const message = error.response.data.message;
@@ -103,6 +114,18 @@ export const medicalRecordsService = {
       return response.data as MedicalRecordResponse;
     } catch (error) {
       extractErrorMessage(error, "Erro ao atualizar prontuário.");
+    }
+  },
+
+  async downloadPdf(appointmentId: string): Promise<void> {
+    try {
+      const response = await api.get(
+        `/medical-records/appointment/${appointmentId}/pdf`,
+        { responseType: "blob" },
+      );
+      downloadBlob(response.data, `prontuario-${appointmentId}.pdf`);
+    } catch (error) {
+      extractErrorMessage(error, "Erro ao baixar prontuário em PDF.");
     }
   },
 };
