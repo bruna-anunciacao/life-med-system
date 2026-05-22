@@ -1,4 +1,5 @@
 import { SearchIcon } from "../../../../utils/icons";
+import { getLocationValue, LocationOption } from "./locationFilters";
 
 const SPECIALTIES = [
   "Todas",
@@ -12,16 +13,11 @@ const SPECIALTIES = [
   "Psiquiatria",
 ];
 
-export type Location = {
-  city: string;
-  state: string;
-};
-
 type SearchBarProps = {
   search: string;
   selectedSpecialty: string;
   selectedLocation: string;
-  locations: Location[];
+  locations: LocationOption[];
   resultsCount: number;
   isLoading: boolean;
   onSearchChange: (value: string) => void;
@@ -65,8 +61,8 @@ export function SearchBar({
         >
           <option value="Todas">Todas as localidades</option>
           {locations.map((loc) => (
-            <option key={`${loc.city}-${loc.state}`} value={`${loc.city} - ${loc.state}`}>
-              {loc.city} - {loc.state}
+            <option key={getLocationValue(loc)} value={getLocationValue(loc)}>
+              {getLocationValue(loc)}
             </option>
           ))}
         </select>
