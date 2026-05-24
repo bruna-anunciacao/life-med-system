@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   Res,
   UseGuards,
@@ -23,9 +24,12 @@ import type { Response } from 'express';
 import { MedicalRecordsService } from './medical-records.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
+import { ListMedicalRecordsQueryDto } from './dto/list-medical-records-query.dto';
 import {
   MedicalRecordResponseDto,
   MedicalRecordPatientResponseDto,
+  MedicalRecordListResponseDto,
+  MedicalRecordPatientListResponseDto,
 } from './dto/medical-record-response.dto';
 import { ProfessionalRoleGuard } from '../professional/guards/professional-role.guard';
 import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
@@ -52,6 +56,39 @@ export class MedicalRecordsController {
     @Body() dto: CreateMedicalRecordDto,
   ) {
     return this.service.create(req.user.userId, dto);
+  }
+
+  @Get()
+  @ApiOperation({
+    summary: 'Listar prontuários do usuário autenticado',
+    description:
+      'Médico: lista os prontuários que ele criou. Paciente: lista os próprios prontuários (sem internalNotes).',
+  })
+  @ApiResponse({ status: 200, type: MedicalRecordListResponseDto })
+  list(
+    @Request() req: { user: { userId: string; role: UserRole } },
+    @Query() query: ListMedicalRecordsQueryDto,
+  ): Promise<
+    MedicalRecordListResponseDto | MedicalRecordPatientListResponseDto
+  > {
+    return this.service.list(req.user.userId, req.user.role, query);
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Buscar prontuário por ID',
+    description:
+      'Profissional autor recebe todos os campos. Paciente dono não recebe internalNotes (LGPD).',
+  })
+  @ApiParam({ name: 'id', description: 'ID do prontuário' })
+  @ApiResponse({ status: 200, type: MedicalRecordResponseDto })
+  @ApiResponse({ status: 403, description: 'Acesso negado.' })
+  @ApiResponse({ status: 404, description: 'Prontuário não encontrado.' })
+  findById(
+    @Request() req: { user: { userId: string; role: UserRole } },
+    @Param('id') id: string,
+  ): Promise<MedicalRecordResponseDto | MedicalRecordPatientResponseDto> {
+    return this.service.findById(id, req.user.userId, req.user.role);
   }
 
   @Get('appointment/:appointmentId')
@@ -120,6 +157,7 @@ export class MedicalRecordsController {
     doc.pipe(res);
     doc.end();
   }
+
   @Patch(':id')
   @UseGuards(ProfessionalRoleGuard)
   @ApiOperation({ summary: 'Atualizar prontuário (somente autor)' })

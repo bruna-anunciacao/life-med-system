@@ -7,11 +7,24 @@ export interface MedicalRecordAuthor {
   email: string;
 }
 
+export interface MedicalRecordPatient {
+  id: string;
+  name: string;
+}
+
+export interface MedicalRecordAppointment {
+  id: string;
+  dateTime: string;
+  modality: string;
+}
+
 export interface MedicalRecordResponse {
   id: string;
   appointmentId: string;
   patientId: string;
   author: MedicalRecordAuthor;
+  patient?: MedicalRecordPatient;
+  appointment?: MedicalRecordAppointment;
   chiefComplaint: string | null;
   diagnosis: string | null;
   treatmentPlan: string | null;
@@ -26,12 +39,20 @@ export interface MedicalRecordPatientResponse {
   appointmentId: string;
   patientId: string;
   author: MedicalRecordAuthor;
+  appointment?: MedicalRecordAppointment;
   chiefComplaint: string | null;
   diagnosis: string | null;
   treatmentPlan: string | null;
   prescriptions: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PaginatedMedicalRecords<T> {
+  data: T[];
+  page: number;
+  limit: number;
+  total: number;
 }
 
 export interface CreateMedicalRecordDto {
@@ -47,6 +68,16 @@ export type UpdateMedicalRecordDto = Omit<
   CreateMedicalRecordDto,
   "appointmentId"
 >;
+
+export interface ListMedicalRecordsParams {
+  patientId?: string;
+  authorId?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
 
 function downloadBlob(blob: Blob, filename: string): void {
   const blobUrl = window.URL.createObjectURL(blob);
@@ -77,6 +108,39 @@ export const medicalRecordsService = {
       return response.data as MedicalRecordResponse;
     } catch (error) {
       extractErrorMessage(error, "Erro ao criar prontuário.");
+    }
+  },
+
+  async list(
+    params: ListMedicalRecordsParams = {},
+  ): Promise<PaginatedMedicalRecords<MedicalRecordResponse>> {
+    try {
+      const response = await api.get("/medical-records", { params });
+      return response.data as PaginatedMedicalRecords<MedicalRecordResponse>;
+    } catch (error) {
+      extractErrorMessage(error, "Erro ao listar prontuários.");
+    }
+  },
+
+  async listForPatient(
+    params: ListMedicalRecordsParams = {},
+  ): Promise<PaginatedMedicalRecords<MedicalRecordPatientResponse>> {
+    try {
+      const response = await api.get("/medical-records", { params });
+      return response.data as PaginatedMedicalRecords<MedicalRecordPatientResponse>;
+    } catch (error) {
+      extractErrorMessage(error, "Erro ao listar prontuários.");
+    }
+  },
+
+  async findById(
+    id: string,
+  ): Promise<MedicalRecordResponse | MedicalRecordPatientResponse> {
+    try {
+      const response = await api.get(`/medical-records/${id}`);
+      return response.data;
+    } catch (error) {
+      extractErrorMessage(error, "Erro ao buscar prontuário.");
     }
   },
 
