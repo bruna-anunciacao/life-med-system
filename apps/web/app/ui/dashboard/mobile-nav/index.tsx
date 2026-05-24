@@ -13,6 +13,7 @@ import {
   Stethoscope,
   SignOut,
   Plus,
+  FileText,
 } from "@phosphor-icons/react";
 
 type NavItem = {
@@ -49,6 +50,12 @@ const MobileNav = ({ role }: { role: string }) => {
             href: "/dashboard/professional/patients",
             icon: <Stethoscope size={22} />,
             activeIcon: <Stethoscope size={22} weight="fill" />,
+          },
+          {
+            name: "Prontuários",
+            href: "/dashboard/professional/medical-records",
+            icon: <FileText size={22} />,
+            activeIcon: <FileText size={22} weight="fill" />,
           },
           {
             name: "Perfil",
@@ -103,6 +110,12 @@ const MobileNav = ({ role }: { role: string }) => {
             href: "/dashboard/patient/appointments",
             icon: <CalendarBlank size={22} />,
             activeIcon: <CalendarBlank size={22} weight="fill" />,
+          },
+          {
+            name: "Prontuários",
+            href: "/dashboard/patient/medical-records",
+            icon: <FileText size={22} />,
+            activeIcon: <FileText size={22} weight="fill" />,
           },
           {
             name: "Perfil",

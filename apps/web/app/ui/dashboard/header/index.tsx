@@ -21,6 +21,10 @@ const DashboardHeader = ({ role }: { role: string }) => {
           { name: "Início", href: "/dashboard/professional" },
           { name: "Agenda", href: "/dashboard/professional/schedule" },
           { name: "Pacientes", href: "/dashboard/professional/patients" },
+          {
+            name: "Prontuários",
+            href: "/dashboard/professional/medical-records",
+          },
           { name: "Perfil", href: "/dashboard/professional/profile" },
         ];
       case "MANAGER":
@@ -35,6 +39,7 @@ const DashboardHeader = ({ role }: { role: string }) => {
           { name: "Início", href: "/dashboard/patient" },
           { name: "Buscar Médicos", href: "/dashboard/patient/search" },
           { name: "Consultas", href: "/dashboard/patient/appointments" },
+          { name: "Prontuários", href: "/dashboard/patient/medical-records" },
           { name: "Perfil", href: "/dashboard/patient/profile" },
         ];
     }
