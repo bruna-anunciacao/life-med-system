@@ -4,6 +4,7 @@ import {
   NotFoundException,
   Inject,
 } from '@nestjs/common';
+import { AppointmentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfessionalSettingsDto } from './dto/update-setting.dto';
 import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
@@ -115,37 +116,68 @@ export class ProfessionalService {
       orderBy: { dateTime: 'desc' },
       select: {
         dateTime: true,
+        status: true,
         patient: {
           select: {
             id: true,
             name: true,
             email: true,
+            cpf: true,
+            patientProfile: {
+              select: { phone: true },
+            },
           },
         },
       },
     });
 
+    const now = new Date();
     const uniquePatients = new Map<
       string,
       {
         id: string;
         name: string;
         email: string;
+        cpf: string | null;
         phone: string;
-        lastVisit: string;
+        lastVisit: string | null;
+        nextVisit: string | null;
       }
     >();
 
     for (const appt of appointments) {
-      if (!uniquePatients.has(appt.patient.id)) {
-        uniquePatients.set(appt.patient.id, {
-          id: appt.patient.id,
-          name: appt.patient.name,
-          email: appt.patient.email,
-          phone: (appt.patient as any).phone || 'Não informado',
-          lastVisit: appt.dateTime.toISOString(),
-        });
+      const existing = uniquePatients.get(appt.patient.id) ?? {
+        id: appt.patient.id,
+        name: appt.patient.name,
+        email: appt.patient.email,
+        cpf: appt.patient.cpf ?? null,
+        phone: appt.patient.patientProfile?.phone || 'Não informado',
+        lastVisit: null as string | null,
+        nextVisit: null as string | null,
+      };
+
+      const isUpcoming =
+        appt.dateTime > now &&
+        (appt.status === AppointmentStatus.PENDING ||
+          appt.status === AppointmentStatus.CONFIRMED);
+
+      if (isUpcoming) {
+        if (
+          !existing.nextVisit ||
+          new Date(existing.nextVisit) > appt.dateTime
+        ) {
+          existing.nextVisit = appt.dateTime.toISOString();
+        }
+      } else {
+        if (
+          !existing.lastVisit ||
+          new Date(existing.lastVisit) < appt.dateTime
+        ) {
+          existing.lastVisit = appt.dateTime.toISOString();
+        }
       }
+
+      uniquePatients.set(appt.patient.id, existing);
     }
 
     return Array.from(uniquePatients.values());
@@ -158,6 +190,10 @@ export class ProfessionalService {
         id: true,
         name: true,
         email: true,
+        cpf: true,
+        patientProfile: {
+          select: { phone: true },
+        },
       },
     });
 
@@ -174,7 +210,8 @@ export class ProfessionalService {
       id: patient.id,
       name: patient.name,
       email: patient.email,
-      phone: (patient as any).phone || 'Não informado',
+      cpf: patient.cpf ?? null,
+      phone: patient.patientProfile?.phone || 'Não informado',
       history: appointments.map((apt) => ({
         id: apt.id,
         dateTime: apt.dateTime,

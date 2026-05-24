@@ -11,13 +11,16 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { usePatientDetail } from "@/queries/useProfessionalPatients";
+import { formatPhoneNumber } from "@/app/utils/formatPhone";
 
 export interface PatientCardData {
   id: string;
   name: string;
   email: string;
+  cpf: string | null;
   phone: string;
-  lastVisit: string;
+  lastVisit: string | null;
+  nextVisit: string | null;
   photoUrl?: string;
 }
 
@@ -41,6 +44,18 @@ const STATUS_TEXT: Record<string, string> = {
   PENDING: "Pendente",
 };
 
+function formatCpf(cpf: string | null): string {
+  if (!cpf) return "Não informado";
+  const digits = cpf.replace(/\D/g, "");
+  if (digits.length !== 11) return cpf;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+}
+
+function formatPhone(phone: string): string {
+  if (!phone || phone === "Não informado") return "Não informado";
+  return formatPhoneNumber(phone);
+}
+
 export function PatientCard({ patient }: PatientCardProps) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -51,28 +66,36 @@ export function PatientCard({ patient }: PatientCardProps) {
     isAnyModalOpen,
   );
 
-  const visitDate = new Date(patient.lastVisit);
-  const isFuture = visitDate > new Date();
-  const visitLabel = isFuture ? "Próxima Consulta" : "Última Consulta";
-  const formattedDate = visitDate.toLocaleDateString("pt-BR");
+  const nextVisitFormatted = patient.nextVisit
+    ? new Date(patient.nextVisit).toLocaleDateString("pt-BR")
+    : null;
+  const lastVisitFormatted = patient.lastVisit
+    ? new Date(patient.lastVisit).toLocaleDateString("pt-BR")
+    : null;
 
-  const renderAvatar = (name: string, photoUrl?: string) => {
+  const renderAvatar = (
+    name: string,
+    photoUrl?: string,
+    size: "sm" | "md" = "md",
+  ) => {
+    const sizePx = size === "sm" ? 40 : 48;
+    const sizeClass = size === "sm" ? "w-10 h-10" : "w-12 h-12";
     if (photoUrl) {
       return (
         <Image
           src={photoUrl}
           alt={name}
           title={`Foto de perfil de ${name}`}
-          width={48}
-          height={48}
-          className="w-12 h-12 rounded-full object-cover object-center border border-gray-200 p-1 bg-[#fafafa] shadow-sm shrink-0"
+          width={sizePx}
+          height={sizePx}
+          className={`${sizeClass} rounded-full object-cover object-center border border-gray-200 bg-[#fafafa] shrink-0`}
         />
       );
     }
     return (
       <div
         title={`Foto de perfil de ${name}`}
-        className="w-12 h-12 rounded-full font-semibold flex items-center justify-center text-[#006fee] bg-[#e6f1ff] border border-gray-200 p-1 shadow-sm shrink-0"
+        className={`${sizeClass} rounded-full font-semibold flex items-center justify-center text-blue-700 bg-blue-50 border border-blue-100 shrink-0`}
       >
         {name.charAt(0).toUpperCase()}
       </div>
@@ -81,47 +104,83 @@ export function PatientCard({ patient }: PatientCardProps) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between h-full">
-        <div>
-          <div className="flex gap-4 items-center mb-4">
-            {renderAvatar(patient.name, patient.photoUrl)}
-            <div className="min-w-0 flex-1">
-              <h3
-                className="font-semibold text-base text-gray-900 truncate"
-                title={patient.name}
-              >
-                {patient.name}
-              </h3>
-              <p
-                className="text-[0.85rem] text-gray-500 truncate"
-                title={patient.email}
-              >
-                {patient.email}
-              </p>
-            </div>
-          </div>
-          <div className="text-[0.9rem] text-gray-700 mb-6">
-            <p className="truncate mb-1" title={`Telefone: ${patient.phone}`}>
-              <strong>Telefone:</strong> {patient.phone}
-            </p>
-            <p className="truncate" title={`${visitLabel}: ${formattedDate}`}>
-              <strong>{visitLabel}:</strong> {formattedDate}
+      <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-col h-full">
+        <div className="flex gap-3 items-center mb-4">
+          {renderAvatar(patient.name, patient.photoUrl)}
+          <div className="min-w-0 flex-1">
+            <h3
+              className="font-semibold text-[15px] text-gray-900 truncate"
+              title={patient.name}
+            >
+              {patient.name}
+            </h3>
+            <p
+              className="text-[13px] text-gray-500 truncate"
+              title={patient.email}
+            >
+              {patient.email}
             </p>
           </div>
         </div>
+
+        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[13px] mb-5">
+          <dt className="text-gray-500">CPF</dt>
+          <dd
+            className="text-gray-800 font-medium truncate"
+            title={formatCpf(patient.cpf)}
+          >
+            {formatCpf(patient.cpf)}
+          </dd>
+          <dt className="text-gray-500">Telefone</dt>
+          <dd
+            className="text-gray-800 font-medium truncate"
+            title={formatPhone(patient.phone)}
+          >
+            {formatPhone(patient.phone)}
+          </dd>
+          {nextVisitFormatted && (
+            <>
+              <dt className="text-gray-500">Próxima consulta</dt>
+              <dd
+                className="text-gray-800 font-medium truncate"
+                title={nextVisitFormatted}
+              >
+                {nextVisitFormatted}
+              </dd>
+            </>
+          )}
+          {lastVisitFormatted && (
+            <>
+              <dt className="text-gray-500">Última consulta</dt>
+              <dd
+                className="text-gray-800 font-medium truncate"
+                title={lastVisitFormatted}
+              >
+                {lastVisitFormatted}
+              </dd>
+            </>
+          )}
+          {!nextVisitFormatted && !lastVisitFormatted && (
+            <>
+              <dt className="text-gray-500">Consultas</dt>
+              <dd className="text-gray-400 italic truncate">Nenhuma</dd>
+            </>
+          )}
+        </dl>
+
         <div className="flex gap-2 mt-auto">
           <Button
             size="sm"
             variant="outline"
-            className="flex-1 border-gray-200 text-gray-700 text-xs"
+            className="flex-1 text-xs"
             onClick={() => setIsProfileOpen(true)}
             title="Abrir perfil detalhado do paciente"
           >
-            Ver Perfil
+            Ver perfil
           </Button>
           <Button
             size="sm"
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs"
+            className="flex-1 text-xs"
             onClick={() => setIsHistoryOpen(true)}
             title="Ver histórico de consultas deste paciente"
           >
@@ -133,7 +192,7 @@ export function PatientCard({ patient }: PatientCardProps) {
       <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
         <DialogContent className="sm:max-w-106.25 rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Perfil do Paciente</DialogTitle>
+            <DialogTitle>Perfil do paciente</DialogTitle>
             <DialogDescription>
               Informações detalhadas de contato e cadastro.
             </DialogDescription>
@@ -154,11 +213,19 @@ export function PatientCard({ patient }: PatientCardProps) {
                     {detailData.name}
                   </h4>
                   <span className="text-sm text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-md">
-                    Paciente Ativo
+                    Paciente ativo
                   </span>
                 </div>
               </div>
               <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 space-y-3">
+                <div>
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
+                    CPF
+                  </p>
+                  <p className="text-sm text-gray-900">
+                    {formatCpf(detailData.cpf)}
+                  </p>
+                </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
                     E-mail
@@ -171,13 +238,13 @@ export function PatientCard({ patient }: PatientCardProps) {
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
                     Telefone
                   </p>
-                  <p className="text-sm text-gray-900" title={detailData.phone}>
-                    {detailData.phone}
+                  <p className="text-sm text-gray-900">
+                    {formatPhone(detailData.phone)}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
-                    Total de Consultas
+                    Total de consultas
                   </p>
                   <p className="text-sm text-gray-900">
                     {detailData.history.length}
@@ -192,7 +259,7 @@ export function PatientCard({ patient }: PatientCardProps) {
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="sm:max-w-125 rounded-2xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Histórico de Consultas</DialogTitle>
+            <DialogTitle>Histórico de consultas</DialogTitle>
             <DialogDescription>
               Acompanhamento de consultas de {patient.name}.
             </DialogDescription>

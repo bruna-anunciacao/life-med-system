@@ -16,14 +16,17 @@ export interface PatientProfile {
   id: string;
   name: string;
   email: string;
+  cpf: string | null;
   phone: string;
-  lastVisit: string;
+  lastVisit: string | null;
+  nextVisit: string | null;
 }
 
 export interface PatientDetail {
   id: string;
   name: string;
   email: string;
+  cpf: string | null;
   phone: string;
   history: {
     id: string;
