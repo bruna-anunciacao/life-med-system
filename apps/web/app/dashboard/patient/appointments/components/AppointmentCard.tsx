@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { ClockIcon } from "../../../../utils/icons";
 import { Appointment } from "../appointments.types";
 import {
@@ -12,7 +15,7 @@ import {
   getModalityLabel,
   getCardStatusClass,
 } from "../appointments.utils";
-import { MedicalRecordViewModal } from "./MedicalRecordViewModal";
+import { medicalRecordsService } from "@/services/medical-records-service";
 
 type AppointmentCardProps = {
   appointment: Appointment;
@@ -29,10 +32,28 @@ export function AppointmentCard({
   onDetails,
   isMobile = false,
 }: AppointmentCardProps) {
+  const router = useRouter();
   const { day, month, year } = formatDate(appt.dateTime);
-  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
-  const canViewRecord = appt.status === "COMPLETED";
+  const [isOpeningRecord, setIsOpeningRecord] = useState(false);
   const specialtyLabel = appt.specialties.join(", ");
+
+  const handleOpenRecord = async () => {
+    try {
+      setIsOpeningRecord(true);
+      const existing = await medicalRecordsService.findByAppointment(appt.id);
+      if (existing && "id" in existing) {
+        router.push(`/dashboard/patient/medical-records/${existing.id}`);
+        return;
+      }
+      toast.info("Prontuário ainda não disponível para esta consulta.");
+    } catch (error) {
+      const msg =
+        error instanceof Error ? error.message : "Erro ao abrir prontuário.";
+      toast.error(msg);
+    } finally {
+      setIsOpeningRecord(false);
+    }
+  };
 
   if (isMobile) {
     return (
@@ -148,9 +169,10 @@ export function AppointmentCard({
                   variant="outline"
                   className="flex-1 text-xs"
                   title="Ver prontuário da consulta"
-                  onClick={() => setIsRecordModalOpen(true)}
+                  onClick={handleOpenRecord}
+                  disabled={isOpeningRecord}
                 >
-                  Prontuário
+                  {isOpeningRecord ? <Spinner size="sm" /> : "Prontuário"}
                 </Button>
               </>
             )}
@@ -167,14 +189,6 @@ export function AppointmentCard({
             )}
           </div>
         </CardContent>
-        {canViewRecord && (
-          <MedicalRecordViewModal
-            appointmentId={appt.id}
-            doctorName={appt.doctorName}
-            open={isRecordModalOpen}
-            onOpenChange={setIsRecordModalOpen}
-          />
-        )}
       </Card>
     );
   }
@@ -285,9 +299,10 @@ export function AppointmentCard({
                 size="sm"
                 variant="outline"
                 title="Ver prontuário da consulta"
-                onClick={() => setIsRecordModalOpen(true)}
+                onClick={handleOpenRecord}
+                disabled={isOpeningRecord}
               >
-                Prontuário
+                {isOpeningRecord ? <Spinner size="sm" /> : "Prontuário"}
               </Button>
             </>
           )}
@@ -303,14 +318,6 @@ export function AppointmentCard({
           )}
         </div>
       </CardContent>
-      {canViewRecord && (
-        <MedicalRecordViewModal
-          appointmentId={appt.id}
-          doctorName={appt.doctorName}
-          open={isRecordModalOpen}
-          onOpenChange={setIsRecordModalOpen}
-        />
-      )}
     </Card>
   );
 }
