@@ -56,6 +56,11 @@ export class AuthService {
     }
 
     if (!user.emailVerified) {
+      if (user.role === UserRole.PATIENT) {
+        throw new UnauthorizedException(
+          'Seu e-mail ainda não foi verificado. Verifique sua caixa de entrada.',
+        );
+      }
       throw new UnauthorizedException(
         'Sua conta ainda não foi aprovada. Aguarde a verificação do administrador.',
       );

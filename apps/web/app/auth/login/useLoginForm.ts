@@ -44,7 +44,7 @@ export function useLoginForm() {
             return;
           }
 
-          if (message.includes("e-mail ainda não foi verificado")) {
+          if (message.includes("ainda não foi verificado")) {
             toast.info(message);
             return;
           }
