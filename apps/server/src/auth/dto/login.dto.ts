@@ -11,12 +11,12 @@ export class LoginDto {
   email!: string;
 
   @ApiProperty({
-    example: 'Senha@123',
-    description: 'Senha (mínimo 8 caracteres)',
-    minLength: 8,
+    example: '123456',
+    description: 'Senha (mínimo 6 caracteres)',
+    minLength: 6,
   })
   @IsString({ message: 'Senha deve ser texto' })
   @IsNotEmpty({ message: 'Senha é obrigatória' })
-  @MinLength(8, { message: 'A senha deve ter no mínimo 8 caracteres' })
+  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres' })
   password!: string;
 }
