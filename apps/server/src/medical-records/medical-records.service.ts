@@ -8,23 +8,36 @@ import { AppointmentStatus, Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
+import { ListMedicalRecordsQueryDto } from './dto/list-medical-records-query.dto';
 import {
   MedicalRecordResponseDto,
   MedicalRecordPatientResponseDto,
+  MedicalRecordListResponseDto,
+  MedicalRecordPatientListResponseDto,
 } from './dto/medical-record-response.dto';
 import {
   MedicalRecordPdfService,
   PatientMedicalRecordPdfInput,
 } from './medical-record-pdf.service';
 
-type MedicalRecordWithAuthor = Prisma.MedicalRecordGetPayload<{
-  include: { author: true };
+type MedicalRecordWithRelations = Prisma.MedicalRecordGetPayload<{
+  include: {
+    author: true;
+    patient: true;
+    appointment: true;
+  };
 }>;
 
 const VALID_LINK_STATUSES: AppointmentStatus[] = [
   AppointmentStatus.CONFIRMED,
   AppointmentStatus.COMPLETED,
 ];
+
+const RECORD_INCLUDE = {
+  author: true,
+  patient: true,
+  appointment: true,
+} as const;
 
 @Injectable()
 export class MedicalRecordsService {
@@ -63,7 +76,7 @@ export class MedicalRecordsService {
           prescriptions: dto.prescriptions,
           internalNotes: dto.internalNotes,
         },
-        include: { author: true },
+        include: RECORD_INCLUDE,
       });
       return this.toResponseDto(record);
     } catch (error) {
@@ -93,30 +106,120 @@ export class MedicalRecordsService {
 
     const record = await this.prisma.medicalRecord.findUnique({
       where: { appointmentId },
-      include: { author: true },
+      include: RECORD_INCLUDE,
     });
 
     if (!record) {
       throw new NotFoundException('Prontuário não encontrado.');
     }
 
-    if (requesterRole === UserRole.PATIENT) {
-      if (record.patientId !== requesterId) {
-        throw new ForbiddenException('Acesso negado a este prontuário.');
-      }
-      return this.toPatientResponseDto(record);
-    }
+    return this.authorizeAndSerialize(record, requesterId, requesterRole);
+  }
 
-    const isAuthor = record.authorId === requesterId;
-    const hasLink =
-      isAuthor ||
-      (await this.hasPriorAppointment(requesterId, record.patientId));
-
-    if (!hasLink) {
+  async findById(
+    recordId: string,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<MedicalRecordResponseDto | MedicalRecordPatientResponseDto> {
+    if (
+      requesterRole !== UserRole.PROFESSIONAL &&
+      requesterRole !== UserRole.PATIENT
+    ) {
       throw new ForbiddenException('Acesso negado a este prontuário.');
     }
 
-    return this.toResponseDto(record);
+    const record = await this.prisma.medicalRecord.findUnique({
+      where: { id: recordId },
+      include: RECORD_INCLUDE,
+    });
+
+    if (!record) {
+      throw new NotFoundException('Prontuário não encontrado.');
+    }
+
+    return this.authorizeAndSerialize(record, requesterId, requesterRole);
+  }
+
+  async list(
+    requesterId: string,
+    requesterRole: UserRole,
+    query: ListMedicalRecordsQueryDto,
+  ): Promise<
+    MedicalRecordListResponseDto | MedicalRecordPatientListResponseDto
+  > {
+    if (
+      requesterRole !== UserRole.PROFESSIONAL &&
+      requesterRole !== UserRole.PATIENT
+    ) {
+      throw new ForbiddenException('Acesso negado.');
+    }
+
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.MedicalRecordWhereInput = {};
+
+    if (requesterRole === UserRole.PROFESSIONAL) {
+      // Médico vê apenas prontuários que ele mesmo criou
+      where.authorId = requesterId;
+      if (query.patientId) where.patientId = query.patientId;
+      if (query.authorId && query.authorId !== requesterId) {
+        // não permitir ver de outros médicos
+        throw new ForbiddenException(
+          'Não é possível listar prontuários de outros profissionais.',
+        );
+      }
+    } else {
+      // Paciente vê apenas os próprios
+      where.patientId = requesterId;
+      if (query.authorId) where.authorId = query.authorId;
+    }
+
+    if (query.startDate || query.endDate) {
+      where.createdAt = {
+        ...(query.startDate && { gte: new Date(query.startDate) }),
+        ...(query.endDate && { lte: new Date(query.endDate) }),
+      };
+    }
+
+    if (query.search) {
+      const term = query.search.trim();
+      if (term.length > 0) {
+        where.OR = [
+          { patient: { name: { contains: term, mode: 'insensitive' } } },
+          { chiefComplaint: { contains: term, mode: 'insensitive' } },
+          { diagnosis: { contains: term, mode: 'insensitive' } },
+        ];
+      }
+    }
+
+    const [records, total] = await Promise.all([
+      this.prisma.medicalRecord.findMany({
+        where,
+        include: RECORD_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.medicalRecord.count({ where }),
+    ]);
+
+    if (requesterRole === UserRole.PATIENT) {
+      return {
+        data: records.map((r) => this.toPatientResponseDto(r)),
+        page,
+        limit,
+        total,
+      };
+    }
+
+    return {
+      data: records.map((r) => this.toResponseDto(r)),
+      page,
+      limit,
+      total,
+    };
   }
 
   async findByPatient(
@@ -133,7 +236,7 @@ export class MedicalRecordsService {
 
     const records = await this.prisma.medicalRecord.findMany({
       where: { patientId },
-      include: { author: true },
+      include: RECORD_INCLUDE,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -147,7 +250,7 @@ export class MedicalRecordsService {
   ): Promise<MedicalRecordResponseDto> {
     const record = await this.prisma.medicalRecord.findUnique({
       where: { id: recordId },
-      include: { author: true },
+      include: RECORD_INCLUDE,
     });
 
     if (!record) {
@@ -169,7 +272,7 @@ export class MedicalRecordsService {
         prescriptions: dto.prescriptions,
         internalNotes: dto.internalNotes,
       },
-      include: { author: true },
+      include: RECORD_INCLUDE,
     });
 
     return this.toResponseDto(updated);
@@ -234,6 +337,31 @@ export class MedicalRecordsService {
 
     return this.pdfService.generate(input);
   }
+
+  private async authorizeAndSerialize(
+    record: MedicalRecordWithRelations,
+    requesterId: string,
+    requesterRole: UserRole,
+  ): Promise<MedicalRecordResponseDto | MedicalRecordPatientResponseDto> {
+    if (requesterRole === UserRole.PATIENT) {
+      if (record.patientId !== requesterId) {
+        throw new ForbiddenException('Acesso negado a este prontuário.');
+      }
+      return this.toPatientResponseDto(record);
+    }
+
+    const isAuthor = record.authorId === requesterId;
+    const hasLink =
+      isAuthor ||
+      (await this.hasPriorAppointment(requesterId, record.patientId));
+
+    if (!hasLink) {
+      throw new ForbiddenException('Acesso negado a este prontuário.');
+    }
+
+    return this.toResponseDto(record);
+  }
+
   private async hasPriorAppointment(
     professionalId: string,
     patientId: string,
@@ -249,7 +377,7 @@ export class MedicalRecordsService {
   }
 
   private toResponseDto(
-    record: MedicalRecordWithAuthor,
+    record: MedicalRecordWithRelations,
   ): MedicalRecordResponseDto {
     return {
       id: record.id,
@@ -259,6 +387,15 @@ export class MedicalRecordsService {
         id: record.author.id,
         name: record.author.name,
         email: record.author.email,
+      },
+      patient: {
+        id: record.patient.id,
+        name: record.patient.name,
+      },
+      appointment: {
+        id: record.appointment.id,
+        dateTime: record.appointment.dateTime,
+        modality: record.appointment.modality,
       },
       chiefComplaint: record.chiefComplaint,
       diagnosis: record.diagnosis,
@@ -271,7 +408,7 @@ export class MedicalRecordsService {
   }
 
   private toPatientResponseDto(
-    record: MedicalRecordWithAuthor,
+    record: MedicalRecordWithRelations,
   ): MedicalRecordPatientResponseDto {
     return {
       id: record.id,
@@ -281,6 +418,11 @@ export class MedicalRecordsService {
         id: record.author.id,
         name: record.author.name,
         email: record.author.email,
+      },
+      appointment: {
+        id: record.appointment.id,
+        dateTime: record.appointment.dateTime,
+        modality: record.appointment.modality,
       },
       chiefComplaint: record.chiefComplaint,
       diagnosis: record.diagnosis,
