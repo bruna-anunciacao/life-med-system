@@ -1,65 +1,125 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { SearchIcon } from "../../../utils/icons";
+import { SearchIcon, UsersIcon } from "../../../utils/icons";
 import { useProfessionalPatients } from "@/queries/useProfessionalPatients";
 import { PatientCard, PatientCardData } from "./components/PatientCard";
+
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
 
 export default function PatientsPage() {
   const [search, setSearch] = useState("");
   const { data: patients = [], isLoading, isError } = useProfessionalPatients();
 
-  const filtered = patients.filter((p) => {
-    const term = search.toLowerCase();
-    return Object.values(p)
-      .filter((value) => typeof value === "string")
-      .some((value) => (value as string).toLowerCase().includes(term));
-  });
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return patients;
+    const termDigits = onlyDigits(term);
+    return patients.filter((p) => {
+      const matchesText =
+        p.name?.toLowerCase().includes(term) ||
+        p.email?.toLowerCase().includes(term) ||
+        p.phone?.toLowerCase().includes(term);
+      const matchesCpf =
+        termDigits.length > 0 &&
+        p.cpf &&
+        onlyDigits(p.cpf).includes(termDigits);
+      return matchesText || matchesCpf;
+    });
+  }, [patients, search]);
+
+  const totalLabel =
+    patients.length === 1 ? "1 paciente" : `${patients.length} pacientes`;
 
   return (
     <section className="w-full min-h-screen mx-auto px-4 py-6 sm:px-16 sm:py-8 bg-[#f8fafc]">
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
           Pacientes
         </h1>
         <p className="mt-1 text-sm sm:text-base text-gray-500">
           Acompanhe o perfil e o histórico dos pacientes que você atende.
+          {!isLoading && patients.length > 0 && (
+            <span className="ml-1 text-gray-700 font-medium">
+              · {totalLabel}
+            </span>
+          )}
         </p>
       </div>
 
-      <div className="mb-6 sm:mb-8 w-full sm:max-w-100 relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-          <SearchIcon />
-        </span>
-        <Input
-          placeholder="Buscar paciente..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          title="Digite o nome ou informação para filtrar os pacientes"
-          className="h-12 w-full px-4 rounded-lg border border-slate-300 text-sm text-slate-700 bg-white outline-none transition-all duration-200 pl-10"
-        />
-      </div>
+      <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
+        <CardContent className="p-4 sm:p-5">
+          <label className="text-xs font-medium text-slate-600 mb-1.5 block">
+            Buscar por nome, e-mail, telefone ou CPF
+          </label>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+              <SearchIcon size={16} />
+            </span>
+            <Input
+              placeholder="Ex.: Maria Silva, 123.456.789-00, maria@..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              title="Digite nome, e-mail, telefone ou CPF"
+              className="h-11 pl-10"
+            />
+          </div>
+          {search && (
+            <p className="text-xs text-slate-500 mt-2">
+              {filtered.length} resultado{filtered.length === 1 ? "" : "s"} para
+              “{search}”
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {isLoading ? (
         <div className="py-20 flex justify-center items-center">
           <Spinner size="lg" />
         </div>
       ) : isError ? (
-        <div className="py-20 text-center text-red-500 font-medium">
-          Não foi possível carregar a lista de pacientes.
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="py-20 text-center text-gray-500">
-          Nenhum paciente encontrado.
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]">
-          {filtered.map((patient) => (
-            <div key={patient.id} title="Visualizar detalhes do paciente">
-              <PatientCard patient={patient as PatientCardData} />
+        <Card className="border border-red-200 bg-red-50 rounded-xl">
+          <CardContent className="py-10 text-center text-red-600 font-medium">
+            Não foi possível carregar a lista de pacientes.
+          </CardContent>
+        </Card>
+      ) : patients.length === 0 ? (
+        <Card className="border border-dashed border-gray-300 rounded-xl bg-white">
+          <CardContent className="py-16 text-center flex flex-col items-center gap-3">
+            <div className="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
+              <UsersIcon size={28} />
             </div>
+            <div>
+              <p className="text-base font-semibold text-slate-800">
+                Você ainda não tem pacientes
+              </p>
+              <p className="text-sm text-slate-500 mt-1 max-w-md">
+                Assim que uma consulta for agendada com você, o paciente
+                aparecerá aqui.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : filtered.length === 0 ? (
+        <Card className="border border-dashed border-gray-300 rounded-xl bg-white">
+          <CardContent className="py-12 text-center">
+            <p className="text-base font-medium text-slate-700">
+              Nenhum paciente encontrado.
+            </p>
+            <p className="text-sm text-slate-500 mt-1">
+              Tente outra busca por nome, e-mail ou CPF.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+          {filtered.map((patient) => (
+            <PatientCard key={patient.id} patient={patient as PatientCardData} />
           ))}
         </div>
       )}
