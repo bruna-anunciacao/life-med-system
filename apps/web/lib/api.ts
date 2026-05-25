@@ -32,7 +32,11 @@ api.interceptors.response.use(
     if (
       typeof window !== "undefined" &&
       payload?.code === "QUESTIONNAIRE_REQUIRED" &&
-      payload?.redirectTo
+      payload?.redirectTo &&
+      // Avoid bouncing the patient back to the questionnaire when they have
+      // just completed it: a residual request may still race the freshly
+      // persisted state. The completion cookie is the source of truth here.
+      Cookies.get(QUESTIONNAIRE_COMPLETED_KEY) !== "true"
     ) {
       Cookies.set(QUESTIONNAIRE_COMPLETED_KEY, "false", { expires: 1 });
       window.location.href = payload.redirectTo;
