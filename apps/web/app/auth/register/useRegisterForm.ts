@@ -81,8 +81,11 @@ export function useRegisterForm() {
           socialLinks: professional.socialLinks,
         });
         toast.success(
-          "Sua solicitação foi enviada para a administração, aguarde. Sua resposta virá via email.",
+          "Cadastro realizado! Confirme seu e-mail para concluir a primeira etapa. Depois sua conta será analisada por um administrador.",
         );
+        form.reset(INITIAL_FORM);
+        setTimeout(() => router.push("/auth/verify-email-pending"), 1000);
+        return;
       } else {
         const patient = data as z.infer<typeof registerPatientValidation>;
         await authService.registerPatient({

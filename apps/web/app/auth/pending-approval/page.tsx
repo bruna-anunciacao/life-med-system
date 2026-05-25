@@ -11,11 +11,12 @@ export default function PendingApprovalPage() {
           <Clock className="h-8 w-8 text-amber-600" />
         </div>
 
-        <h1 className="text-2xl font-semibold">Conta Pendente de Aprovacao</h1>
+        <h1 className="text-2xl font-semibold">Aguardando aprovação</h1>
 
         <p className="text-muted-foreground">
-          Sua conta foi criada com sucesso, mas ainda precisa ser aprovada por um
-          administrador. Voce recebera acesso assim que sua conta for verificada.
+          Seu e-mail já foi confirmado. Agora sua conta precisa ser aprovada por
+          um administrador antes do primeiro acesso. Você receberá um e-mail
+          assim que a aprovação for concluída.
         </p>
 
         <Link

@@ -244,12 +244,19 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                   >
                     <Eye />
                   </Button>
-                  {(user.status === "COMPLETED" || user.status === "BLOCKED") && (
+                  {(user.status === "PENDING" ||
+                    user.status === "COMPLETED" ||
+                    user.status === "BLOCKED") && (
                     <Button
                       size="icon"
                       variant="ghost"
+                      disabled={!user.emailVerified}
                       className="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
-                      title={`Verificar/Aprovar usuário ${user.name}`}
+                      title={
+                        user.emailVerified
+                          ? `Aprovar usuário ${user.name}`
+                          : `${user.name} ainda não confirmou o e-mail`
+                      }
                       onClick={() => onStatusChange(user.id, "VERIFIED")}
                     >
                       <Check />
@@ -427,12 +434,19 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                         <Eye />
                       </Button>
 
-                      {(user.status === "COMPLETED" || user.status === "BLOCKED") && (
+                      {(user.status === "PENDING" ||
+                        user.status === "COMPLETED" ||
+                        user.status === "BLOCKED") && (
                         <Button
                           size="icon"
                           variant="ghost"
+                          disabled={!user.emailVerified}
                           className="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
-                          title={`Verificar/Aprovar usuário ${user.name}`}
+                          title={
+                            user.emailVerified
+                              ? `Aprovar usuário ${user.name}`
+                              : `${user.name} ainda não confirmou o e-mail`
+                          }
                           onClick={() => onStatusChange(user.id, "VERIFIED")}
                         >
                           <Check />
