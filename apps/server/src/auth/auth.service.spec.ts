@@ -60,6 +60,55 @@ describe('AuthService', () => {
     expect(jwtService.sign).not.toHaveBeenCalled();
   });
 
+  it('blocks professional whose email is not yet confirmed', async () => {
+    prisma.user.findUnique.mockResolvedValue(
+      await makeUser({
+        role: UserRole.PROFESSIONAL,
+        emailVerified: false,
+        status: UserStatus.PENDING,
+        patientProfile: null,
+      }),
+    );
+
+    await expect(
+      service.login({ email: 'usuario@lifemed.com', password }),
+    ).rejects.toThrow('Seu e-mail ainda não foi verificado');
+
+    expect(jwtService.sign).not.toHaveBeenCalled();
+  });
+
+  it('blocks professional with confirmed email but pending admin approval', async () => {
+    prisma.user.findUnique.mockResolvedValue(
+      await makeUser({
+        role: UserRole.PROFESSIONAL,
+        emailVerified: true,
+        status: UserStatus.PENDING,
+        patientProfile: null,
+      }),
+    );
+
+    await expect(
+      service.login({ email: 'usuario@lifemed.com', password }),
+    ).rejects.toThrow('aguarda aprovação do administrador');
+
+    expect(jwtService.sign).not.toHaveBeenCalled();
+  });
+
+  it('lets an approved (VERIFIED) professional login', async () => {
+    prisma.user.findUnique.mockResolvedValue(
+      await makeUser({
+        role: UserRole.PROFESSIONAL,
+        emailVerified: true,
+        status: UserStatus.VERIFIED,
+        patientProfile: null,
+      }),
+    );
+
+    await expect(
+      service.login({ email: 'usuario@lifemed.com', password }),
+    ).resolves.toMatchObject({ accessToken: 'signed-token' });
+  });
+
   it('keeps verified users able to login', async () => {
     prisma.user.findUnique.mockResolvedValue(await makeUser());
 

@@ -38,14 +38,17 @@ export function useLoginForm() {
           const message =
             error instanceof Error ? error.message : "Erro desconhecido.";
 
-          if (message.includes("ainda não foi aprovada")) {
+          // Etapa 2: e-mail confirmado, mas falta aprovação do administrador.
+          if (message.includes("aguarda aprovação do administrador")) {
             toast.info(message);
             router.push("/auth/pending-approval");
             return;
           }
 
+          // Etapa 1: e-mail ainda não confirmado.
           if (message.includes("ainda não foi verificado")) {
             toast.info(message);
+            router.push("/auth/verify-email-pending");
             return;
           }
 

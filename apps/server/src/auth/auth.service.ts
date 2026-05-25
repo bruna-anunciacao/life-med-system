@@ -55,14 +55,22 @@ export class AuthService {
       );
     }
 
+    // Etapa 1 (todos): o e-mail precisa estar confirmado.
     if (!user.emailVerified) {
-      if (user.role === UserRole.PATIENT) {
-        throw new UnauthorizedException(
-          'Seu e-mail ainda não foi verificado. Verifique sua caixa de entrada.',
-        );
-      }
       throw new UnauthorizedException(
-        'Sua conta ainda não foi aprovada. Aguarde a verificação do administrador.',
+        'Seu e-mail ainda não foi verificado. Verifique sua caixa de entrada.',
+      );
+    }
+
+    // Etapa 2 (apenas profissional/gestor): a conta precisa ser aprovada por um
+    // administrador. Pacientes têm acesso assim que confirmam o e-mail.
+    if (
+      user.role !== UserRole.PATIENT &&
+      user.role !== UserRole.ADMIN &&
+      user.status !== UserStatus.VERIFIED
+    ) {
+      throw new UnauthorizedException(
+        'Seu e-mail foi confirmado, mas sua conta ainda aguarda aprovação do administrador.',
       );
     }
 
@@ -168,7 +176,7 @@ export class AuthService {
         password: passwordHash,
         name: dto.name,
         role: UserRole.PROFESSIONAL,
-        status: UserStatus.COMPLETED,
+        status: UserStatus.PENDING,
         professionalProfile: {
           create: {
             professionalLicense: dto.professionalLicense,
@@ -348,16 +356,20 @@ export class AuthService {
   async verifyEmail(token: string) {
     const user = await this.emailVerification.validateToken(token);
 
+    // Em ambos os casos a confirmação de e-mail marca emailVerified.
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerified: true },
+    });
+
     if (user.role === UserRole.PATIENT) {
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: { emailVerified: true },
-      });
       return {
         message: 'E-mail verificado com sucesso. Você já pode fazer login.',
       };
     }
 
+    // Profissional/gestor: e-mail confirmado, mas ainda depende de aprovação
+    // do administrador (status passa a VERIFIED na aprovação).
     this.notifyAdminsOfNewUser({
       name: user.name,
       email: user.email,
