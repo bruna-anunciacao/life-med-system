@@ -6,7 +6,7 @@ Plataforma digital web responsiva, sem fins lucrativos, destinada a facilitar o 
 
 | Recurso | Link |
 |---------|------|
-| **Frontend (Produção)** | https://life-med-frontend.vercel.app/ |
+| **Frontend (Produção)** | https://life-med-system-web.vercel.app/ |
 | **Backend (Produção)** | https://life-med.onrender.com/ |
 | **Repositório Principal** | https://github.com/bruna-anunciacao/life-med-system |
 | **Documentação de Requisitos** | [Google Docs](https://docs.google.com/document/d/1nTb6WZjGDMXA394hR0gvFeqp7Gk6E-zGJrsyybsuBJ4/edit?usp=sharing) |
