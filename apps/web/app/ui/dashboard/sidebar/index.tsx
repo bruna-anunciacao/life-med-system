@@ -14,6 +14,8 @@ import {
   Search,
   CalendarDays,
   CalendarPlus,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,7 +33,7 @@ import {
 export function AppSidebar({ role }: { role: string }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, state, toggleSidebar } = useSidebar();
 
   const getNavItems = () => {
     switch (role) {
@@ -112,13 +114,21 @@ export function AppSidebar({ role }: { role: string }) {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="h-16 flex items-center justify-center border-b border-sidebar-border group-data-[collapsible=icon]:p-0">
+      <SidebarHeader className="flex h-16 flex-row items-center justify-between border-b border-sidebar-border px-4 transition-all duration-200 group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-4 group-data-[collapsible=icon]:py-4 group-data-[collapsible=icon]:px-0">
         <Link
           href={`/dashboard/${role.toLowerCase()}`}
-          className="flex items-center justify-center overflow-hidden transition-all group-data-[collapsible=icon]:w-full"
+          className="flex shrink-0 items-center justify-center transition-all duration-200 origin-center group-data-[collapsible=icon]:scale-90"
         >
           <LifeMedLogo height={28} width={75} />
         </Link>
+
+        <button
+          onClick={toggleSidebar}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors [&_svg]:!size-6"
+          title={state === "collapsed" ? "Expandir menu" : "Recolher menu"}
+        >
+          {state === "collapsed" ? <ChevronRight /> : <ChevronLeft />}
+        </button>
       </SidebarHeader>
 
       <SidebarContent>
@@ -140,13 +150,13 @@ export function AppSidebar({ role }: { role: string }) {
                       <SidebarMenuButton
                         isActive={isActive}
                         tooltip={item.name}
-                        className={`w-full flex items-center gap-3 h-11 px-3 transition-colors group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center ${
+                        className={`w-full flex items-center gap-3 h-12 px-3 transition-colors group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!h-12 [&_svg]:!size-6 ${
                           isActive
                             ? "!bg-sky-200 !text-sky-950 !font-semibold hover:!bg-sky-300"
                             : "text-slate-600 hover:bg-slate-200 hover:text-slate-900"
                         }`}
                       >
-                        <item.icon className="h-5 w-5 shrink-0" />
+                        <item.icon className="shrink-0" />
                         <span className="truncate text-base group-data-[collapsible=icon]:hidden">
                           {item.name}
                         </span>
@@ -160,15 +170,15 @@ export function AppSidebar({ role }: { role: string }) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:items-center">
+      <SidebarFooter className="border-t border-sidebar-border p-4 group-data-[collapsible=icon]:p-4 group-data-[collapsible=icon]:items-center">
         <SidebarMenu className="w-full">
           <SidebarMenuItem className="w-full flex justify-center">
             <SidebarMenuButton
               onClick={handleLogout}
-              className="flex items-center gap-3 h-11 px-3 text-red-600 hover:text-red-800 hover:bg-red-100 w-full transition-colors group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center"
+              className="flex items-center gap-3 h-12 px-3 text-red-600 hover:text-red-800 hover:bg-red-100 w-full transition-colors group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:!w-12 group-data-[collapsible=icon]:!h-12 [&_svg]:!size-6"
               tooltip="Sair"
             >
-              <LogOut className="h-5 w-5 shrink-0" />
+              <LogOut className="shrink-0" />
               <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
                 Sair
               </span>
