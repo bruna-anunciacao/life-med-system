@@ -8,11 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { useMedicalRecordsListQuery } from "@/queries/useMedicalRecords";
-import {
-  CalendarIcon,
-  SearchIcon,
-  EyeIcon,
-} from "../../../utils/icons";
+import { SearchInput } from "@/components/ui/search-input";
+import { CalendarIcon, EyeIcon } from "../../../utils/icons";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 const PAGE_SIZE = 10;
@@ -78,7 +75,8 @@ const MedicalRecordsListPage = () => {
     <PageShell>
       <PageHeader
         title="Prontuários"
-        description={`Prontuários médicos criados por você.${total > 0 ? ` ${total} no total.` : ""}`}
+        description={`Prontuários médicos criados por você.{" "}
+         ${total > 0 ? ` ${total} no total.` : ""}`}
       />
 
       <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
@@ -91,18 +89,11 @@ const MedicalRecordsListPage = () => {
               <label className="text-xs font-medium text-slate-600">
                 Buscar (paciente, queixa ou diagnóstico)
               </label>
-              <div className="relative">
-                <SearchIcon
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={16}
-                />
-                <Input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Ex.: João Silva, enxaqueca…"
-                  className="pl-9"
-                />
-              </div>
+              <SearchInput
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Ex.: João Silva, enxaqueca…"
+              />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-slate-600">

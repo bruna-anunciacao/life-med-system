@@ -32,6 +32,7 @@ import {
   ClipboardList,
   X,
 } from 'lucide-react';
+import { SearchInput } from '@/components/ui/search-input';
 
 type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender' | 'questionnaire';
 type SortDir = 'asc' | 'desc';
@@ -240,28 +241,13 @@ export default function PatientsPage() {
         )}
 
         <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Buscar paciente por nome..."
-              defaultValue={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-12 pr-12 py-3 border border-border rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-card placeholder:text-muted-foreground"
-              aria-label="Buscar paciente por nome"
-            />
-            {searchTerm && (
-              <button
-                type="button"
-                onClick={() => handleSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition"
-                aria-label="Limpar busca"
-                title="Limpar busca"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          <SearchInput
+            placeholder="Buscar paciente por nome..."
+            defaultValue={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="h-12 shadow-sm rounded-xl"
+            aria-label="Buscar paciente por nome"
+          />
           {searchTerm && (
             <p className="mt-2 text-xs text-muted-foreground">
               {filteredPatients.length}{' '}
