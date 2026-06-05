@@ -83,7 +83,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Nome + E-mail em grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="name" className="text-sm font-semibold text-[#374151]">Nome completo</Label>
             <Input 
@@ -127,7 +127,7 @@ const RegisterPage = () => {
         )}
 
         {/* Senhas em grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <PasswordField
             name="password"
             label="Senha"

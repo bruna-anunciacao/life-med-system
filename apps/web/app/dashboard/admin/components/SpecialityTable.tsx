@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useCreateSpeciality } from "@/queries/useCreateSpeciality";
 import { useUpdateSpeciality } from "@/queries/useUpdateSpeciality";
 import { useDeleteSpeciality } from "@/queries/useDeleteSpeciality";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { useIsMobile, useMounted } from "@/hooks/useIsMobile";
 import { Stethoscope, Plus, Pencil, Trash2 } from "lucide-react";
 import {
   DataTable,
@@ -37,6 +37,7 @@ interface SpecialitiesTableProps {
 
 export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
   const isMobile = useIsMobile();
+  const mounted = useMounted();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newSpecialityName, setNewSpecialityName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -118,7 +119,9 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
           }
         />
 
-        {specialities.length === 0 ? (
+        {!mounted ? (
+          <div className="h-40" aria-hidden="true" />
+        ) : specialities.length === 0 ? (
           <DataTableEmpty
             icon={<Stethoscope className="h-8 w-8" />}
             title="Nenhuma especialidade"

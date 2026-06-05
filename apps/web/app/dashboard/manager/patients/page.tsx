@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Fuse from 'fuse.js';
 import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile, useMounted } from '@/hooks/useIsMobile';
 import Link from 'next/link';
 import { StatsCardsSkeleton, TableSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -84,6 +84,7 @@ const formatLocalDate = (dateString: string) => {
 export default function PatientsPage() {
   const router = useRouter();
   const isMobile = useIsMobile();
+  const mounted = useMounted();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get('search') ?? '';
 
@@ -270,7 +271,9 @@ export default function PatientsPage() {
           )}
         </div>
 
-        {filteredPatients.length === 0 ? (
+        {!mounted ? (
+          <div className="h-40" aria-hidden="true" />
+        ) : filteredPatients.length === 0 ? (
           searchTerm ? (
             <DataTableCard>
               <DataTableEmpty
@@ -338,7 +341,7 @@ export default function PatientsPage() {
             </DataTableMobileList>
           </DataTableCard>
         ) : (
-          <DataTableCard>
+          <DataTableCard className="overflow-x-auto">
             <DataTable>
               <DataTableHead>
                 <SortableHeader field="name" currentField={sortField} direction={sortDir} onToggle={toggleSort}>

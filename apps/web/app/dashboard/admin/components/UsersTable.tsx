@@ -14,7 +14,6 @@ import {
   DataTableHead,
   DataTableHeadCell,
   DataTableHeader,
-  DataTableLoading,
   DataTableMobileItem,
   DataTableMobileList,
   DataTableRow,
@@ -23,7 +22,7 @@ import {
 } from "@/components/ui/data-table";
 import { AdminUser } from "../../../../services/admin-service";
 import { useAdminUsersTable, TypeFilter } from "@/queries/useAdminUsersTable";
-import { useIsMobile } from "@/hooks/useIsMobile";
+import { useIsMobile, useMounted } from "@/hooks/useIsMobile";
 import { TableSkeleton } from "@/components/ui/skeletons";
 import { Eye, Check, Ban, Pencil, Users } from "lucide-react";
 
@@ -83,6 +82,7 @@ function getSpeciality(user: AdminUser) {
 function UsersTableInner({ onStatusChange, actions }: Props) {
   const router = useRouter();
   const isMobile = useIsMobile();
+  const mounted = useMounted();
   const { users, isLoading, search, setSearch, typeFilter, setTypeFilter } = useAdminUsersTable();
 
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -167,7 +167,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
         />
       </DataTableToolbar>
 
-      {isLoading ? (
+      {isLoading || !mounted ? (
         isMobile ? (
           <TableSkeleton rows={6} columns={4} isMobile />
         ) : (
