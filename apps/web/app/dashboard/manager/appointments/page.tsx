@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useListAppointmentsQuery } from '@/queries/useListAppointmentsQuery';
 import { useCancelAppointmentManagerMutation } from '@/queries/useCancelAppointmentManagerMutation';
-import { useIsMobile } from '@/hooks/useIsMobile';
+import { useIsMobile, useMounted } from '@/hooks/useIsMobile';
 import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
@@ -30,6 +30,7 @@ type SortDir = 'asc' | 'desc';
 
 export default function AppointmentsPage() {
   const isMobile = useIsMobile();
+  const mounted = useMounted();
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -204,7 +205,9 @@ export default function AppointmentsPage() {
               </select>
             </div>
 
-            {filteredAppointments.length === 0 ? (
+            {!mounted ? (
+              <div className="h-40" aria-hidden="true" />
+            ) : filteredAppointments.length === 0 ? (
               <DataTableCard>
                 <DataTableEmpty
                   icon={<Calendar className="h-8 w-8" />}
@@ -289,7 +292,7 @@ export default function AppointmentsPage() {
                 </DataTableMobileList>
               </DataTableCard>
             ) : (
-              <DataTableCard>
+              <DataTableCard className="overflow-x-auto">
                 <DataTable>
                   <DataTableHead>
                     <SortableHeader field="patient" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
