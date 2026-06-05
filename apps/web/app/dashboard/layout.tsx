@@ -8,10 +8,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LifeMedLogo } from "../ui/life-med-logo";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
-import { authService } from "../../services/auth-service";
-import { useRouter } from "next/navigation";
 
 const DashboardLayout = ({
   children,
@@ -20,7 +16,6 @@ const DashboardLayout = ({
 }>) => {
   const [role, setRole] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     const userRole = Cookies.get("user-role");
@@ -29,11 +24,6 @@ const DashboardLayout = ({
     }
     setIsLoading(false);
   }, []);
-
-  const handleLogout = () => {
-    authService.logout();
-    router.push("/auth/login");
-  };
 
   if (isLoading) {
     return (
@@ -62,15 +52,10 @@ const DashboardLayout = ({
           <SidebarTrigger />
         </header>
 
-        <header className="flex md:hidden h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4">
+        <header className="flex md:hidden h-14 shrink-0 items-center border-b border-gray-200 bg-white px-4">
           <Link href={`/dashboard/${role.toLowerCase()}`}>
             <LifeMedLogo height={24} width={65} />
           </Link>
-          {role !== "ADMIN" && (
-            <Button variant="ghost" size="icon" onClick={handleLogout}>
-              <LogOut className="size-5 text-red-600" />
-            </Button>
-          )}
         </header>
 
         <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
