@@ -9,7 +9,20 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { CancelConfirmDialog } from '@/app/dashboard/patient/appointments/components/CancelConfirmDialog';
-import { Calendar, Clock, X, CheckCircle, AlertCircle, XCircle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCard,
+  DataTableCell,
+  DataTableEmpty,
+  DataTableHead,
+  DataTableHeadCell,
+  DataTableMobileItem,
+  DataTableMobileList,
+  DataTableRow,
+  SortableHeader,
+} from '@/components/ui/data-table';
+import { Calendar, Clock, X, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 
 type SortField = 'patient' | 'professional' | 'dateTime' | 'scheduledBy' | 'status';
 type SortDir = 'asc' | 'desc';
@@ -63,14 +76,6 @@ export default function AppointmentsPage() {
     });
   }, [filteredAppointments, sortField, sortDir]);
 
-  function SortIcon({ field }: { field: SortField }) {
-    if (sortField !== field)
-      return <ArrowUpDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-400" />;
-    return sortDir === 'asc'
-      ? <ArrowUp className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />
-      : <ArrowDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />;
-  }
-
   const appointmentStats = useMemo(() => {
     return {
       total: appointments.length,
@@ -122,7 +127,7 @@ export default function AppointmentsPage() {
         <PageHeader
           title="Agendamentos"
           action={{
-            label: "+ Nova Consulta",
+            label: '+ Nova Consulta',
             href: '/dashboard/manager/appointments/new',
             colorClass: 'bg-blue-600 hover:bg-blue-700',
           }}
@@ -138,46 +143,46 @@ export default function AppointmentsPage() {
           <>
             {!isMobile && (
               <div className="grid grid-cols-5 gap-4 mb-8">
-                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Total</p>
-                      <p className="text-2xl font-bold text-gray-900 mt-1">{appointmentStats.total}</p>
+                      <p className="text-xs text-muted-foreground font-medium">Total</p>
+                      <p className="text-2xl font-bold text-foreground mt-1">{appointmentStats.total}</p>
                     </div>
                     <Calendar className="w-8 h-8 text-blue-500 opacity-20" />
                   </div>
                 </div>
-                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Pendente</p>
+                      <p className="text-xs text-muted-foreground font-medium">Pendente</p>
                       <p className="text-2xl font-bold text-yellow-600 mt-1">{appointmentStats.pending}</p>
                     </div>
                     <AlertCircle className="w-8 h-8 text-yellow-500 opacity-20" />
                   </div>
                 </div>
-                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Confirmado</p>
+                      <p className="text-xs text-muted-foreground font-medium">Confirmado</p>
                       <p className="text-2xl font-bold text-blue-600 mt-1">{appointmentStats.confirmed}</p>
                     </div>
                     <CheckCircle className="w-8 h-8 text-blue-500 opacity-20" />
                   </div>
                 </div>
-                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Concluído</p>
+                      <p className="text-xs text-muted-foreground font-medium">Concluído</p>
                       <p className="text-2xl font-bold text-green-600 mt-1">{appointmentStats.completed}</p>
                     </div>
                     <CheckCircle className="w-8 h-8 text-green-500 opacity-20" />
                   </div>
                 </div>
-                <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500 font-medium">Cancelado</p>
+                      <p className="text-xs text-muted-foreground font-medium">Cancelado</p>
                       <p className="text-2xl font-bold text-red-600 mt-1">{appointmentStats.cancelled}</p>
                     </div>
                     <XCircle className="w-8 h-8 text-red-500 opacity-20" />
@@ -190,7 +195,7 @@ export default function AppointmentsPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-card text-foreground"
               >
                 <option value="">Todos os status</option>
                 <option value="PENDING">Pendente</option>
@@ -201,152 +206,129 @@ export default function AppointmentsPage() {
             </div>
 
             {filteredAppointments.length === 0 ? (
-              <div className="text-center py-12">
-                <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">
-                  {statusFilter
-                    ? `Nenhuma consulta com status "${statusFilter}"`
-                    : 'Nenhuma consulta encontrada'}
-                </p>
-              </div>
+              <DataTableCard>
+                <DataTableEmpty
+                  icon={<Calendar className="h-8 w-8" />}
+                  title={
+                    statusFilter
+                      ? `Nenhuma consulta com status "${statusFilter}"`
+                      : 'Nenhuma consulta encontrada'
+                  }
+                />
+              </DataTableCard>
             ) : isMobile ? (
-              <div className="space-y-3">
-                {filteredAppointments.map((appointment: any) => (
-                  <div
-                    key={appointment.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <h3 className="font-medium text-gray-900 text-sm">
-                          {appointment.patient?.name ||
-                            appointment.patient?.email ||
-                            'Paciente'}
-                        </h3>
-                        <p className="text-xs text-gray-500">
-                          {appointment.professional?.name ||
-                            appointment.professional?.email ||
-                            'Profissional'}
-                        </p>
-                      </div>
-                      <StatusBadge
-                        status={appointment.status || 'PENDING'}
-                        type="appointment"
-                      />
-                    </div>
-
-                    <div className="space-y-2 mb-3">
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        {new Date(appointment.dateTime).toLocaleDateString('pt-BR')}
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        {new Date(appointment.dateTime).toLocaleTimeString('pt-BR', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </div>
-                    </div>
-
-                    {(appointment.scheduledByManager?.user?.name ||
-                      appointment.cancelledByManager) && (
-                      <div className="bg-slate-50 rounded p-2 mb-3 text-xs space-y-1 border border-gray-200">
-                        {appointment.scheduledByManager?.user?.name && (
-                          <p className="text-gray-600">
-                            Agendado por:{' '}
-                            <span className="font-medium">
-                              {appointment.scheduledByManager.user.name}
-                            </span>
+              <DataTableCard>
+                <DataTableMobileList>
+                  {sortedAppointments.map((appointment: any) => (
+                    <DataTableMobileItem key={appointment.id}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="min-w-0">
+                          <h3 className="font-medium text-foreground text-sm truncate">
+                            {appointment.patient?.name ||
+                              appointment.patient?.email ||
+                              'Paciente'}
+                          </h3>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {appointment.professional?.name ||
+                              appointment.professional?.email ||
+                              'Profissional'}
                           </p>
-                        )}
-                        {appointment.cancelledByManager && (
-                          <p className="text-red-600">
-                            Cancelado por:{' '}
-                            <span className="font-medium">
-                              {appointment.cancelledByManager.user?.name}
-                            </span>
-                          </p>
-                        )}
+                        </div>
+                        <StatusBadge
+                          status={appointment.status || 'PENDING'}
+                          type="appointment"
+                        />
                       </div>
-                    )}
 
-                    {appointment.status !== 'CANCELLED' && (
-                      <button
-                        onClick={() => handleCancelClick(appointment.id)}
-                        disabled={cancelMutation.isPending}
-                        className="w-full px-3 py-2 text-sm text-red-600 border border-red-200 hover:bg-red-50 rounded transition disabled:opacity-50"
-                      >
-                        Cancelar
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      <div className="space-y-2 mb-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(appointment.dateTime).toLocaleDateString('pt-BR')}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          {new Date(appointment.dateTime).toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
+
+                      {(appointment.scheduledByManager?.user?.name ||
+                        appointment.cancelledByManager) && (
+                        <div className="rounded p-2 mb-3 text-xs space-y-1 border border-border bg-muted/30">
+                          {appointment.scheduledByManager?.user?.name && (
+                            <p className="text-muted-foreground">
+                              Agendado por:{' '}
+                              <span className="font-medium text-foreground">
+                                {appointment.scheduledByManager.user.name}
+                              </span>
+                            </p>
+                          )}
+                          {appointment.cancelledByManager && (
+                            <p className="text-red-600">
+                              Cancelado por:{' '}
+                              <span className="font-medium">
+                                {appointment.cancelledByManager.user?.name}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {appointment.status !== 'CANCELLED' && (
+                        <button
+                          onClick={() => handleCancelClick(appointment.id)}
+                          disabled={cancelMutation.isPending}
+                          className="w-full px-3 py-2 text-sm text-red-600 border border-red-200 hover:bg-red-50 rounded transition disabled:opacity-50"
+                        >
+                          Cancelar
+                        </button>
+                      )}
+                    </DataTableMobileItem>
+                  ))}
+                </DataTableMobileList>
+              </DataTableCard>
             ) : (
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-slate-50 border-b border-gray-200">
-                    <tr>
-                      <th
-                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                        onClick={() => toggleSort('patient')}
-                        title="Ordenar por paciente"
-                      >
-                        Paciente <SortIcon field="patient" />
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                        onClick={() => toggleSort('professional')}
-                        title="Ordenar por profissional"
-                      >
-                        Profissional <SortIcon field="professional" />
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                        onClick={() => toggleSort('dateTime')}
-                        title="Ordenar por data/hora"
-                      >
-                        Data/Hora <SortIcon field="dateTime" />
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                        onClick={() => toggleSort('scheduledBy')}
-                        title="Ordenar por agendado por"
-                      >
-                        Agendado por <SortIcon field="scheduledBy" />
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                        onClick={() => toggleSort('status')}
-                        title="Ordenar por status"
-                      >
-                        Status <SortIcon field="status" />
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                        Ações
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
+              <DataTableCard>
+                <DataTable>
+                  <DataTableHead>
+                    <SortableHeader field="patient" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                      Paciente
+                    </SortableHeader>
+                    <SortableHeader field="professional" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                      Profissional
+                    </SortableHeader>
+                    <SortableHeader field="dateTime" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                      Data/Hora
+                    </SortableHeader>
+                    <SortableHeader field="scheduledBy" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                      Agendado por
+                    </SortableHeader>
+                    <SortableHeader field="status" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                      Status
+                    </SortableHeader>
+                    <DataTableHeadCell>Ações</DataTableHeadCell>
+                  </DataTableHead>
+                  <DataTableBody>
                     {sortedAppointments.map((appointment: any) => (
-                      <tr key={appointment.id} className="hover:bg-slate-50 transition">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <DataTableRow key={appointment.id}>
+                        <DataTableCell className="font-medium text-foreground">
                           {appointment.patient?.name ||
                             appointment.patient?.email ||
                             '-'}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        </DataTableCell>
+                        <DataTableCell>
                           {appointment.professional?.name ||
                             appointment.professional?.email ||
                             '-'}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        </DataTableCell>
+                        <DataTableCell>
                           {new Date(appointment.dateTime).toLocaleString('pt-BR')}
-                        </td>
-                        <td className="px-6 py-4 text-sm">
+                        </DataTableCell>
+                        <DataTableCell>
                           <div className="space-y-1">
-                            <p className="text-gray-900">
+                            <p className="text-foreground">
                               {appointment.scheduledByManager?.user?.name || '-'}
                             </p>
                             {appointment.cancelledByManager && (
@@ -356,14 +338,14 @@ export default function AppointmentsPage() {
                               </p>
                             )}
                           </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm">
+                        </DataTableCell>
+                        <DataTableCell>
                           <StatusBadge
                             status={appointment.status || 'PENDING'}
                             type="appointment"
                           />
-                        </td>
-                        <td className="px-6 py-4 text-sm">
+                        </DataTableCell>
+                        <DataTableCell>
                           {appointment.status !== 'CANCELLED' && (
                             <button
                               onClick={() => handleCancelClick(appointment.id)}
@@ -374,12 +356,12 @@ export default function AppointmentsPage() {
                               Cancelar
                             </button>
                           )}
-                        </td>
-                      </tr>
+                        </DataTableCell>
+                      </DataTableRow>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </DataTableBody>
+                </DataTable>
+              </DataTableCard>
             )}
           </>
         )}

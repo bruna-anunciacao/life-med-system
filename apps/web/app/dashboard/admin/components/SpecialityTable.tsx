@@ -8,7 +8,21 @@ import { useCreateSpeciality } from "@/queries/useCreateSpeciality";
 import { useUpdateSpeciality } from "@/queries/useUpdateSpeciality";
 import { useDeleteSpeciality } from "@/queries/useDeleteSpeciality";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Stethoscope, Plus, Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Stethoscope, Plus, Pencil, Trash2 } from "lucide-react";
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCard,
+  DataTableCell,
+  DataTableEmpty,
+  DataTableHead,
+  DataTableHeadCell,
+  DataTableHeader,
+  DataTableMobileItem,
+  DataTableMobileList,
+  DataTableRow,
+  SortableHeader,
+} from "@/components/ui/data-table";
 
 type SortDir = "asc" | "desc";
 
@@ -33,27 +47,25 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
 
   const isSaving = isCreating || isUpdating;
 
-  const [sortDir, setSortDir] = useState<SortDir | null>(null);
+  const [sortField, setSortField] = useState<"name" | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const sortedSpecialities = useMemo(() => {
-    if (!sortDir) return specialities;
+    if (!sortField) return specialities;
     return [...specialities].sort((a, b) => {
       const cmp = a.name.localeCompare(b.name);
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [specialities, sortDir]);
+  }, [specialities, sortField, sortDir]);
 
-  function toggleSort() {
-    setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+  function toggleSort(field: "name") {
+    if (sortField === field) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortField(field);
+      setSortDir("asc");
+    }
   }
-
-  const SortIcon = () => {
-    if (!sortDir)
-      return <ArrowUpDown className="ml-1.5 inline h-3.5 w-3.5 text-muted-foreground/50" />;
-    return sortDir === "asc"
-      ? <ArrowUp className="ml-1.5 inline h-3.5 w-3.5 text-foreground" />
-      : <ArrowDown className="ml-1.5 inline h-3.5 w-3.5 text-foreground" />;
-  };
 
   function openCreate() {
     setEditingId(null);
@@ -89,121 +101,114 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
 
   return (
     <>
-      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-foreground">Especialidades</h2>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-              {specialities.length}
-            </span>
-          </div>
-          <Button 
-            size="sm" 
-            onClick={openCreate} 
-            className="gap-1.5"
-            title="Adicionar nova especialidade médica"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            {isMobile ? "Nova" : "Nova Especialidade"}
-          </Button>
-        </div>
-
-        {/* Empty state */}
-        {specialities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-            <div className="rounded-full bg-muted p-4">
-              <Stethoscope className="h-8 w-8 text-muted-foreground/50" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-foreground">Nenhuma especialidade</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Adicione a primeira especialidade médica.
-              </p>
-            </div>
-            <Button 
-              size="sm" 
-              variant="outline" 
-              onClick={openCreate} 
-              className="mt-1 gap-1.5"
-              title="Adicionar especialidade"
+      <DataTableCard>
+        <DataTableHeader
+          title="Especialidades"
+          count={specialities.length}
+          actions={
+            <Button
+              size="sm"
+              onClick={openCreate}
+              className="gap-1.5"
+              title="Adicionar nova especialidade médica"
             >
               <Plus className="h-3.5 w-3.5" />
-              Adicionar
+              {isMobile ? "Nova" : "Nova Especialidade"}
             </Button>
-          </div>
+          }
+        />
+
+        {specialities.length === 0 ? (
+          <DataTableEmpty
+            icon={<Stethoscope className="h-8 w-8" />}
+            title="Nenhuma especialidade"
+            description="Adicione a primeira especialidade médica."
+            action={
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={openCreate}
+                className="gap-1.5"
+                title="Adicionar especialidade"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Adicionar
+              </Button>
+            }
+          />
         ) : isMobile ? (
-          /* Mobile: cards */
-          <div className="divide-y divide-border relative">
-            {isDeleting && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-                <p className="text-sm font-medium text-muted-foreground">Excluindo...</p>
-              </div>
-            )}
-            {specialities.map((spec) => (
-              <div key={spec.id} className="flex items-center justify-between px-4 py-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                    <Stethoscope className="h-4 w-4" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground">{spec.name}</p>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    onClick={() => openEdit(spec)}
-                    title={`Editar especialidade ${spec.name}`}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50"
-                    onClick={() => handleDelete(spec.id, spec.name)}
-                    title={`Excluir especialidade ${spec.name}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          /* Desktop: table */
           <div className="relative">
             {isDeleting && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
                 <p className="text-sm font-medium text-muted-foreground">Excluindo...</p>
               </div>
             )}
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <th
-                    className="px-6 py-3 text-left cursor-pointer select-none"
-                    onClick={toggleSort}
-                    title="Ordenar por nome da especialidade"
-                  >
-                    Nome da especialidade <SortIcon />
-                  </th>
-                  <th className="px-6 py-3 text-center">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
+            <DataTableMobileList>
+              {sortedSpecialities.map((spec) => (
+                <DataTableMobileItem key={spec.id}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                        <Stethoscope className="h-4 w-4" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground truncate">{spec.name}</p>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={() => openEdit(spec)}
+                        title={`Editar especialidade ${spec.name}`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-50"
+                        onClick={() => handleDelete(spec.id, spec.name)}
+                        title={`Excluir especialidade ${spec.name}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </DataTableMobileItem>
+              ))}
+            </DataTableMobileList>
+          </div>
+        ) : (
+          <div className="relative">
+            {isDeleting && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+                <p className="text-sm font-medium text-muted-foreground">Excluindo...</p>
+              </div>
+            )}
+            <DataTable>
+              <DataTableHead>
+                <SortableHeader
+                  field="name"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Nome da especialidade
+                </SortableHeader>
+                <DataTableHeadCell align="center">Ações</DataTableHeadCell>
+              </DataTableHead>
+              <DataTableBody>
                 {sortedSpecialities.map((spec) => (
-                  <tr key={spec.id} className="hover:bg-muted/30 transition-colors">
-                    <td className="px-6 py-3.5">
+                  <DataTableRow key={spec.id}>
+                    <DataTableCell>
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                           <Stethoscope className="h-3.5 w-3.5" />
                         </div>
                         <span className="font-medium text-foreground">{spec.name}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-3.5">
+                    </DataTableCell>
+                    <DataTableCell align="center">
                       <div className="flex items-center justify-center gap-1">
                         <Button
                           size="icon"
@@ -224,16 +229,15 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </DataTableCell>
+                  </DataTableRow>
                 ))}
-              </tbody>
-            </table>
+              </DataTableBody>
+            </DataTable>
           </div>
         )}
-      </div>
+      </DataTableCard>
 
-      {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm sm:items-center">
           <div className="w-full rounded-t-2xl bg-card px-6 pb-8 pt-6 shadow-xl sm:max-w-md sm:rounded-2xl sm:pb-6 animate-in fade-in slide-in-from-bottom-4 duration-200">
@@ -256,17 +260,17 @@ export const SpecialitiesTable = ({ specialities }: SpecialitiesTableProps) => {
                 title="Nome da especialidade médica"
               />
               <div className="flex gap-3 justify-end">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={closeModal} 
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={closeModal}
                   disabled={isSaving}
                   title="Cancelar operação"
                 >
                   Cancelar
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isSaving || !newSpecialityName.trim()}
                   title="Salvar alterações"
                 >
