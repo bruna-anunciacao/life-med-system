@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { FormPageSkeleton } from "@/components/ui/skeletons";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { AddressForm } from "@/components/address/AddressForm";
@@ -33,8 +33,8 @@ export default function PerfilPage() {
 
   if (isLoading) {
     return (
-      <PageShell className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
+      <PageShell>
+        <FormPageSkeleton />
       </PageShell>
     );
   }

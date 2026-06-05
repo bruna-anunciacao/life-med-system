@@ -4,13 +4,20 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SpecialitiesTable } from "../components/SpecialityTable";
 import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
-import { LoadingPage } from "@/components/shared/LoadingPage";
+import { TableSkeleton, PageHeaderSkeleton } from "@/components/ui/skeletons";
 import { PageShell } from "../../../ui/dashboard/page-shell";
 
 export default function SpecialidadesPage() {
   const { data: specialities = [], isLoading } = useSpecialitiesQuery();
 
-  if (isLoading) return <LoadingPage />;
+  if (isLoading) {
+    return (
+      <PageShell>
+        <PageHeaderSkeleton withAction={false} />
+        <TableSkeleton rows={6} columns={3} />
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>

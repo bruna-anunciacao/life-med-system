@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -214,9 +214,7 @@ const AppointmentsPage = () => {
       )}
 
       {isLoading ? (
-        <div className="py-16 flex justify-center items-center">
-          <Spinner size="lg" />
-        </div>
+        <CardGridSkeleton count={4} minWidth={400} />
       ) : filtered.length === 0 ? (
         <EmptyAppointments
           activeTab={activeTab}

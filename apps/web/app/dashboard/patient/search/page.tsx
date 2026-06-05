@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Spinner } from "@/components/ui/spinner";
+import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { professionalsService } from "../../../../services/professionals-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -118,9 +118,7 @@ const SearchDoctorsPage = () => {
       </div>
 
       {isLoading ? (
-        <div className="py-16 px-8 flex justify-center items-center">
-          <Spinner size="lg" />
-        </div>
+        <CardGridSkeleton count={6} minWidth={360} />
       ) : filtered.length === 0 ? (
         <EmptySearch />
       ) : (

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import {
@@ -136,8 +137,8 @@ const MedicalRecordDetailsPage = () => {
 
   if (isLoading) {
     return (
-      <PageShell className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
+      <PageShell>
+        <DetailPageSkeleton />
       </PageShell>
     );
   }

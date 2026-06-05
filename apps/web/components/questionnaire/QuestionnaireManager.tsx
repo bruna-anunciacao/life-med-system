@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
+import { QuestionnaireSkeleton } from "@/components/ui/skeletons";
 import {
   Dialog,
   DialogContent,
@@ -60,11 +61,7 @@ export function QuestionnaireManager() {
   }, [thresholdDraft, data]);
 
   if (isLoading) {
-    return (
-      <section className="flex min-h-[40vh] items-center justify-center">
-        <Spinner size="lg" />
-      </section>
-    );
+    return <QuestionnaireSkeleton />;
   }
 
   if (!data) {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { DashboardHomeSkeleton } from "@/components/ui/skeletons";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
@@ -108,8 +108,8 @@ const PatientDashboard = () => {
 
   if (isLoading) {
     return (
-      <PageShell className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
+      <PageShell>
+        <DashboardHomeSkeleton />
       </PageShell>
     );
   }
