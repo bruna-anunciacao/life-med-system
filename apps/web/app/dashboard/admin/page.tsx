@@ -28,14 +28,14 @@ const AdminDashboard = () => {
   const actions = (
     <div className="flex flex-wrap items-center gap-2">
       <Link
-        href="/dashboard/admin/register-manager"
+        href="/dashboard/admin/managers/new"
         className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm transition-colors hover:opacity-90"
       >
         <Plus className="h-3.5 w-3.5" />
         Cadastrar Gestor
       </Link>
       <Link
-        href="/dashboard/admin/specialidades"
+        href="/dashboard/admin/specialties"
         title="Acessar painel de gerenciamento de especialidades médicas"
         className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
       >
@@ -43,7 +43,7 @@ const AdminDashboard = () => {
         Gerenciar Especialidades
       </Link>
       <Link
-        href="/dashboard/admin/questionnaire"
+        href="/dashboard/admin/questionnaires"
         title="Editar o questionário de vulnerabilidade"
         className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
       >

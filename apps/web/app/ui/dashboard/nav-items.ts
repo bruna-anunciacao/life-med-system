@@ -27,17 +27,17 @@ export function getNavItems(role: string): NavItem[] {
         { name: "Usuários", href: "/dashboard/admin/users", icon: Users },
         {
           name: "Gestores",
-          href: "/dashboard/admin/register-manager",
+          href: "/dashboard/admin/managers/new",
           icon: UserPlus,
         },
         {
           name: "Especialidades",
-          href: "/dashboard/admin/specialidades",
+          href: "/dashboard/admin/specialties",
           icon: Stethoscope,
         },
         {
           name: "Questionário",
-          href: "/dashboard/admin/questionnaire",
+          href: "/dashboard/admin/questionnaires",
           icon: ClipboardList,
         },
       ];

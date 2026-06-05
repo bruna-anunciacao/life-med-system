@@ -14,7 +14,7 @@ import { PasswordField } from "@/app/auth/register/components/PasswordField";
 import { applyCpfMask } from "@/lib/cpf";
 import { useRegisterManagerMutation } from "@/queries/useRegisterManagerMutation";
 import { registerManagerSchema, type RegisterManagerSchema } from "@/app/auth/register-manager/register-manager.validation";
-import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { PageShell, PageHeader } from "@/app/ui/dashboard/page-shell";
 
 export default function RegisterManagerPage() {
   const router = useRouter();

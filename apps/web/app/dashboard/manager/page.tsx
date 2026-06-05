@@ -66,7 +66,7 @@ const ManagerDashboard = () => {
     },
     {
       label: "Gerenciar Questionário",
-      href: "/dashboard/manager/questionnaire",
+      href: "/dashboard/manager/questionnaires",
       icon: <ClipboardList size={20} />,
       color: "bg-amber-600 hover:bg-amber-700",
       hint: "Editar perguntas e pontuação do questionário de vulnerabilidade",
