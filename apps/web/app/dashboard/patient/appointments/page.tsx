@@ -18,6 +18,7 @@ import {
   appointmentsService,
   AppointmentResponse,
 } from "@/services/appointments-service";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 function mapApiToAppointment(appt: AppointmentResponse): Appointment {
   return {
@@ -176,34 +177,22 @@ const AppointmentsPage = () => {
         : "Fazer download do histórico de consultas canceladas";
 
   return (
-    <section
-      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
-    >
-      <div
-        className={`mb-8 flex justify-between items-start flex-wrap gap-4 ${isMobile ? "flex-col" : ""}`}
-      >
-        <div>
-          <h1
-            className={`font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
+    <PageShell>
+      <PageHeader
+        title="Minhas Consultas"
+        description="Acompanhe e gerencie suas consultas agendadas."
+        actions={
+          <Button
+            size={isMobile ? "default" : "lg"}
+            onClick={() => router.push("/dashboard/patient/search")}
+            title="Buscar médicos e agendar uma nova consulta"
+            className={isMobile ? "w-full" : ""}
           >
-            Minhas Consultas
-          </h1>
-          <p
-            className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}
-          >
-            Acompanhe e gerencie suas consultas agendadas.
-          </p>
-        </div>
-        <Button
-          size={isMobile ? "default" : "lg"}
-          onClick={() => router.push("/dashboard/patient/search")}
-          title="Buscar médicos e agendar uma nova consulta"
-          className={isMobile ? "w-full" : ""}
-        >
-          <SearchIcon />
-          Nova Consulta
-        </Button>
-      </div>
+            <SearchIcon />
+            Nova Consulta
+          </Button>
+        }
+      />
 
       <AppointmentTabs
         activeTab={activeTab}
@@ -272,7 +261,7 @@ const AppointmentsPage = () => {
         open={isDetailsModalOpen}
         onOpenChange={setIsDetailsModalOpen}
       />
-    </section>
+    </PageShell>
   );
 };
 

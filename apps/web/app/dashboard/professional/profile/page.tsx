@@ -9,6 +9,7 @@ import { ProfileAvatar } from "./components/ProfileAvatar";
 import { ProfessionalInfoForm } from "./components/ProfessionalInfoForm";
 import { SocialLinksForm } from "./components/SocialLinksForm";
 import { useProfileForm } from "./useProfileForm";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 export default function PerfilPage() {
   const {
@@ -32,31 +33,27 @@ export default function PerfilPage() {
 
   if (isLoading) {
     return (
-      <div className="py-24 px-8 flex justify-center items-center">
+      <PageShell className="flex items-center justify-center min-h-[60vh]">
         <Spinner size="lg" />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
-      <div className="flex justify-between items-start mb-8 flex-wrap gap-4 max-sm:flex-col max-sm:items-start">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
-            Meu Perfil
-          </h1>
-          <p className="mt-1 text-base text-gray-500">
-            Gerencie suas informações profissionais.
-          </p>
-        </div>
-        <Button
-          size="lg"
-          onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
-          title={isEditing ? "Cancelar edição" : "Habilitar edição do perfil"}
-        >
-          {isEditing ? "Cancelar" : "Editar Perfil"}
-        </Button>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Meu Perfil"
+        description="Gerencie suas informações profissionais."
+        actions={
+          <Button
+            size="lg"
+            onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
+            title={isEditing ? "Cancelar edição" : "Habilitar edição do perfil"}
+          >
+            {isEditing ? "Cancelar" : "Editar Perfil"}
+          </Button>
+        }
+      />
 
       <Card className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-8 space-y-8">
@@ -120,6 +117,6 @@ export default function PerfilPage() {
           <AddressForm userId={user?.id || ""} />
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

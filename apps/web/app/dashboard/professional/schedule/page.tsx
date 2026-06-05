@@ -12,6 +12,7 @@ import { useUpdateAppointmentStatusMutation } from "@/queries/useProfessionalApp
 import { ScheduleTimeline } from "./components/ScheduleTimeline";
 import ScheduleModal from "./scheduleModal";
 import { BlockScheduleModal } from "./components/BlockScheduleModal";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 type Appointment = {
   id: string;
@@ -117,30 +118,26 @@ const SchedulePage = () => {
   };
 
   return (
-    <section className="w-full min-h-screen mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-8 bg-[#f8fafc]">
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <div>
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-            Minha Agenda
-          </h1>
-          <p className="mt-1 text-sm sm:text-base text-gray-500">
-            Visualize e gerencie seus horários.
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <Button variant="outline" title="Cancelar a agenda do dia" size="lg" onClick={() => setIsBlockModalOpen(true)} className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
-            Cancelar Agenda
-          </Button>
-          <Button
-          size="lg"
-          onClick={() => setIsOpen(true)}
-          className="w-full sm:w-auto"
-          title="Configurar horários e dias de atendimento"
-        >
-            Gerenciar Horários
-          </Button>
-        </div>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Minha Agenda"
+        description="Visualize e gerencie seus horários."
+        actions={
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Button variant="outline" title="Cancelar a agenda do dia" size="lg" onClick={() => setIsBlockModalOpen(true)} className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
+              Cancelar Agenda
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => setIsOpen(true)}
+              className="w-full sm:w-auto"
+              title="Configurar horários e dias de atendimento"
+            >
+              Gerenciar Horários
+            </Button>
+          </div>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-6">
         <aside className="flex flex-col gap-6">
@@ -190,10 +187,10 @@ const SchedulePage = () => {
       <ScheduleModal isOpen={isOpen} onOpenChange={(open) => setIsOpen(open)} />
       <BlockScheduleModal 
         isOpen={isBlockModalOpen} 
-        onOpenChange={setIsBlockModalOpen} 
-        selectedDate={selectedDate} 
+        onOpenChange={setIsBlockModalOpen}
+        selectedDate={selectedDate}
       />
-    </section>
+    </PageShell>
   );
 };
 

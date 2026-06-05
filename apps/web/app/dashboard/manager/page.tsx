@@ -9,6 +9,7 @@ import { useListAppointmentsQuery } from "@/queries/useListAppointmentsQuery";
 import { LoadingPage } from "@/components/shared/LoadingPage";
 import { Users, Calendar, FileText, Plus, ClipboardList } from "lucide-react";
 import Link from "next/link";
+import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
 
 const ManagerDashboard = () => {
   const { data: user, isLoading: loadingUser } = useUserQuery();
@@ -79,15 +80,11 @@ const ManagerDashboard = () => {
   const userName = user?.name?.split(" ")[0] || "";
 
   return (
-    <section className="min-h-screen w-full bg-slate-50 p-8">
-      <div className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-          Bem-vindo, {userName}!
-        </h1>
-        <p className="mt-2 text-slate-600">
-          Você está no painel do gestor. Gerencie pacientes e consultas.
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title={`Bem-vindo, ${userName}!`}
+        description="Você está no painel do gestor. Gerencie pacientes e consultas."
+      />
 
       <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
         {stats.map((stat) => (
@@ -160,7 +157,7 @@ const ManagerDashboard = () => {
           </ul>
         </CardContent>
       </Card>
-    </section>
+    </PageShell>
   );
 };
 

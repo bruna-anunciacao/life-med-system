@@ -16,6 +16,7 @@ import {
   MedicalRecordResponse,
 } from "@/services/medical-records-service";
 import { CalendarIcon } from "../../../../utils/icons";
+import { PageShell } from "../../../../ui/dashboard/page-shell";
 
 type ClinicalKey =
   | "chiefComplaint"
@@ -135,17 +136,15 @@ const MedicalRecordDetailsPage = () => {
 
   if (isLoading) {
     return (
-      <section className="w-full min-h-screen flex justify-center items-center bg-[#f8fafc]">
+      <PageShell className="flex items-center justify-center min-h-[60vh]">
         <Spinner size="lg" />
-      </section>
+      </PageShell>
     );
   }
 
   if (!record) {
     return (
-      <section
-        className={`w-full min-h-screen bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
-      >
+      <PageShell>
         <p className="text-base text-slate-700">Prontuário não encontrado.</p>
         <Button
           variant="outline"
@@ -154,16 +153,14 @@ const MedicalRecordDetailsPage = () => {
         >
           Voltar para a lista
         </Button>
-      </section>
+      </PageShell>
     );
   }
 
   const isSaving = updateMutation.isPending;
 
   return (
-    <section
-      className={`w-full min-h-screen bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
-    >
+    <PageShell>
       <div className="mb-6 flex items-center gap-3 flex-wrap">
         <Button
           variant="outline"
@@ -317,7 +314,7 @@ const MedicalRecordDetailsPage = () => {
           )}
         </CardContent>
       </Card>
-    </section>
+    </PageShell>
   );
 };
 

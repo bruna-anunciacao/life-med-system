@@ -15,6 +15,7 @@ import {
 import { BookingModal } from "./components/BookingModal";
 import { AddressData } from "./components/addressMaps";
 import { getAvailableLocations, getLocationValue } from "./components/locationFilters";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 type Professional = {
   id: string;
@@ -96,24 +97,11 @@ const SearchDoctorsPage = () => {
     });
 
   return (
-    <section
-      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
-    >
-      <div className="mb-8 flex justify-between items-start flex-wrap gap-4">
-        <div>
-          <h1
-            className={`font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
-          >
-            Buscar Médicos
-          </h1>
-          <p
-            className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}
-          >
-            Encontre profissionais de saúde voluntários e agende sua consulta
-            gratuitamente.
-          </p>
-        </div>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Buscar Médicos"
+        description="Encontre profissionais de saúde voluntários e agende sua consulta gratuitamente."
+      />
 
       <div title="Pesquisar e filtrar médicos por nome, especialidade ou localização">
         <SearchBar
@@ -173,7 +161,7 @@ const SearchDoctorsPage = () => {
         }}
         professional={bookingProfessional as unknown as Professional}
       />
-    </section>
+    </PageShell>
   );
 };
 

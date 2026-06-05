@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import {
   useCreateMedicalRecordMutation,
   useMedicalRecordByAppointmentQuery,
 } from "@/queries/useMedicalRecords";
+import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
 
 type ClinicalKey =
   | "chiefComplaint"
@@ -63,7 +63,6 @@ const EMPTY: Record<ClinicalKey, string> = {
 const NewMedicalRecordPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isMobile = useIsMobile();
   const appointmentId = searchParams.get("appointmentId");
   const patientName = searchParams.get("patientName") ?? "Paciente";
 
@@ -84,7 +83,7 @@ const NewMedicalRecordPage = () => {
 
   if (!appointmentId) {
     return (
-      <section className="w-full min-h-screen px-4 py-8 sm:px-16 bg-[#f8fafc]">
+      <PageShell>
         <p className="text-base text-slate-700">
           Consulta não informada. Volte para a agenda e selecione uma consulta.
         </p>
@@ -95,15 +94,15 @@ const NewMedicalRecordPage = () => {
         >
           Ir para agenda
         </Button>
-      </section>
+      </PageShell>
     );
   }
 
   if (isLoading) {
     return (
-      <section className="w-full min-h-screen flex justify-center items-center bg-[#f8fafc]">
+      <PageShell className="flex items-center justify-center min-h-[60vh]">
         <Spinner size="lg" />
-      </section>
+      </PageShell>
     );
   }
 
@@ -129,9 +128,7 @@ const NewMedicalRecordPage = () => {
   };
 
   return (
-    <section
-      className={`w-full min-h-screen bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
-    >
+    <PageShell>
       <div className="mb-6 flex items-center gap-3 flex-wrap">
         <Button
           variant="outline"
@@ -143,16 +140,10 @@ const NewMedicalRecordPage = () => {
         </Button>
       </div>
 
-      <div className="mb-6">
-        <h1
-          className={`font-bold text-slate-900 tracking-tight ${isMobile ? "text-xl" : "text-2xl"}`}
-        >
-          Novo prontuário
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Paciente: <span className="font-medium">{patientName}</span>
-        </p>
-      </div>
+      <PageHeader
+        title="Novo prontuário"
+        description={`Paciente: ${patientName}`}
+      />
 
       <Card className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-5 sm:p-6 flex flex-col gap-5">
@@ -213,7 +204,7 @@ const NewMedicalRecordPage = () => {
           </div>
         </CardContent>
       </Card>
-    </section>
+    </PageShell>
   );
 };
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
 import { usersService } from "@/services/users-service";
 import { professionalsService } from "@/services/professionals-service";
 import {
@@ -107,38 +108,28 @@ const PatientDashboard = () => {
 
   if (isLoading) {
     return (
-      <section className="min-h-screen w-full bg-slate-50 flex items-center justify-center">
+      <PageShell className="flex items-center justify-center min-h-[60vh]">
         <Spinner size="lg" />
-      </section>
+      </PageShell>
     );
   }
 
   return (
-    <section
-      className={`min-h-screen w-full bg-slate-50 ${isMobile ? "p-4" : "p-8"}`}
-    >
-      <div
-        className={`mb-6 flex items-end justify-between ${isMobile ? "flex-col items-start gap-3" : ""}`}
-      >
-        <div>
-          <h1
-            className={`font-bold tracking-tight text-gray-900 ${isMobile ? "text-xl" : "text-2xl"}`}
+    <PageShell>
+      <PageHeader
+        title={userName ? `Olá, ${userName}!` : "Painel do Paciente"}
+        description="Acompanhe suas consultas e encontre profissionais de saúde."
+        actions={
+          <Button
+            onClick={goToSearch}
+            title="Buscar e agendar com novos profissionais de saúde"
+            className={`gap-2 ${isMobile ? "w-full" : ""}`}
           >
-            {userName ? `Olá, ${userName}!` : "Painel do Paciente"}
-          </h1>
-          <p className="mt-0.5 text-sm text-gray-500">
-            Acompanhe suas consultas e encontre profissionais de saúde.
-          </p>
-        </div>
-        <Button
-          onClick={goToSearch}
-          title="Buscar e agendar com novos profissionais de saúde"
-          className={`gap-2 ${isMobile ? "w-full" : ""}`}
-        >
-          <SearchIcon size={16} />
-          Buscar Médicos
-        </Button>
-      </div>
+            <SearchIcon size={16} />
+            Buscar Médicos
+          </Button>
+        }
+      />
 
       <div
         className={`mb-6 grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-[1fr_340px]"}`}
@@ -174,7 +165,7 @@ const PatientDashboard = () => {
           />
         </div>
       </div>
-    </section>
+    </PageShell>
   );
 };
 

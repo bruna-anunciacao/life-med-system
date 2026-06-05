@@ -10,6 +10,7 @@ import { PatientProfileForm } from "./components/PatientProfileForm";
 import { ProfessionalProfileForm } from "./components/ProfessionalProfileForm";
 import { useAdminUserForm } from "./useAdminUserForm";
 import { ArrowLeft } from "lucide-react";
+import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
 
 const AdminUserProfilePage = () => {
   const {
@@ -29,14 +30,14 @@ const AdminUserProfilePage = () => {
   } = useAdminUserForm();
 
   if (isLoading) return (
-    <div className="py-24 px-8 flex justify-center items-center">
+    <PageShell className="flex items-center justify-center min-h-[60vh]">
       <Spinner size="lg" />
-    </div>
+    </PageShell>
   );
 
   if (!user) {
     return (
-      <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+      <PageShell>
         <Button
           onClick={() => router.push("/dashboard/admin")}
           variant="outline"
@@ -46,11 +47,11 @@ const AdminUserProfilePage = () => {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
-          <p className="mt-1 text-base text-gray-500">{error ?? "Usuário não encontrado."}</p>
-        </div>
-      </section>
+        <PageHeader
+          title="Perfil do Usuário"
+          description={error ?? "Usuário não encontrado."}
+        />
+      </PageShell>
     );
   }
 
@@ -62,7 +63,7 @@ const AdminUserProfilePage = () => {
     : null;
 
   return (
-    <section className="w-full min-h-screen mx-auto px-16 py-8 bg-[#f8fafc]">
+    <PageShell>
       <Button
         onClick={() => router.push("/dashboard/admin")}
         variant="outline"
@@ -73,10 +74,10 @@ const AdminUserProfilePage = () => {
         Voltar
       </Button>
 
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Perfil do Usuário</h1>
-        <p className="mt-1 text-base text-gray-500">Visualização e edição de dados cadastrais.</p>
-      </div>
+      <PageHeader
+        title="Perfil do Usuário"
+        description="Visualização e edição de dados cadastrais."
+      />
 
       <Card className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-12 space-y-8">
@@ -148,7 +149,7 @@ const AdminUserProfilePage = () => {
           <AddressForm userId={user?.id || ""} />
         </CardContent>
       </Card>
-    </section>
+    </PageShell>
   );
 };
 

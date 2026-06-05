@@ -12,6 +12,7 @@ import { useAddressCep } from '@/hooks/useAddressCep';
 import { AddressFields } from '@/components/address';
 import { newPatientSchema, type NewPatientSchema } from './new-patient.validation';
 import { PhoneInputBR } from '@/components/ui/phone-input-br';
+import { PageShell } from '../../../../ui/dashboard/page-shell';
 
 export default function NewPatientPage() {
   const router = useRouter();
@@ -68,7 +69,7 @@ export default function NewPatientPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 px-4">
+    <PageShell>
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">
@@ -207,6 +208,6 @@ export default function NewPatientPage() {
         </form>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

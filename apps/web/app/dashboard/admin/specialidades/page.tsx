@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { SpecialitiesTable } from "../components/SpecialityTable";
 import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
 import { LoadingPage } from "@/components/shared/LoadingPage";
+import { PageShell } from "../../../ui/dashboard/page-shell";
 
 export default function SpecialidadesPage() {
   const { data: specialities = [], isLoading } = useSpecialitiesQuery();
@@ -12,7 +13,7 @@ export default function SpecialidadesPage() {
   if (isLoading) return <LoadingPage />;
 
   return (
-    <div className="px-4 py-4 sm:px-6 sm:py-6">
+    <PageShell>
       <Link
         href="/dashboard/admin"
         className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -22,6 +23,6 @@ export default function SpecialidadesPage() {
       </Link>
 
       <SpecialitiesTable specialities={specialities} />
-    </div>
+    </PageShell>
   );
 }

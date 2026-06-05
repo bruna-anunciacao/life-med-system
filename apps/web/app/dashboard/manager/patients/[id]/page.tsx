@@ -19,6 +19,7 @@ import { AddressForm } from "@/components/address/AddressForm";
 import { PhoneInputBR } from "@/components/ui/phone-input-br";
 import { useQueryClient } from "@tanstack/react-query";
 import { applyCpfMask } from "@/lib/cpf";
+import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
 
 export default function PatientDetailsPage() {
   const router = useRouter();
@@ -102,17 +103,15 @@ export default function PatientDetailsPage() {
 
   if (isLoading) {
     return (
-      <section className="min-h-screen w-full bg-slate-50 p-8">
-        <div className="flex items-center justify-center">
-          <p className="text-slate-600">Carregando detalhes do paciente...</p>
-        </div>
-      </section>
+      <PageShell className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-slate-600">Carregando detalhes do paciente...</p>
+      </PageShell>
     );
   }
 
   if (error || !patient) {
     return (
-      <section className="min-h-screen w-full bg-slate-50 p-8">
+      <PageShell>
         <div className="max-w-4xl mx-auto">
           <Button
             onClick={() => router.push("/dashboard/manager/patients")}
@@ -136,12 +135,12 @@ export default function PatientDetailsPage() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </PageShell>
     );
   }
 
   return (
-    <section className="min-h-screen w-full bg-slate-50 p-8">
+    <PageShell>
       <div className="max-w-4xl mx-auto">
         <Button
           onClick={() => router.push("/dashboard/manager/patients")}
@@ -457,6 +456,6 @@ export default function PatientDetailsPage() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </PageShell>
     );
 }
