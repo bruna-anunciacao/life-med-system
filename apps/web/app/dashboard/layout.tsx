@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { AppSidebar } from "../ui/dashboard/sidebar";
 import { MobileNav } from "../ui/dashboard/mobile-navbar";
 import { Spinner } from "@/components/ui/spinner";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LifeMedLogo } from "../ui/life-med-logo";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -46,10 +46,22 @@ const DashboardLayout = ({
   const defaultOpen = role !== "ADMIN";
 
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
+    <SidebarProvider
+      defaultOpen={defaultOpen}
+      style={
+        {
+          "--sidebar-width": "13rem",
+          "--sidebar-width-icon": "3rem",
+        } as React.CSSProperties
+      }
+    >
       <AppSidebar role={role} />
 
-      <SidebarInset className="flex flex-col flex-1 min-w-0 overflow-hidden relative">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden relative bg-slate-50">
+        <header className="hidden md:flex h-14 shrink-0 items-center gap-2 px-4">
+          <SidebarTrigger />
+        </header>
+
         <header className="flex md:hidden h-14 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4">
           <Link href={`/dashboard/${role.toLowerCase()}`}>
             <LifeMedLogo height={24} width={65} />
@@ -61,12 +73,12 @@ const DashboardLayout = ({
           )}
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 bg-slate-50">
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
           {children}
         </main>
 
         <MobileNav role={role} />
-      </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 };

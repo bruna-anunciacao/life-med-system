@@ -2,90 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Home,
-  Calendar,
-  Users,
-  FileText,
-  User,
-  Search,
-  CalendarDays,
-  CalendarPlus,
-  LogOut,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { authService } from "../../../../services/auth-service";
+import { getNavItems } from "../nav-items";
 
 export function MobileNav({ role }: { role: string }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const getNavItems = () => {
-    switch (role) {
-      case "ADMIN":
-        return [];
-      case "PROFESSIONAL":
-        return [
-          { name: "Início", href: "/dashboard/professional", icon: Home },
-          {
-            name: "Agenda",
-            href: "/dashboard/professional/schedule",
-            icon: Calendar,
-          },
-          {
-            name: "Pacientes",
-            href: "/dashboard/professional/patients",
-            icon: Users,
-          },
-          {
-            name: "Prontuários",
-            href: "/dashboard/professional/medical-records",
-            icon: FileText,
-          },
-          {
-            name: "Perfil",
-            href: "/dashboard/professional/profile",
-            icon: User,
-          },
-        ];
-      case "MANAGER":
-        return [
-          { name: "Início", href: "/dashboard/manager", icon: Home },
-          {
-            name: "Pacientes",
-            href: "/dashboard/manager/patients",
-            icon: Users,
-          },
-          {
-            name: "Consultas",
-            href: "/dashboard/manager/appointments",
-            icon: CalendarDays,
-          },
-          {
-            name: "Agendar",
-            href: "/dashboard/manager/appointments/new",
-            icon: CalendarPlus,
-          },
-        ];
-      default:
-        return [
-          { name: "Início", href: "/dashboard/patient", icon: Home },
-          { name: "Buscar", href: "/dashboard/patient/search", icon: Search },
-          {
-            name: "Consultas",
-            href: "/dashboard/patient/appointments",
-            icon: Calendar,
-          },
-          {
-            name: "Prontuários",
-            href: "/dashboard/patient/medical-records",
-            icon: FileText,
-          },
-          { name: "Perfil", href: "/dashboard/patient/profile", icon: User },
-        ];
-    }
-  };
-
-  const navItems = getNavItems();
+  const navItems = getNavItems(role);
 
   const handleLogout = () => {
     authService.logout();
