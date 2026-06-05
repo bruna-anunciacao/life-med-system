@@ -23,7 +23,7 @@ export function ProfessionalFields({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="cpf" className="text-sm font-semibold text-[#374151]">CPF</Label>
           <Input
@@ -54,7 +54,7 @@ export function ProfessionalFields({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="modality" className="text-sm font-semibold text-[#374151]">Modalidade de atendimento</Label>
           <select
@@ -91,7 +91,7 @@ export function ProfessionalFields({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="primarySpecialty" className="text-sm font-semibold text-[#374151]">
             Especialidade Principal

@@ -156,7 +156,7 @@ export default function PatientDetailsPage() {
           <CardContent className="p-8">
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                   Detalhes do Paciente
                 </h1>
                 <p className="text-slate-600">

@@ -72,7 +72,7 @@ export default function NewPatientPage() {
     <PageShell>
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
             Cadastrar Novo Paciente
           </h1>
 

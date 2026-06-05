@@ -18,7 +18,7 @@ export function PatientFields({ register, control, errors, isLoading, onCpfChang
   return (
     <>
       {/* CPF + Celular */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="cpf" className="text-sm font-semibold text-[#374151]">CPF</Label>
           <Input
@@ -54,7 +54,7 @@ export function PatientFields({ register, control, errors, isLoading, onCpfChang
       </div>
 
       {/* Data de nascimento + Gênero */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="dateOfBirth" className="text-sm font-semibold text-[#374151]">Data de nascimento</Label>
           <input

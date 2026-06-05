@@ -210,7 +210,7 @@ const ProfessionalDashboard = () => {
             </div>
             {nextAppointment ? (
               <Card className="border-l-4 border-l-[#006fee]">
-                <CardContent className="p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6">
+                <CardContent className="p-6 flex flex-col md:flex-row md:flex-wrap md:justify-between md:items-center gap-4 md:gap-6">
                   <div className="flex items-center gap-4">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-700">

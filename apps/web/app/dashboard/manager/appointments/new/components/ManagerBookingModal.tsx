@@ -400,7 +400,7 @@ export function ManagerBookingModal({
                     </div>
                   ) : availableSlots.length > 0 ? (
                     <div className="relative">
-                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-56 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 max-h-56 overflow-y-auto p-3 bg-gray-50 rounded-lg border border-gray-200">
                         {availableSlots.map((slot) => {
                           const isSelected = selectedSlot === slot.time;
                           return (
@@ -478,7 +478,7 @@ export function ManagerBookingModal({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                   <div className="flex items-start gap-2.5">
                     <div className="w-8 h-8 rounded-lg bg-white border border-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <User size={14} className="text-blue-600" weight="duotone" />
