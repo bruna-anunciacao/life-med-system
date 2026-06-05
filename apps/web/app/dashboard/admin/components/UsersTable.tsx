@@ -6,17 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  DataTable,
+  DataTableBody,
+  DataTableCard,
+  DataTableCell,
+  DataTableEmpty,
+  DataTableHead,
+  DataTableHeadCell,
+  DataTableHeader,
+  DataTableLoading,
+  DataTableMobileItem,
+  DataTableMobileList,
+  DataTableRow,
+  DataTableToolbar,
+  SortableHeader,
+} from "@/components/ui/data-table";
 import { AdminUser } from "../../../../services/admin-service";
 import { useAdminUsersTable, TypeFilter } from "@/queries/useAdminUsersTable";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { ArrowUpDown, ArrowUp, ArrowDown, Eye, Check, Ban, Pencil } from "lucide-react";
+import { Eye, Check, Ban, Pencil, Users } from "lucide-react";
 
 type SortField =
   | "name"
@@ -126,303 +134,243 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
     });
   }, [users, sortField, sortDir]);
 
-  function SortIcon({ field }: { field: SortField }) {
-    if (sortField !== field)
-      return <ArrowUpDown className="ml-1.5 inline h-3.5 w-3.5 text-muted-foreground/50" />;
-    return sortDir === "asc"
-      ? <ArrowUp className="ml-1.5 inline h-3.5 w-3.5 text-foreground" />
-      : <ArrowDown className="ml-1.5 inline h-3.5 w-3.5 text-foreground" />;
-  }
-
-  const filterBar = (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/30 px-4 py-3 sm:px-6 sm:gap-3">
-      <div className="flex rounded-lg border border-border bg-background text-sm overflow-hidden">
-        {TYPE_TABS.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => setTypeFilter(tab.value)}
-            title={`Filtrar por ${tab.label}`}
-            className={`px-3 py-1.5 font-medium transition-colors sm:px-4 ${
-              typeFilter === tab.value
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-      <Input
-        placeholder="Buscar usuário..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        title="Digite o nome ou e-mail para buscar"
-        className="h-8 flex-1 min-w-[160px] max-w-xs text-sm bg-background"
-      />
-    </div>
-  );
+  const stopClick = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
-    <div className="w-full rounded-xl border border-border bg-card shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4 border-b border-border sm:px-6">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold text-foreground">Usuários</h2>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-            {sortedUsers.length}
-          </span>
+    <DataTableCard>
+      <DataTableHeader title="Usuários" count={sortedUsers.length} actions={actions} />
+
+      <DataTableToolbar>
+        <div className="flex rounded-lg border border-border bg-background text-sm overflow-hidden">
+          {TYPE_TABS.map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setTypeFilter(tab.value)}
+              title={`Filtrar por ${tab.label}`}
+              className={`px-3 py-1.5 font-medium transition-colors sm:px-4 ${
+                typeFilter === tab.value
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-        {actions && <div>{actions}</div>}
-      </div>
+        <Input
+          placeholder="Buscar usuário..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          title="Digite o nome ou e-mail para buscar"
+          className="h-8 flex-1 min-w-[160px] max-w-xs text-sm bg-background"
+        />
+      </DataTableToolbar>
 
-      {filterBar}
-
-      {/* Loading / empty */}
       {isLoading ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">Carregando...</div>
+        <DataTableLoading message="Carregando usuários..." />
       ) : sortedUsers.length === 0 ? (
-        <div className="py-12 text-center text-sm text-muted-foreground">
-          Nenhum usuário encontrado.
-        </div>
+        <DataTableEmpty
+          icon={<Users className="h-8 w-8" />}
+          title="Nenhum usuário encontrado"
+        />
       ) : isMobile ? (
-        /* ── Mobile: cards ── */
-        <div className="divide-y divide-border">
+        <DataTableMobileList>
           {sortedUsers.map((user) => {
             const badge = TYPE_BADGE[user.role];
             const speciality = getSpeciality(user);
-            const stopClick = (e: React.MouseEvent) => e.stopPropagation();
             return (
-              <div
+              <DataTableMobileItem
                 key={user.id}
-                className="flex items-start gap-3 px-4 py-4 cursor-pointer active:bg-muted/40"
                 onClick={() => goToEdit(user.id)}
                 title={`Abrir perfil de ${user.name}`}
               >
-                {/* Avatar */}
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">
-                  {getInitials(user.name)}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.className}`}>
-                      {badge.label}
-                    </span>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground text-background text-xs font-bold">
+                    {getInitials(user.name)}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{user.email}</p>
-                  {user.role === "PROFESSIONAL" && speciality && (
-                    <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
-                      {speciality}
-                      {user.professionalProfile?.modality && ` · ${user.professionalProfile.modality}`}
-                    </p>
-                  )}
-                  {user.role === "PATIENT" && user.patientProfile?.phone && (
-                    <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
-                      Tel: {user.patientProfile.phone}
-                    </p>
-                  )}
-                  {user.createdAt && (
-                    <p className="text-[11px] text-muted-foreground/60 mt-0.5">
-                      Cadastrado em {formatDate(user.createdAt)}
-                    </p>
-                  )}
-                  <div className="mt-2">
-                    <StatusBadge status={user.status} type="user" />
-                  </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex flex-col gap-0.5 shrink-0" onClick={stopClick}>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    title={`Visualizar detalhes de ${user.name}`}
-                    onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
-                  >
-                    <Eye />
-                  </Button>
-                  {(user.status === "PENDING" ||
-                    user.status === "COMPLETED" ||
-                    user.status === "BLOCKED") && (
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.className}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{user.email}</p>
+                    {user.role === "PROFESSIONAL" && speciality && (
+                      <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                        {speciality}
+                        {user.professionalProfile?.modality && ` · ${user.professionalProfile.modality}`}
+                      </p>
+                    )}
+                    {user.role === "PATIENT" && user.patientProfile?.phone && (
+                      <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
+                        Tel: {user.patientProfile.phone}
+                      </p>
+                    )}
+                    {user.createdAt && (
+                      <p className="text-[11px] text-muted-foreground/60 mt-0.5">
+                        Cadastrado em {formatDate(user.createdAt)}
+                      </p>
+                    )}
+                    <div className="mt-2">
+                      <StatusBadge status={user.status} type="user" />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-0.5 shrink-0" onClick={stopClick}>
                     <Button
                       size="icon"
                       variant="ghost"
-                      disabled={!user.emailVerified}
-                      className="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
-                      title={
-                        user.emailVerified
-                          ? `Aprovar usuário ${user.name}`
-                          : `${user.name} ainda não confirmou o e-mail`
-                      }
-                      onClick={() => onStatusChange(user.id, "VERIFIED")}
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      title={`Visualizar detalhes de ${user.name}`}
+                      onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                     >
-                      <Check />
+                      <Eye />
                     </Button>
-                  )}
-                  {user.status === "VERIFIED" && (
+                    {(user.status === "PENDING" ||
+                      user.status === "COMPLETED" ||
+                      user.status === "BLOCKED") && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        disabled={!user.emailVerified}
+                        className="h-8 w-8 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"
+                        title={
+                          user.emailVerified
+                            ? `Aprovar usuário ${user.name}`
+                            : `${user.name} ainda não confirmou o e-mail`
+                        }
+                        onClick={() => onStatusChange(user.id, "VERIFIED")}
+                      >
+                        <Check />
+                      </Button>
+                    )}
+                    {user.status === "VERIFIED" && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50"
+                        title={`Bloquear usuário ${user.name}`}
+                        onClick={() => onStatusChange(user.id, "BLOCKED")}
+                      >
+                        <Ban />
+                      </Button>
+                    )}
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-50"
-                      title={`Bloquear usuário ${user.name}`}
-                      onClick={() => onStatusChange(user.id, "BLOCKED")}
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      title={`Editar dados de ${user.name}`}
+                      onClick={() => router.push(`/dashboard/admin/users/${user.id}?edit=1`)}
                     >
-                      <Ban />
+                      <Pencil />
                     </Button>
-                  )}
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                    title={`Editar dados de ${user.name}`}
-                    onClick={() => router.push(`/dashboard/admin/users/${user.id}?edit=1`)}
-                  >
-                    <Pencil />
-                  </Button>
+                  </div>
                 </div>
-              </div>
+              </DataTableMobileItem>
             );
           })}
-        </div>
+        </DataTableMobileList>
       ) : (
-        /* ── Desktop: table ── */
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead
-                className="pl-6 cursor-pointer select-none"
-                onClick={() => toggleSort("name")}
-                title="Ordenar por Nome"
-              >
-                Usuário <SortIcon field="name" />
-              </TableHead>
+        <DataTable>
+          <DataTableHead>
+            <SortableHeader field="name" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+              Usuário
+            </SortableHeader>
 
-              {typeFilter === "all" && (
-                <TableHead
-                  className="text-center cursor-pointer select-none"
-                  onClick={() => toggleSort("type")}
-                  title="Ordenar por Tipo"
-                >
-                  Tipo <SortIcon field="type" />
-                </TableHead>
-              )}
+            {typeFilter === "all" && (
+              <SortableHeader field="type" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                Tipo
+              </SortableHeader>
+            )}
 
-              {typeFilter === "PATIENT" && (
-                <>
-                  <TableHead
-                    className="text-center cursor-pointer select-none"
-                    onClick={() => toggleSort("phone")}
-                    title="Ordenar por Telefone"
-                  >
-                    Telefone <SortIcon field="phone" />
-                  </TableHead>
-                  <TableHead
-                    className="text-center cursor-pointer select-none"
-                    onClick={() => toggleSort("dateOfBirth")}
-                    title="Ordenar por Nascimento"
-                  >
-                    Nascimento <SortIcon field="dateOfBirth" />
-                  </TableHead>
-                </>
-              )}
+            {typeFilter === "PATIENT" && (
+              <>
+                <SortableHeader field="phone" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                  Telefone
+                </SortableHeader>
+                <SortableHeader field="dateOfBirth" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                  Nascimento
+                </SortableHeader>
+              </>
+            )}
 
-              {typeFilter === "PROFESSIONAL" && (
-                <>
-                  <TableHead
-                    className="text-center cursor-pointer select-none"
-                    onClick={() => toggleSort("speciality")}
-                    title="Ordenar por Especialidade"
-                  >
-                    Especialidade <SortIcon field="speciality" />
-                  </TableHead>
-                  <TableHead
-                    className="text-center cursor-pointer select-none"
-                    onClick={() => toggleSort("modality")}
-                    title="Ordenar por Modalidade"
-                  >
-                    Modalidade <SortIcon field="modality" />
-                  </TableHead>
-                </>
-              )}
+            {typeFilter === "PROFESSIONAL" && (
+              <>
+                <SortableHeader field="speciality" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                  Especialidade
+                </SortableHeader>
+                <SortableHeader field="modality" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                  Modalidade
+                </SortableHeader>
+              </>
+            )}
 
-              <TableHead
-                className="text-center cursor-pointer select-none"
-                onClick={() => toggleSort("status")}
-                title="Ordenar por Status"
-              >
-                Status <SortIcon field="status" />
-              </TableHead>
+            <SortableHeader field="status" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+              Status
+            </SortableHeader>
 
-              <TableHead
-                className="text-center cursor-pointer select-none"
-                onClick={() => toggleSort("createdAt")}
-                title="Ordenar por data de cadastro"
-              >
-                Cadastrado em <SortIcon field="createdAt" />
-              </TableHead>
+            <SortableHeader field="createdAt" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+              Cadastrado em
+            </SortableHeader>
 
-              <TableHead className="pr-6 text-center">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+            <DataTableHeadCell align="center">Ações</DataTableHeadCell>
+          </DataTableHead>
+          <DataTableBody>
             {sortedUsers.map((user) => {
               const badge = TYPE_BADGE[user.role];
               const speciality = getSpeciality(user);
-              const stopClick = (e: React.MouseEvent) => e.stopPropagation();
               return (
-                <TableRow
+                <DataTableRow
                   key={user.id}
-                  className="cursor-pointer"
                   onClick={() => goToEdit(user.id)}
                   title={`Abrir perfil de ${user.name}`}
                 >
-                  <TableCell className="pl-6">
+                  <DataTableCell>
                     <p className="font-medium text-foreground">{user.name}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
-                  </TableCell>
+                  </DataTableCell>
 
                   {typeFilter === "all" && (
-                    <TableCell className="text-center">
+                    <DataTableCell align="center">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
                         {badge.label}
                       </span>
-                    </TableCell>
+                    </DataTableCell>
                   )}
 
                   {typeFilter === "PATIENT" && (
                     <>
-                      <TableCell className="text-center text-sm text-muted-foreground">
+                      <DataTableCell align="center">
                         {user.patientProfile?.phone ?? <span className="text-muted-foreground/40">—</span>}
-                      </TableCell>
-                      <TableCell className="text-center text-sm text-muted-foreground">
+                      </DataTableCell>
+                      <DataTableCell align="center">
                         {formatDate(user.patientProfile?.dateOfBirth) ?? <span className="text-muted-foreground/40">—</span>}
-                      </TableCell>
+                      </DataTableCell>
                     </>
                   )}
 
                   {typeFilter === "PROFESSIONAL" && (
                     <>
-                      <TableCell className="text-center text-sm text-muted-foreground">
+                      <DataTableCell align="center">
                         {speciality ?? <span className="text-muted-foreground/40">—</span>}
-                      </TableCell>
-                      <TableCell className="text-center text-sm text-muted-foreground">
+                      </DataTableCell>
+                      <DataTableCell align="center">
                         {user.professionalProfile?.modality ?? <span className="text-muted-foreground/40">—</span>}
-                      </TableCell>
+                      </DataTableCell>
                     </>
                   )}
 
-                  <TableCell className="text-center">
+                  <DataTableCell align="center">
                     <StatusBadge status={user.status} type="user" />
-                  </TableCell>
+                  </DataTableCell>
 
-                  <TableCell className="text-center text-sm text-muted-foreground">
+                  <DataTableCell align="center">
                     {formatDate(user.createdAt) ?? <span className="text-muted-foreground/40">—</span>}
-                  </TableCell>
+                  </DataTableCell>
 
-                  <TableCell className="pr-6" onClick={stopClick}>
+                  <DataTableCell align="center" onClick={stopClick}>
                     <div className="flex items-center justify-center gap-0.5">
                       <Button
                         size="icon"
@@ -475,13 +423,13 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                         <Pencil />
                       </Button>
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </DataTableCell>
+                </DataTableRow>
               );
             })}
-          </TableBody>
-        </Table>
+          </DataTableBody>
+        </DataTable>
       )}
-    </div>
+    </DataTableCard>
   );
 }

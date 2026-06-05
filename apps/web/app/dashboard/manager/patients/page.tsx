@@ -11,7 +11,27 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
 import { PageShell } from '../../../ui/dashboard/page-shell';
 import { formatPhoneNumber } from '@/app/utils/formatPhone';
-import { Search, Users, UserCheck, ClipboardCheck, ClipboardList, ArrowUpDown, ArrowUp, ArrowDown, X } from 'lucide-react';
+import {
+  DataTable,
+  DataTableBody,
+  DataTableCard,
+  DataTableCell,
+  DataTableEmpty,
+  DataTableHead,
+  DataTableHeadCell,
+  DataTableMobileItem,
+  DataTableMobileList,
+  DataTableRow,
+  SortableHeader,
+} from '@/components/ui/data-table';
+import {
+  Search,
+  Users,
+  UserCheck,
+  ClipboardCheck,
+  ClipboardList,
+  X,
+} from 'lucide-react';
 
 type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender' | 'questionnaire';
 type SortDir = 'asc' | 'desc';
@@ -130,14 +150,6 @@ export default function PatientsPage() {
     });
   }, [filteredPatients, sortField, sortDir]);
 
-  function SortIcon({ field }: { field: SortField }) {
-    if (sortField !== field)
-      return <ArrowUpDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-400" />;
-    return sortDir === 'asc'
-      ? <ArrowUp className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />
-      : <ArrowDown className="ml-1.5 inline h-3.5 w-3.5 text-gray-900" />;
-  }
-
   function handleSearch(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
@@ -168,7 +180,7 @@ export default function PatientsPage() {
         <SharedPageHeader
           title="Pacientes"
           action={{
-            label: "+ Novo Paciente",
+            label: '+ Novo Paciente',
             href: '/dashboard/manager/patients/new',
             colorClass: 'bg-green-600 hover:bg-green-700',
           }}
@@ -176,37 +188,37 @@ export default function PatientsPage() {
 
         {patients.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-medium">Total</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</p>
+                  <p className="text-xs text-muted-foreground font-medium">Total</p>
+                  <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
                 </div>
                 <Users className="w-7 h-7 text-blue-500 opacity-25" />
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-medium">Ativos</p>
+                  <p className="text-xs text-muted-foreground font-medium">Ativos</p>
                   <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</p>
                 </div>
                 <UserCheck className="w-7 h-7 text-emerald-500 opacity-25" />
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-medium">Com questionário</p>
+                  <p className="text-xs text-muted-foreground font-medium">Com questionário</p>
                   <p className="text-2xl font-bold text-blue-600 mt-1">{stats.withQuestionnaire}</p>
                 </div>
                 <ClipboardCheck className="w-7 h-7 text-blue-500 opacity-25" />
               </div>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-medium">Sem questionário</p>
+                  <p className="text-xs text-muted-foreground font-medium">Sem questionário</p>
                   <p className="text-2xl font-bold text-amber-600 mt-1">{stats.withoutQuestionnaire}</p>
                 </div>
                 <ClipboardList className="w-7 h-7 text-amber-500 opacity-25" />
@@ -217,20 +229,20 @@ export default function PatientsPage() {
 
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
             <input
               type="text"
               placeholder="Buscar paciente por nome..."
               defaultValue={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white placeholder:text-gray-400"
+              className="w-full pl-12 pr-12 py-3 border border-border rounded-xl text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-card placeholder:text-muted-foreground"
               aria-label="Buscar paciente por nome"
             />
             {searchTerm && (
               <button
                 type="button"
                 onClick={() => handleSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition"
                 aria-label="Limpar busca"
                 title="Limpar busca"
               >
@@ -239,22 +251,22 @@ export default function PatientsPage() {
             )}
           </div>
           {searchTerm && (
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-muted-foreground">
               {filteredPatients.length}{' '}
               {filteredPatients.length === 1 ? 'resultado' : 'resultados'} para{' '}
-              <span className="font-medium text-gray-700">&quot;{searchTerm}&quot;</span>
+              <span className="font-medium text-foreground">&quot;{searchTerm}&quot;</span>
             </p>
           )}
         </div>
 
         {filteredPatients.length === 0 ? (
           searchTerm ? (
-            <div className="text-center py-12">
-              <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-sm">
-                Nenhum paciente encontrado para &quot;{searchTerm}&quot;
-              </p>
-            </div>
+            <DataTableCard>
+              <DataTableEmpty
+                icon={<Users className="h-8 w-8" />}
+                title={`Nenhum paciente encontrado para "${searchTerm}"`}
+              />
+            </DataTableCard>
           ) : (
             <EmptyState
               message="Nenhum paciente cadastrado"
@@ -263,138 +275,107 @@ export default function PatientsPage() {
             />
           )
         ) : isMobile ? (
-          <div className="space-y-3">
-            {sortedPatients.map((patient) => (
-              <div
-                key={patient.id}
-                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition"
-              >
-                <div className="flex gap-3 mb-3">
-                  <div
-                    className={`${getAvatarColor(patient.name)} w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}
-                  >
-                    {getInitials(patient.name)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">
-                      {patient.name}
-                    </h3>
-                    <p className="text-xs text-gray-500 truncate">{patient.email}</p>
-                  </div>
-                  {patient.patientProfile?.questionnaire ? (
-                    <span className="inline-flex items-center gap-1 self-start rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
-                      <ClipboardCheck className="w-3 h-3" />
-                      Respondido
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 self-start rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
-                      <ClipboardList className="w-3 h-3" />
-                      Pendente
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-1.5 mb-3">
-                  {patient.patientProfile?.phone && (
-                    <p className="text-xs text-gray-600">
-                      <span className="font-medium">Tel:</span> {patient.patientProfile.phone}
-                    </p>
-                  )}
-                  {patient.patientProfile?.dateOfBirth && (
-                    <p className="text-xs text-gray-600">
-                      <span className="font-medium">Nascimento:</span>{' '}
-                      {new Date(patient.patientProfile.dateOfBirth).toLocaleDateString(
-                        'pt-BR',
-                      )}
-                    </p>
-                  )}
-                </div>
-                <Link
-                  href={`/dashboard/manager/patients/${patient.id}`}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          <DataTableCard>
+            <DataTableMobileList>
+              {sortedPatients.map((patient) => (
+                <DataTableMobileItem
+                  key={patient.id}
+                  onClick={() => router.push(`/dashboard/manager/patients/${patient.id}`)}
+                  title={`Ver detalhes de ${patient.name}`}
                 >
-                  Ver Detalhes →
-                </Link>
-              </div>
-            ))}
-          </div>
+                  <div className="flex gap-3 mb-3">
+                    <div
+                      className={`${getAvatarColor(patient.name)} w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}
+                    >
+                      {getInitials(patient.name)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground truncate">
+                        {patient.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground truncate">{patient.email}</p>
+                    </div>
+                    {patient.patientProfile?.questionnaire ? (
+                      <span className="inline-flex items-center gap-1 self-start rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
+                        <ClipboardCheck className="w-3 h-3" />
+                        Respondido
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 self-start rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
+                        <ClipboardList className="w-3 h-3" />
+                        Pendente
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-1.5">
+                    {patient.patientProfile?.phone && (
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-medium">Tel:</span> {patient.patientProfile.phone}
+                      </p>
+                    )}
+                    {patient.patientProfile?.dateOfBirth && (
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-medium">Nascimento:</span>{' '}
+                        {new Date(patient.patientProfile.dateOfBirth).toLocaleDateString(
+                          'pt-BR',
+                        )}
+                      </p>
+                    )}
+                  </div>
+                </DataTableMobileItem>
+              ))}
+            </DataTableMobileList>
+          </DataTableCard>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-slate-50 border-b border-gray-200">
-                <tr>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                    onClick={() => toggleSort('name')}
-                    title="Ordenar por nome"
-                  >
-                    Nome <SortIcon field="name" />
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                    onClick={() => toggleSort('email')}
-                    title="Ordenar por email"
-                  >
-                    Email <SortIcon field="email" />
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                    onClick={() => toggleSort('phone')}
-                    title="Ordenar por telefone"
-                  >
-                    Telefone <SortIcon field="phone" />
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                    onClick={() => toggleSort('dateOfBirth')}
-                    title="Ordenar por data de nascimento"
-                  >
-                    Data de Nascimento <SortIcon field="dateOfBirth" />
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                    onClick={() => toggleSort('gender')}
-                    title="Ordenar por gênero"
-                  >
-                    Gênero <SortIcon field="gender" />
-                  </th>
-                  <th
-                    className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer select-none"
-                    onClick={() => toggleSort('questionnaire')}
-                    title="Ordenar por questionário"
-                  >
-                    Questionário <SortIcon field="questionnaire" />
-                  </th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
+          <DataTableCard>
+            <DataTable>
+              <DataTableHead>
+                <SortableHeader field="name" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                  Nome
+                </SortableHeader>
+                <SortableHeader field="email" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                  Email
+                </SortableHeader>
+                <SortableHeader field="phone" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                  Telefone
+                </SortableHeader>
+                <SortableHeader field="dateOfBirth" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                  Data de Nascimento
+                </SortableHeader>
+                <SortableHeader field="gender" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                  Gênero
+                </SortableHeader>
+                <SortableHeader field="questionnaire" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                  Questionário
+                </SortableHeader>
+                <DataTableHeadCell>Ações</DataTableHeadCell>
+              </DataTableHead>
+              <DataTableBody>
                 {sortedPatients.map((patient) => (
-                  <tr key={patient.id} className="hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 text-sm">
+                  <DataTableRow key={patient.id}>
+                    <DataTableCell>
                       <div className="flex items-center gap-3">
                         <div
                           className={`${getAvatarColor(patient.name)} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs`}
                         >
                           {getInitials(patient.name)}
                         </div>
-                        <span className="font-medium text-gray-900">{patient.name}</span>
+                        <span className="font-medium text-foreground">{patient.name}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{patient.email}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    </DataTableCell>
+                    <DataTableCell>{patient.email}</DataTableCell>
+                    <DataTableCell>
                       {formatPhoneNumber(patient.patientProfile?.phone) || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    </DataTableCell>
+                    <DataTableCell>
                       {patient.patientProfile?.dateOfBirth
                         ? formatLocalDate(patient.patientProfile.dateOfBirth)
                         : '-'}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    </DataTableCell>
+                    <DataTableCell>
                       {patient.patientProfile?.gender ?? '-'}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
+                    </DataTableCell>
+                    <DataTableCell>
                       {patient.patientProfile?.questionnaire ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs font-medium">
                           <ClipboardCheck className="w-3 h-3" />
@@ -406,20 +387,20 @@ export default function PatientsPage() {
                           Pendente
                         </span>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
+                    </DataTableCell>
+                    <DataTableCell>
                       <Link
                         href={`/dashboard/manager/patients/${patient.id}`}
                         className="text-blue-600 hover:text-blue-700 font-medium transition"
                       >
                         Ver Detalhes
                       </Link>
-                    </td>
-                  </tr>
+                    </DataTableCell>
+                  </DataTableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </DataTableBody>
+            </DataTable>
+          </DataTableCard>
         )}
       </div>
     </PageShell>
