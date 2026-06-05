@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { SearchIcon, UsersIcon } from "../../../utils/icons";
 import { useProfessionalPatients } from "@/queries/useProfessionalPatients";
 import { PatientCard, PatientCardData } from "./components/PatientCard";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
@@ -36,21 +37,11 @@ export default function PatientsPage() {
   const totalLabel =
     patients.length === 1 ? "1 paciente" : `${patients.length} pacientes`;
 
+  const headerDescription = `Acompanhe o perfil e o histórico dos pacientes que você atende.${!isLoading && patients.length > 0 ? ` · ${totalLabel}` : ""}`;
+
   return (
-    <section className="w-full min-h-screen mx-auto px-4 py-6 sm:px-16 sm:py-8 bg-[#f8fafc]">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-          Pacientes
-        </h1>
-        <p className="mt-1 text-sm sm:text-base text-gray-500">
-          Acompanhe o perfil e o histórico dos pacientes que você atende.
-          {!isLoading && patients.length > 0 && (
-            <span className="ml-1 text-gray-700 font-medium">
-              · {totalLabel}
-            </span>
-          )}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader title="Pacientes" description={headerDescription} />
 
       <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-4 sm:p-5">
@@ -123,6 +114,6 @@ export default function PatientsPage() {
           ))}
         </div>
       )}
-    </section>
+    </PageShell>
   );
 }

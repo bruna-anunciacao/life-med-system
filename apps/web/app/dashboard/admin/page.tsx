@@ -6,6 +6,7 @@ import { adminService } from "../../../services/admin-service";
 import { toast } from "sonner";
 import { UsersTable } from "./components/UsersTable";
 import { useQueryClient } from "@tanstack/react-query";
+import { PageShell } from "../../ui/dashboard/page-shell";
 
 const AdminDashboard = () => {
   const queryClient = useQueryClient();
@@ -53,9 +54,9 @@ const AdminDashboard = () => {
   );
 
   return (
-    <section className="px-4 py-4 sm:px-6 sm:py-6">
+    <PageShell>
       <UsersTable onStatusChange={handleStatusChange} actions={actions} />
-    </section>
+    </PageShell>
   );
 };
 

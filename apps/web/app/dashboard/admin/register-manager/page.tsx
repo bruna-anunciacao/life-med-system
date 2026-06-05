@@ -4,6 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { PhoneInputBR } from "@/components/ui/phone-input-br";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { PasswordField } from "@/app/auth/register/components/PasswordField";
 import { applyCpfMask } from "@/lib/cpf";
 import { useRegisterManagerMutation } from "@/queries/useRegisterManagerMutation";
 import { registerManagerSchema, type RegisterManagerSchema } from "@/app/auth/register-manager/register-manager.validation";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 export default function RegisterManagerPage() {
   const router = useRouter();
@@ -64,26 +66,21 @@ export default function RegisterManagerPage() {
   };
 
   return (
-    <section className="px-4 py-4 sm:px-6 sm:py-6">
-      <div className="mx-auto max-w-3xl space-y-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push("/dashboard/admin")}
-          title="Voltar para a tela do administrador"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar
-        </Button>
+    <PageShell>
+      <Link
+        href="/dashboard/admin"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Painel Administrativo
+      </Link>
 
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Cadastrar gestor</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Crie uma conta de gestor vinculada à administração do sistema.
-          </p>
-        </div>
+      <PageHeader
+        title="Cadastrar gestor"
+        description="Crie uma conta de gestor vinculada à administração do sistema."
+      />
 
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
@@ -151,8 +148,7 @@ export default function RegisterManagerPage() {
               </Button>
             </div>
           </form>
-        </div>
       </div>
-    </section>
+    </PageShell>
   );
 }

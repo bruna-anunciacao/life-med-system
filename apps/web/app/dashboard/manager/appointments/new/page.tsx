@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { managerService } from "../../../../../services/manager-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
 import { SearchBar } from "../../../patient/search/components/SearchBar";
 import { DoctorCard } from "../../../patient/search/components/DoctorCard";
 import { EmptySearch } from "../../../patient/search/components/EmptySearch";
@@ -96,16 +97,8 @@ const NewApointmentPage = () => {
     });
 
   return (
-    <section
-      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
-    >
-      <div className="mb-8">
-        <h1
-          className={`my-10 font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
-        >
-          Agendamento de consulta
-        </h1>
-      </div>
+    <PageShell>
+      <PageHeader title="Agendamento de consulta" />
 
       <SearchBar
         search={search}
@@ -160,7 +153,7 @@ const NewApointmentPage = () => {
         patients={patients}
         professional={bookingProfessional as unknown as Professional}
       />
-    </section>
+    </PageShell>
   );
 };
 

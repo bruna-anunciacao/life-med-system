@@ -20,6 +20,7 @@ import { useDailyScheduleQuery } from "@/queries/useDailyScheduleQuery";
 import { useProfessionalPatients } from "@/queries/useProfessionalPatients";
 import { useUpdateAppointmentStatusMutation } from "@/queries/useProfessionalAppointments";
 import { ConfirmModal } from "./schedule/components/ConfirmModal";
+import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
 
 type Appointment = {
   id: string;
@@ -151,33 +152,29 @@ const ProfessionalDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex w-full min-h-screen items-center justify-center bg-[#f8fafc]">
+      <PageShell className="flex items-center justify-center min-h-[60vh]">
         <Spinner size="lg" />
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <section className="w-full min-h-screen mx-auto px-4 py-6 sm:px-16 sm:py-8 bg-[#f8fafc]">
-      <div className="mb-10 flex justify-between items-center max-sm:flex-col max-sm:items-start max-sm:gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-            Painel Profissional
-          </h1>
-          <p className="mt-1 text-sm sm:text-base text-gray-500">
-            Gerencie suas consultas e acompanhe seu dia.
-          </p>
-        </div>
-        <Button
-          size="lg"
-          className="w-full sm:w-auto"
-          title="Acessar calendário completo da agenda"
-          onClick={handleCalendarClick}
-        >
-          <CalendarIcon />
-          Minha Agenda
-        </Button>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Painel Profissional"
+        description="Gerencie suas consultas e acompanhe seu dia."
+        actions={
+          <Button
+            size="lg"
+            className="w-full sm:w-auto"
+            title="Acessar calendário completo da agenda"
+            onClick={handleCalendarClick}
+          >
+            <CalendarIcon />
+            Minha Agenda
+          </Button>
+        }
+      />
       <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat, index) => (
           <Card
@@ -375,7 +372,7 @@ const ProfessionalDashboard = () => {
         pendingStatus={pendingAction?.status || ""}
         onConfirm={handleConfirmAction}
       />
-    </section>
+    </PageShell>
   );
 };
 

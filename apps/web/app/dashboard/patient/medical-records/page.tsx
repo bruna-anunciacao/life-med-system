@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMedicalRecordsListForPatientQuery } from "@/queries/useMedicalRecords";
 import { CalendarIcon, EyeIcon, SearchIcon } from "../../../utils/icons";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 
 const PAGE_SIZE = 10;
 
@@ -30,7 +30,6 @@ function truncate(text: string | null, max = 120) {
 
 const PatientMedicalRecordsPage = () => {
   const router = useRouter();
-  const isMobile = useIsMobile();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -60,22 +59,11 @@ const PatientMedicalRecordsPage = () => {
   const hasFilters = Boolean(search);
 
   return (
-    <section
-      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
-    >
-      <div className="mb-8">
-        <h1
-          className={`font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
-        >
-          Meus Prontuários
-        </h1>
-        <p
-          className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}
-        >
-          Histórico dos prontuários das suas consultas.
-          {total > 0 && ` ${total} no total.`}
-        </p>
-      </div>
+    <PageShell>
+      <PageHeader
+        title="Meus Prontuários"
+        description={`Histórico dos prontuários das suas consultas.${total > 0 ? ` ${total} no total.` : ""}`}
+      />
 
       <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-4 sm:p-5">
@@ -222,7 +210,7 @@ const PatientMedicalRecordsPage = () => {
           </div>
         </div>
       )}
-    </section>
+    </PageShell>
   );
 };
 

@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useDailyScheduleQuery } from '@/queries/useDailyScheduleQuery';
 import { ScheduleTimeline } from '@/app/dashboard/professional/schedule/components/ScheduleTimeline';
 import { LoadingPage } from '@/components/shared/LoadingPage';
+import { PageShell, PageHeader } from '../../../../../ui/dashboard/page-shell';
 
 type Appointment = {
   id: string;
@@ -109,20 +110,14 @@ export default function ProfessionalSchedulePage() {
   }
 
   return (
-    <section className="w-full min-h-screen mx-auto px-4 sm:px-8 lg:px-16 py-6 sm:py-8 bg-[#f8fafc]">
-      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
-        <div>
-          <Link href="/dashboard/manager/appointments" className="text-blue-600 hover:underline text-sm mb-2 block">
-            ← Voltar para consultas
-          </Link>
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 tracking-tight">
-            Agenda do Profissional
-          </h1>
-          <p className="mt-1 text-sm sm:text-base text-gray-500">
-            Visualize os horários e consultas agendadas.
-          </p>
-        </div>
-      </div>
+    <PageShell>
+      <Link href="/dashboard/manager/appointments" className="text-blue-600 hover:underline text-sm mb-2 block">
+        ← Voltar para consultas
+      </Link>
+      <PageHeader
+        title="Agenda do Profissional"
+        description="Visualize os horários e consultas agendadas."
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-6">
         <aside className="flex flex-col gap-6">
@@ -161,6 +156,6 @@ export default function ProfessionalSchedulePage() {
           </div>
         </main>
       </div>
-    </section>
+    </PageShell>
   );
 }

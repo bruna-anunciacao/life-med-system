@@ -6,7 +6,8 @@ import { useCancelAppointmentManagerMutation } from '@/queries/useCancelAppointm
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { LoadingPage } from '@/components/shared/LoadingPage';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
+import { PageShell } from '../../../ui/dashboard/page-shell';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { CancelConfirmDialog } from '@/app/dashboard/patient/appointments/components/CancelConfirmDialog';
 import { Calendar, Clock, X, CheckCircle, AlertCircle, XCircle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
@@ -106,20 +107,18 @@ export default function AppointmentsPage() {
 
   if (error) {
     return (
-      <div className={`${isMobile ? 'p-4' : 'py-12 px-8'}`}>
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-            Erro ao carregar consultas
-          </div>
+      <PageShell>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+          Erro ao carregar consultas
         </div>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className={`${isMobile ? 'p-4 pb-20' : 'py-8 px-4'} bg-gradient-to-br from-slate-50 via-white to-slate-50 min-h-screen`}>
+    <PageShell>
       <div className="max-w-7xl mx-auto">
-        <PageHeader
+        <SharedPageHeader
           title="Agendamentos"
           action={{
             label: "+ Nova Consulta",
@@ -391,6 +390,6 @@ export default function AppointmentsPage() {
         onConfirm={handleCancelConfirm}
         isLoading={cancelMutation.isPending}
       />
-    </div>
+    </PageShell>
   );
 }
