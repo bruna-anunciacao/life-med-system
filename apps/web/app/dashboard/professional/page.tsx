@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
+import { DashboardHomeSkeleton } from "@/components/ui/skeletons";
 import { format } from "date-fns";
 import {
   CalendarIcon,
@@ -152,8 +152,8 @@ const ProfessionalDashboard = () => {
 
   if (isLoading) {
     return (
-      <PageShell className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
+      <PageShell>
+        <DashboardHomeSkeleton />
       </PageShell>
     );
   }

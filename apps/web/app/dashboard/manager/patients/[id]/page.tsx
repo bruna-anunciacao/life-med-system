@@ -20,6 +20,7 @@ import { PhoneInputBR } from "@/components/ui/phone-input-br";
 import { useQueryClient } from "@tanstack/react-query";
 import { applyCpfMask } from "@/lib/cpf";
 import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 
 export default function PatientDetailsPage() {
   const router = useRouter();
@@ -103,8 +104,8 @@ export default function PatientDetailsPage() {
 
   if (isLoading) {
     return (
-      <PageShell className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-slate-600">Carregando detalhes do paciente...</p>
+      <PageShell>
+        <DetailPageSkeleton />
       </PageShell>
     );
   }

@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { SearchIcon, UsersIcon } from "../../../utils/icons";
 import { useProfessionalPatients } from "@/queries/useProfessionalPatients";
 import { PatientCard, PatientCardData } from "./components/PatientCard";
@@ -70,9 +70,7 @@ export default function PatientsPage() {
       </Card>
 
       {isLoading ? (
-        <div className="py-20 flex justify-center items-center">
-          <Spinner size="lg" />
-        </div>
+        <CardGridSkeleton count={6} />
       ) : isError ? (
         <Card className="border border-red-200 bg-red-50 rounded-xl">
           <CardContent className="py-10 text-center text-red-600 font-medium">

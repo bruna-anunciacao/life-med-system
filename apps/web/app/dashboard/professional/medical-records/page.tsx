@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
+import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { useMedicalRecordsListQuery } from "@/queries/useMedicalRecords";
 import {
@@ -152,9 +152,7 @@ const MedicalRecordsListPage = () => {
       </Card>
 
       {isLoading ? (
-        <div className="py-16 flex justify-center">
-          <Spinner size="lg" />
-        </div>
+        <CardGridSkeleton count={4} minWidth={400} />
       ) : records.length === 0 ? (
         <Card className="border border-dashed border-gray-300 rounded-xl bg-white">
           <CardContent className="py-16 text-center flex flex-col items-center gap-3">

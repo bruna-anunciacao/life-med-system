@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { useListAppointmentsQuery } from '@/queries/useListAppointmentsQuery';
 import { useCancelAppointmentManagerMutation } from '@/queries/useCancelAppointmentManagerMutation';
 import { useIsMobile, useMounted } from '@/hooks/useIsMobile';
-import { LoadingPage } from '@/components/shared/LoadingPage';
+import { StatsCardsSkeleton, TableSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
 import { PageShell } from '../../../ui/dashboard/page-shell';
@@ -108,7 +108,15 @@ export default function AppointmentsPage() {
   };
 
   if (isLoading) {
-    return <LoadingPage message="Carregando consultas..." />;
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto">
+          <PageHeaderSkeleton />
+          <StatsCardsSkeleton count={4} />
+          <TableSkeleton rows={6} columns={6} isMobile={isMobile} />
+        </div>
+      </PageShell>
+    );
   }
 
   if (error) {

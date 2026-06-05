@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMedicalRecordByIdQuery } from "@/queries/useMedicalRecords";
 import { medicalRecordsService } from "@/services/medical-records-service";
@@ -40,8 +41,8 @@ const PatientMedicalRecordDetailsPage = () => {
 
   if (isLoading) {
     return (
-      <PageShell className="flex items-center justify-center min-h-[60vh]">
-        <Spinner size="lg" />
+      <PageShell>
+        <DetailPageSkeleton />
       </PageShell>
     );
   }

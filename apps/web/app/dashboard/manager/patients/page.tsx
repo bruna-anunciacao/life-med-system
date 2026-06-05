@@ -6,7 +6,7 @@ import Fuse from 'fuse.js';
 import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
 import { useIsMobile, useMounted } from '@/hooks/useIsMobile';
 import Link from 'next/link';
-import { LoadingPage } from '@/components/shared/LoadingPage';
+import { StatsCardsSkeleton, TableSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
 import { PageShell } from '../../../ui/dashboard/page-shell';
@@ -162,7 +162,18 @@ export default function PatientsPage() {
   }
 
   if (isLoading) {
-    return <LoadingPage message="Carregando pacientes..." />;
+    return (
+      <PageShell>
+        <div className="max-w-7xl mx-auto">
+          <PageHeaderSkeleton />
+          <StatsCardsSkeleton count={4} />
+          <div className="mb-6">
+            <div className="h-12 w-full rounded-xl bg-muted animate-pulse" />
+          </div>
+          <TableSkeleton rows={6} columns={7} isMobile={isMobile} />
+        </div>
+      </PageShell>
+    );
   }
 
   if (error) {

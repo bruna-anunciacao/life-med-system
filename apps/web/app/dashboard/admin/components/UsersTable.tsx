@@ -14,7 +14,6 @@ import {
   DataTableHead,
   DataTableHeadCell,
   DataTableHeader,
-  DataTableLoading,
   DataTableMobileItem,
   DataTableMobileList,
   DataTableRow,
@@ -24,6 +23,7 @@ import {
 import { AdminUser } from "../../../../services/admin-service";
 import { useAdminUsersTable, TypeFilter } from "@/queries/useAdminUsersTable";
 import { useIsMobile, useMounted } from "@/hooks/useIsMobile";
+import { TableSkeleton } from "@/components/ui/skeletons";
 import { Eye, Check, Ban, Pencil, Users } from "lucide-react";
 
 type SortField =
@@ -168,7 +168,11 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
       </DataTableToolbar>
 
       {isLoading || !mounted ? (
-        <DataTableLoading message="Carregando usuários..." />
+        isMobile ? (
+          <TableSkeleton rows={6} columns={4} isMobile />
+        ) : (
+          <TableSkeleton rows={8} columns={4} />
+        )
       ) : sortedUsers.length === 0 ? (
         <DataTableEmpty
           icon={<Users className="h-8 w-8" />}
