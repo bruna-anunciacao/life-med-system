@@ -1,4 +1,4 @@
-import { SearchIcon } from "../../../../utils/icons";
+import { SearchInput } from "@/components/ui/search-input";
 import { getLocationValue, LocationOption } from "./locationFilters";
 
 const SPECIALTIES = [
@@ -39,19 +39,13 @@ export function SearchBar({
   return (
     <div className="mb-8 flex flex-col gap-4">
       <div className="flex flex-col md:flex-row gap-3 w-full">
-        <div className="flex-1 px-4 py-3 flex items-center gap-3 border border-gray-200 rounded-xl bg-white text-base transition-colors duration-200 focus-within:border-[#006fee] focus-within:shadow-[0_0_0_3px_rgba(0,111,238,0.1)]">
-          <span className="text-gray-400 flex-shrink-0">
-            <SearchIcon />
-          </span>
-          <input
-            type="text"
-            className="flex-1 border-none outline-none bg-transparent text-base text-gray-900 placeholder:text-gray-400"
-            placeholder="Buscar por nome ou especialidade..."
-            title="Buscar por nome ou especialidade"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-          />
-        </div>
+        <SearchInput
+          className="flex-1 h-12.5 rounded-xl text-base"
+          placeholder="Buscar por nome ou especialidade..."
+          title="Buscar por nome ou especialidade"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+        />
 
         <select
           value={selectedLocation}

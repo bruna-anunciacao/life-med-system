@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardGridSkeleton } from "@/components/ui/skeletons";
-import { SearchIcon, UsersIcon } from "../../../utils/icons";
+import { UsersIcon } from "../../../utils/icons";
 import { useProfessionalPatients } from "@/queries/useProfessionalPatients";
 import { PatientCard, PatientCardData } from "./components/PatientCard";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { SearchInput } from "@/components/ui/search-input";
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, "");
@@ -48,18 +48,13 @@ export default function PatientsPage() {
           <label className="text-xs font-medium text-slate-600 mb-1.5 block">
             Buscar por nome, e-mail, telefone ou CPF
           </label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-              <SearchIcon size={16} />
-            </span>
-            <Input
-              placeholder="Ex.: Maria Silva, 123.456.789-00, maria@..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              title="Digite nome, e-mail, telefone ou CPF"
-              className="h-11 pl-10"
-            />
-          </div>
+          <SearchInput
+            placeholder="Ex.: Maria Silva, 123.456.789-00, maria@..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            title="Digite nome, e-mail, telefone ou CPF"
+            className="h-11"
+          />
           {search && (
             <p className="text-xs text-slate-500 mt-2">
               {filtered.length} resultado{filtered.length === 1 ? "" : "s"} para
@@ -108,7 +103,10 @@ export default function PatientsPage() {
       ) : (
         <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
           {filtered.map((patient) => (
-            <PatientCard key={patient.id} patient={patient as PatientCardData} />
+            <PatientCard
+              key={patient.id}
+              patient={patient as PatientCardData}
+            />
           ))}
         </div>
       )}

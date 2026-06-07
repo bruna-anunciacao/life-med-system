@@ -28,6 +28,7 @@ import {
 } from "@phosphor-icons/react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 
 interface ManagerBookingModalProps {
   isOpen: boolean;
@@ -301,23 +302,16 @@ export function ManagerBookingModal({
               </div>
             ) : (
               <div className="relative">
-                <div className="relative">
-                  <User
-                    size={18}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  />
-                  <Input
-                    type="text"
-                    placeholder="Buscar por nome ou email..."
-                    value={patientSearchTerm}
-                    onChange={(e) => {
-                      setPatientSearchTerm(e.target.value);
-                      setShowPatientDropdown(true);
-                    }}
-                    onFocus={() => setShowPatientDropdown(true)}
-                    className="pl-10 w-full h-11 border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                <SearchInput
+                  placeholder="Buscar por nome ou email..."
+                  value={patientSearchTerm}
+                  onChange={(e) => {
+                    setPatientSearchTerm(e.target.value);
+                    setShowPatientDropdown(true);
+                  }}
+                  onFocus={() => setShowPatientDropdown(true)}
+                  className="h-11"
+                />
 
                 {showPatientDropdown &&
                   patientSearchTerm &&

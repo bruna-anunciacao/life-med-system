@@ -3,13 +3,13 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { useMedicalRecordsListForPatientQuery } from "@/queries/useMedicalRecords";
-import { CalendarIcon, EyeIcon, SearchIcon } from "../../../utils/icons";
+import { CalendarIcon, EyeIcon } from "../../../utils/icons";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { SearchInput } from "@/components/ui/search-input";
 
 const PAGE_SIZE = 10;
 
@@ -75,21 +75,15 @@ const PatientMedicalRecordsPage = () => {
               <label className="text-xs font-medium text-slate-600">
                 Buscar (médico, queixa ou diagnóstico)
               </label>
-              <div className="relative">
-                <SearchIcon
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                  size={16}
-                />
-                <Input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder="Ex.: Dr. Ana, gripe…"
-                  className="pl-9"
-                />
-              </div>
+              <SearchInput
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder="Ex.: Dr. Ana, gripe…"
+                className="h-10"
+              />
             </div>
             <div className="flex gap-2">
-              <Button type="submit">Buscar</Button>
+              <Button type="submit" className="h-10">Buscar</Button>
               {hasFilters && (
                 <Button
                   type="button"

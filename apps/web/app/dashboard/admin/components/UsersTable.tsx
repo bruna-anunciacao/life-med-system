@@ -2,7 +2,6 @@
 
 import { useState, useMemo, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
@@ -25,6 +24,7 @@ import { useAdminUsersTable, TypeFilter } from "@/queries/useAdminUsersTable";
 import { useIsMobile, useMounted } from "@/hooks/useIsMobile";
 import { TableSkeleton } from "@/components/ui/skeletons";
 import { Eye, Check, Ban, Pencil, Users } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
 
 type SortField =
   | "name"
@@ -158,13 +158,15 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
             </button>
           ))}
         </div>
-        <Input
-          placeholder="Buscar usuário..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          title="Digite o nome ou e-mail para buscar"
-          className="h-8 flex-1 min-w-[160px] max-w-xs text-sm bg-background"
-        />
+        <div className="flex-1 min-w-40 max-w-xs">
+        <SearchInput
+            placeholder="Buscar usuário..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            title="Digite o nome ou e-mail para buscar"
+            className="h-9 text-sm"
+          />
+      </div>
       </DataTableToolbar>
 
       {isLoading || !mounted ? (
