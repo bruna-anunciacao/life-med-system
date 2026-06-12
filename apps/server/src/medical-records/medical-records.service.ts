@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AppointmentStatus, Prisma, UserRole } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { MedicalRecordsRepository } from './medical-records.repository';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
 import { ListMedicalRecordsQueryDto } from './dto/list-medical-records-query.dto';
@@ -33,16 +33,10 @@ const VALID_LINK_STATUSES: AppointmentStatus[] = [
   AppointmentStatus.COMPLETED,
 ];
 
-const RECORD_INCLUDE = {
-  author: true,
-  patient: true,
-  appointment: true,
-} as const;
-
 @Injectable()
 export class MedicalRecordsService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: MedicalRecordsRepository,
     private readonly pdfService: MedicalRecordPdfService,
   ) {}
 
@@ -50,9 +44,9 @@ export class MedicalRecordsService {
     authorId: string,
     dto: CreateMedicalRecordDto,
   ): Promise<MedicalRecordResponseDto> {
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: dto.appointmentId },
-    });
+    const appointment = await this.repository.findAppointmentById(
+      dto.appointmentId,
+    );
 
     if (!appointment) {
       throw new NotFoundException('Consulta não encontrada.');
@@ -65,19 +59,11 @@ export class MedicalRecordsService {
     }
 
     try {
-      const record = await this.prisma.medicalRecord.create({
-        data: {
-          appointmentId: dto.appointmentId,
-          patientId: appointment.patientId,
-          authorId,
-          chiefComplaint: dto.chiefComplaint,
-          diagnosis: dto.diagnosis,
-          treatmentPlan: dto.treatmentPlan,
-          prescriptions: dto.prescriptions,
-          internalNotes: dto.internalNotes,
-        },
-        include: RECORD_INCLUDE,
-      });
+      const record = await this.repository.createForAppointment(
+        dto,
+        appointment.patientId,
+        authorId,
+      );
       return this.toResponseDto(record);
     } catch (error) {
       if (
@@ -104,10 +90,7 @@ export class MedicalRecordsService {
       throw new ForbiddenException('Acesso negado a este prontuário.');
     }
 
-    const record = await this.prisma.medicalRecord.findUnique({
-      where: { appointmentId },
-      include: RECORD_INCLUDE,
-    });
+    const record = await this.repository.findByAppointmentId(appointmentId);
 
     if (!record) {
       throw new NotFoundException('Prontuário não encontrado.');
@@ -128,10 +111,7 @@ export class MedicalRecordsService {
       throw new ForbiddenException('Acesso negado a este prontuário.');
     }
 
-    const record = await this.prisma.medicalRecord.findUnique({
-      where: { id: recordId },
-      include: RECORD_INCLUDE,
-    });
+    const record = await this.repository.findById(recordId);
 
     if (!record) {
       throw new NotFoundException('Prontuário não encontrado.');
@@ -154,56 +134,16 @@ export class MedicalRecordsService {
       throw new ForbiddenException('Acesso negado.');
     }
 
-    const page = query.page || 1;
-    const limit = query.limit || 10;
-    const skip = (page - 1) * limit;
-
-    const where: Prisma.MedicalRecordWhereInput = {};
-
     if (requesterRole === UserRole.PROFESSIONAL) {
-      // Médico vê apenas prontuários que ele mesmo criou
-      where.authorId = requesterId;
-      if (query.patientId) where.patientId = query.patientId;
       if (query.authorId && query.authorId !== requesterId) {
-        // não permitir ver de outros médicos
         throw new ForbiddenException(
           'Não é possível listar prontuários de outros profissionais.',
         );
       }
-    } else {
-      // Paciente vê apenas os próprios
-      where.patientId = requesterId;
-      if (query.authorId) where.authorId = query.authorId;
     }
 
-    if (query.startDate || query.endDate) {
-      where.createdAt = {
-        ...(query.startDate && { gte: new Date(query.startDate) }),
-        ...(query.endDate && { lte: new Date(query.endDate) }),
-      };
-    }
-
-    if (query.search) {
-      const term = query.search.trim();
-      if (term.length > 0) {
-        where.OR = [
-          { patient: { name: { contains: term, mode: 'insensitive' } } },
-          { chiefComplaint: { contains: term, mode: 'insensitive' } },
-          { diagnosis: { contains: term, mode: 'insensitive' } },
-        ];
-      }
-    }
-
-    const [records, total] = await Promise.all([
-      this.prisma.medicalRecord.findMany({
-        where,
-        include: RECORD_INCLUDE,
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      this.prisma.medicalRecord.count({ where }),
-    ]);
+    const { records, total, page, limit } =
+      await this.repository.listForRequester(requesterId, requesterRole, query);
 
     if (requesterRole === UserRole.PATIENT) {
       return {
@@ -234,11 +174,7 @@ export class MedicalRecordsService {
       );
     }
 
-    const records = await this.prisma.medicalRecord.findMany({
-      where: { patientId },
-      include: RECORD_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-    });
+    const records = await this.repository.findByPatient(patientId);
 
     return records.map((r) => this.toResponseDto(r));
   }
@@ -248,10 +184,7 @@ export class MedicalRecordsService {
     requesterId: string,
     dto: UpdateMedicalRecordDto,
   ): Promise<MedicalRecordResponseDto> {
-    const record = await this.prisma.medicalRecord.findUnique({
-      where: { id: recordId },
-      include: RECORD_INCLUDE,
-    });
+    const record = await this.repository.findById(recordId);
 
     if (!record) {
       throw new NotFoundException('Prontuário não encontrado.');
@@ -263,17 +196,7 @@ export class MedicalRecordsService {
       );
     }
 
-    const updated = await this.prisma.medicalRecord.update({
-      where: { id: recordId },
-      data: {
-        chiefComplaint: dto.chiefComplaint,
-        diagnosis: dto.diagnosis,
-        treatmentPlan: dto.treatmentPlan,
-        prescriptions: dto.prescriptions,
-        internalNotes: dto.internalNotes,
-      },
-      include: RECORD_INCLUDE,
-    });
+    const updated = await this.repository.updateRecord(recordId, dto);
 
     return this.toResponseDto(updated);
   }
@@ -282,23 +205,8 @@ export class MedicalRecordsService {
     appointmentId: string,
     patientId: string,
   ): Promise<PDFKit.PDFDocument> {
-    const record = await this.prisma.medicalRecord.findUnique({
-      where: { appointmentId },
-      include: {
-        appointment: {
-          include: {
-            professional: {
-              include: {
-                professionalProfile: {
-                  include: { specialities: true },
-                },
-              },
-            },
-            patient: { include: { patientProfile: true } },
-          },
-        },
-      },
-    });
+    const record =
+      await this.repository.findPatientPdfRecordByAppointment(appointmentId);
 
     if (!record) {
       throw new NotFoundException('Prontuário não encontrado.');
@@ -366,14 +274,11 @@ export class MedicalRecordsService {
     professionalId: string,
     patientId: string,
   ): Promise<boolean> {
-    const count = await this.prisma.appointment.count({
-      where: {
-        professionalId,
-        patientId,
-        status: { in: VALID_LINK_STATUSES },
-      },
-    });
-    return count > 0;
+    return this.repository.hasValidPriorAppointment(
+      professionalId,
+      patientId,
+      VALID_LINK_STATUSES,
+    );
   }
 
   private toResponseDto(

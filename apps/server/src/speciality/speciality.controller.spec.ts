@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { SpecialityController } from './speciality.controller';
+import { SpecialityRepository } from './speciality.repository';
 import { SpecialityService } from './speciality.service';
 
 describe('SpecialityController', () => {
@@ -12,7 +12,7 @@ describe('SpecialityController', () => {
       providers: [
         SpecialityService,
         {
-          provide: PrismaService,
+          provide: SpecialityRepository,
           useValue: {},
         },
       ],

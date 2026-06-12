@@ -4,14 +4,9 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  AppointmentStatus,
-  Prisma,
-  UserRole,
-  UserStatus,
-} from '@prisma/client';
+import { AppointmentStatus, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { PrismaService } from '../prisma/prisma.service';
+import { PatientsRepository } from './patients.repository';
 import { ReportsService } from '../reports/reports.service';
 import { MailService } from '../mail/mail.service';
 import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
@@ -27,7 +22,7 @@ export class PatientsService {
   private readonly logger = new Logger(PatientsService.name);
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: PatientsRepository,
     private readonly reportsService: ReportsService,
     private readonly mailService: MailService,
   ) {}
@@ -76,42 +71,11 @@ export class PatientsService {
     status: AppointmentStatus,
     query: ExportAppointmentsQueryDto,
   ): Promise<AppointmentReportItemDto[]> {
-    const appointments = await this.prisma.appointment.findMany({
-      where: {
-        patientId,
-        status,
-        ...this.buildWhere(query),
-      },
-      include: {
-        patient: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        professional: {
-          select: {
-            id: true,
-            name: true,
-            professionalProfile: {
-              select: {
-                specialities: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-                modality: true,
-                price: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: {
-        dateTime: 'asc',
-      },
-    });
+    const appointments = await this.repository.findAppointmentsByStatus(
+      patientId,
+      status,
+      query,
+    );
 
     return appointments.map((appointment) => ({
       id: appointment.id,
@@ -131,44 +95,15 @@ export class PatientsService {
     }));
   }
 
-  private buildWhere(
-    query: ExportAppointmentsQueryDto,
-  ): Omit<Prisma.AppointmentWhereInput, 'patientId' | 'status'> {
-    const where: Omit<Prisma.AppointmentWhereInput, 'patientId' | 'status'> =
-      {};
-
-    if (query.professionalId) {
-      where.professionalId = query.professionalId;
-    }
-
-    if (query.startDate || query.endDate) {
-      where.dateTime = {};
-
-      if (query.startDate) {
-        where.dateTime.gte = new Date(query.startDate);
-      }
-
-      if (query.endDate) {
-        where.dateTime.lte = new Date(query.endDate);
-      }
-    }
-
-    return where;
-  }
-
   async createAssistedPatient(dto: CreatePatientDto) {
-    const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const existing = await this.repository.findUserByEmail(dto.email);
 
     if (existing) {
       throw new BadRequestException('Email já cadastrado');
     }
 
     if (dto.cpf) {
-      const cpfExists = await this.prisma.user.findUnique({
-        where: { cpf: dto.cpf },
-      });
+      const cpfExists = await this.repository.findUserByCpf(dto.cpf);
       if (cpfExists) {
         throw new BadRequestException('CPF já cadastrado');
       }
@@ -177,41 +112,10 @@ export class PatientsService {
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        password: hashedPassword,
-        name: dto.name,
-        role: UserRole.PATIENT,
-        status: UserStatus.COMPLETED,
-        emailVerified: true,
-        cpf: dto.cpf,
-        patientProfile: {
-          create: {
-            phone: dto.phone,
-            dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : null,
-            gender: dto.gender,
-          },
-        },
-        ...(dto.address && {
-          address: {
-            create: {
-              zipCode: dto.address.zipCode,
-              street: dto.address.street,
-              number: dto.address.number,
-              complement: dto.address.complement,
-              district: dto.address.district,
-              city: dto.address.city,
-              state: dto.address.state,
-            },
-          },
-        }),
-      },
-      include: {
-        patientProfile: true,
-        address: true,
-      },
-    });
+    const user = await this.repository.createAssistedPatient(
+      dto,
+      hashedPassword,
+    );
 
     this.mailService
       .sendTempPasswordEmail(
@@ -233,10 +137,7 @@ export class PatientsService {
   }
 
   async updatePatient(patientId: string, dto: UpdatePatientDto) {
-    const patient = await this.prisma.user.findUnique({
-      where: { id: patientId },
-      include: { patientProfile: true },
-    });
+    const patient = await this.repository.findPatientForUpdate(patientId);
 
     if (!patient || patient.role !== UserRole.PATIENT) {
       throw new NotFoundException('Paciente não encontrado');
@@ -247,44 +148,13 @@ export class PatientsService {
     }
 
     if (dto.cpf !== undefined && dto.cpf && dto.cpf !== patient.cpf) {
-      const cpfExists = await this.prisma.user.findUnique({
-        where: { cpf: dto.cpf },
-      });
+      const cpfExists = await this.repository.findUserByCpf(dto.cpf);
       if (cpfExists && cpfExists.id !== patientId) {
         throw new BadRequestException('CPF já cadastrado');
       }
     }
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id: patientId },
-      data: {
-        name: dto.name !== undefined ? dto.name : patient.name,
-        cpf: dto.cpf !== undefined ? dto.cpf : patient.cpf,
-        email: dto.email !== undefined ? dto.email : patient.email,
-
-        patientProfile: {
-          update: {
-            phone:
-              dto.phone !== undefined
-                ? dto.phone
-                : patient.patientProfile?.phone,
-            gender:
-              dto.gender !== undefined
-                ? dto.gender
-                : patient.patientProfile?.gender,
-            dateOfBirth: dto.dateOfBirth
-              ? new Date(dto.dateOfBirth)
-              : dto.dateOfBirth === null
-                ? null
-                : patient.patientProfile?.dateOfBirth,
-          },
-        },
-      },
-      include: {
-        patientProfile: true,
-        address: true,
-      },
-    });
+    const updatedUser = await this.repository.updatePatient(patientId, dto);
 
     return {
       id: updatedUser.id,
@@ -300,46 +170,12 @@ export class PatientsService {
   }
 
   async listPatients(search?: string) {
-    return this.prisma.user.findMany({
-      where: {
-        role: UserRole.PATIENT,
-        ...(search && {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { cpf: { contains: search } },
-          ],
-        }),
-      },
-      include: {
-        patientProfile: {
-          include: {
-            questionnaire: {
-              include: {
-                answers: { include: { question: true, option: true } },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    return this.repository.listPatients(search);
   }
 
   async getPatient(patientId: string) {
-    const patient = await this.prisma.user.findUnique({
-      where: { id: patientId },
-      include: {
-        patientProfile: {
-          include: {
-            questionnaire: {
-              include: {
-                answers: { include: { question: true, option: true } },
-              },
-            },
-          },
-        },
-      },
-    });
+    const patient =
+      await this.repository.findPatientWithQuestionnaire(patientId);
 
     if (!patient || patient.role !== UserRole.PATIENT) {
       throw new NotFoundException('Paciente não encontrado');

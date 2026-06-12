@@ -4,14 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { PrismaService } from '../prisma/prisma.service';
+import { AddressesRepository } from './addresses.repository';
 import { CreateAddressDto, UpdateAddressDto, ViaCepDto } from './dto';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AddressesService {
   constructor(
-    private prisma: PrismaService,
+    private repository: AddressesRepository,
     private httpService: HttpService,
   ) {}
 
@@ -47,41 +47,36 @@ export class AddressesService {
   }
 
   async create(userId: string, dto: CreateAddressDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await this.repository.findUserById(userId);
 
     if (!user) {
-      console.log(`[AddressesService] Usuário com ID ${userId} não encontrado ao tentar criar endereço`);
+      console.log(
+        `[AddressesService] Usuário com ID ${userId} não encontrado ao tentar criar endereço`,
+      );
       throw new NotFoundException('Usuário não encontrado');
     }
 
-    const existingAddress = await this.prisma.address.findUnique({
-      where: { userId },
-    });
+    const existingAddress = await this.repository.findByUserId(userId);
 
     if (existingAddress) {
-      throw new BadRequestException('Este usuário já possui um endereço cadastrado.',);
+      throw new BadRequestException(
+        'Este usuário já possui um endereço cadastrado.',
+      );
     }
 
-    return this.prisma.address.create({
-      data: {
-        userId,
-        zipCode: dto.zipCode,
-        street: dto.street,
-        number: dto.number,
-        complement: dto.complement || null,
-        district: dto.district,
-        city: dto.city,
-        state: dto.state,
-      },
+    return this.repository.createForUser(userId, {
+      zipCode: dto.zipCode,
+      street: dto.street,
+      number: dto.number,
+      complement: dto.complement || null,
+      district: dto.district,
+      city: dto.city,
+      state: dto.state,
     });
   }
 
   async findByUserId(userId: string) {
-    const address = await this.prisma.address.findUnique({
-      where: { userId },
-    });
+    const address = await this.repository.findByUserId(userId);
 
     if (!address) {
       throw new NotFoundException('Endereço não encontrado para este usuário');
@@ -91,55 +86,36 @@ export class AddressesService {
   }
 
   async update(userId: string, dto: UpdateAddressDto) {
-    const address = await this.prisma.address.findUnique({
-      where: { userId },
-    });
+    const address = await this.repository.findByUserId(userId);
 
     if (!address) {
       throw new NotFoundException('Endereço não encontrado para este usuário');
     }
 
-    return this.prisma.address.update({
-      where: { userId },
-      data: {
-        zipCode: dto.zipCode ?? address.zipCode,
-        street: dto.street ?? address.street,
-        number: dto.number ?? address.number,
-        complement:
-          dto.complement !== undefined ? dto.complement : address.complement,
-        district: dto.district ?? address.district,
-        city: dto.city ?? address.city,
-        state: dto.state ?? address.state,
-      },
+    return this.repository.updateForUser(userId, {
+      zipCode: dto.zipCode ?? address.zipCode,
+      street: dto.street ?? address.street,
+      number: dto.number ?? address.number,
+      complement:
+        dto.complement !== undefined ? dto.complement : address.complement,
+      district: dto.district ?? address.district,
+      city: dto.city ?? address.city,
+      state: dto.state ?? address.state,
     });
   }
 
   async delete(userId: string) {
-    const address = await this.prisma.address.findUnique({
-      where: { userId },
-    });
+    const address = await this.repository.findByUserId(userId);
 
     if (!address) {
       throw new NotFoundException('Endereço não encontrado para este usuário');
     }
 
-    return this.prisma.address.delete({
-      where: { userId },
-    });
+    return this.repository.deleteForUser(userId);
   }
 
   async getCities() {
-    const addresses = await this.prisma.address.findMany({
-      select: {
-        city: true,
-        state: true,
-      },
-      distinct: ['city', 'state'],
-      orderBy: [
-        { state: 'asc' },
-        { city: 'asc' },
-      ],
-    });
+    const addresses = await this.repository.findDistinctCities();
 
     return addresses;
   }

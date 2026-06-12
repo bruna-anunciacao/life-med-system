@@ -1,0 +1,81 @@
+enum UserRole {
+  PROFESSIONAL
+  PATIENT
+  ADMIN
+  MANAGER
+}
+
+enum UserStatus {
+  PENDING
+  COMPLETED
+  VERIFIED
+  BLOCKED
+}
+
+model User {
+  id            String     @id @default(uuid())
+  email         String     @unique
+  password      String
+  name          String
+  role          UserRole   @default(PATIENT)
+  status        UserStatus @default(PENDING)
+  cpf           String?    @unique
+  emailVerified Boolean    @default(false) @map("email_verified")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  professionalProfile ProfessionalProfile?
+  patientProfile      PatientProfile?
+  managerProfile      ManagerProfile?
+
+  appointmentsAsDoctor  Appointment[] @relation("DoctorAppointments")
+  appointmentsAsPatient Appointment[] @relation("PatientAppointments")
+
+  medicalRecordsAsPatient MedicalRecord[] @relation("PatientMedicalRecords")
+  medicalRecordsAsAuthor  MedicalRecord[] @relation("AuthorMedicalRecords")
+
+  availability           Availability[]
+  emailVerifications     EmailVerification[]
+  passwordResets         PasswordReset[]
+  sessions               Session[]
+  answeredQuestionnaires VulnerabilityQuestionnaire[]
+  address                Address?
+  scheduleBlocks         ScheduleBlock[]
+
+  @@map("users")
+}
+
+model PasswordReset {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_resets")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  data      String?  @db.Text
+
+  @@map("sessions")
+}
+
+model EmailVerification {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("email_verifications")
+}

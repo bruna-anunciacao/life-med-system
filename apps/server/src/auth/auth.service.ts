@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthRepository } from './auth.repository';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register-dto';
 import { RegisterProfessionalDto } from './dto/register-profissional-dto';
@@ -21,23 +21,14 @@ import { UserRole, UserStatus } from '@prisma/client';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly repository: AuthRepository,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
     private readonly emailVerification: EmailVerificationService,
   ) {}
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-      include: {
-        patientProfile: {
-          select: {
-            questionnaireCompleted: true,
-          },
-        },
-      },
-    });
+    const user = await this.repository.findUserForLogin(dto.email);
 
     if (!user) {
       throw new UnauthorizedException('Credenciais inválidas');
@@ -98,17 +89,13 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const emailExists = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const emailExists = await this.repository.findUserByEmail(dto.email);
 
     if (emailExists) {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
-    const cpfExists = await this.prisma.user.findFirst({
-      where: { cpf: dto.cpf },
-    });
+    const cpfExists = await this.repository.findUserByCpf(dto.cpf);
 
     if (cpfExists) {
       throw new BadRequestException('CPF já cadastrado');
@@ -116,24 +103,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        cpf: dto.cpf,
-        password: passwordHash,
-        name: dto.name,
-        role: UserRole.PATIENT,
-        status: UserStatus.COMPLETED,
-        patientProfile: {
-          create: {
-            phone: dto.phone,
-            dateOfBirth: dto.dateOfBirth,
-            gender: dto.gender,
-          },
-        },
-      },
-      include: { patientProfile: true },
-    });
+    const user = await this.repository.createPatient(dto, passwordHash);
 
     await this.emailVerification.sendVerification(user);
 
@@ -147,17 +117,13 @@ export class AuthService {
   }
 
   async registerProfessional(dto: RegisterProfessionalDto) {
-    const emailExists = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const emailExists = await this.repository.findUserByEmail(dto.email);
 
     if (emailExists) {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
-    const cpfExists = await this.prisma.user.findFirst({
-      where: { cpf: dto.cpf },
-    });
+    const cpfExists = await this.repository.findUserByCpf(dto.cpf);
 
     if (cpfExists) {
       throw new BadRequestException('CPF já cadastrado');
@@ -165,38 +131,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    const specialtyIds = Array.isArray(dto.specialty)
-      ? dto.specialty
-      : [dto.specialty];
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        cpf: dto.cpf,
-        password: passwordHash,
-        name: dto.name,
-        role: UserRole.PROFESSIONAL,
-        status: UserStatus.PENDING,
-        professionalProfile: {
-          create: {
-            professionalLicense: dto.professionalLicense,
-            specialities: {
-              connect: specialtyIds.map((id) => ({ id })),
-            },
-            modality: dto.modality,
-            bio: dto.bio,
-            socialLinks: dto.socialLinks,
-          },
-        },
-      },
-      include: {
-        professionalProfile: {
-          include: {
-            specialities: true,
-          },
-        },
-      },
-    });
+    const user = await this.repository.createProfessional(dto, passwordHash);
     await this.emailVerification.sendVerification(user);
 
     return {
@@ -210,17 +145,13 @@ export class AuthService {
   }
 
   async registerAdmin(dto: RegisterAdminDto) {
-    const emailExists = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const emailExists = await this.repository.findUserByEmail(dto.email);
 
     if (emailExists) {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
-    const cpfExists = await this.prisma.user.findFirst({
-      where: { cpf: dto.cpf },
-    });
+    const cpfExists = await this.repository.findUserByCpf(dto.cpf);
 
     if (cpfExists) {
       throw new BadRequestException('CPF já cadastrado');
@@ -228,16 +159,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        cpf: dto.cpf,
-        password: passwordHash,
-        name: dto.name,
-        role: UserRole.ADMIN,
-        status: UserStatus.VERIFIED,
-      },
-    });
+    const user = await this.repository.createAdmin(dto, passwordHash);
 
     return {
       id: user.id,
@@ -248,17 +170,13 @@ export class AuthService {
   }
 
   async registerManager(dto: RegisterManagerDto) {
-    const emailExists = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const emailExists = await this.repository.findUserByEmail(dto.email);
 
     if (emailExists) {
       throw new BadRequestException('E-mail já cadastrado');
     }
 
-    const cpfExists = await this.prisma.user.findFirst({
-      where: { cpf: dto.cpf },
-    });
+    const cpfExists = await this.repository.findUserByCpf(dto.cpf);
 
     if (cpfExists) {
       throw new BadRequestException('CPF já cadastrado');
@@ -266,23 +184,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        cpf: dto.cpf,
-        password: passwordHash,
-        name: dto.name,
-        role: UserRole.MANAGER,
-        status: UserStatus.VERIFIED,
-        managerProfile: {
-          create: {
-            phone: dto.phone,
-            bio: dto.bio,
-          },
-        },
-      },
-      include: { managerProfile: true },
-    });
+    const user = await this.repository.createManager(dto, passwordHash);
 
     return {
       id: user.id,
@@ -294,9 +196,7 @@ export class AuthService {
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const user = await this.repository.findUserByEmail(dto.email);
 
     if (!user) {
       return { message: 'Se o e-mail existir, enviaremos instruções' };
@@ -306,13 +206,7 @@ export class AuthService {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 2);
 
-    await this.prisma.passwordReset.create({
-      data: {
-        userId: user.id,
-        token,
-        expiresAt,
-      },
-    });
+    await this.repository.createPasswordReset(user.id, token, expiresAt);
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetUrl = `${frontendUrl}/auth/reset-password?token=${token}`;
@@ -326,10 +220,7 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto) {
-    const reset = await this.prisma.passwordReset.findUnique({
-      where: { token: dto.token },
-      include: { user: true },
-    });
+    const reset = await this.repository.findPasswordResetByToken(dto.token);
 
     if (!reset) {
       throw new BadRequestException('Token inválido');
@@ -341,15 +232,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(dto.newPassword, 10);
 
-    await this.prisma.$transaction([
-      this.prisma.user.update({
-        where: { id: reset.userId },
-        data: { password: passwordHash },
-      }),
-      this.prisma.passwordReset.delete({
-        where: { id: reset.id },
-      }),
-    ]);
+    await this.repository.resetPassword(reset.id, reset.userId, passwordHash);
 
     return { message: 'Senha atualizada com sucesso' };
   }
@@ -357,10 +240,7 @@ export class AuthService {
     const user = await this.emailVerification.validateToken(token);
 
     // Em ambos os casos a confirmação de e-mail marca emailVerified.
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { emailVerified: true },
-    });
+    await this.repository.markEmailVerified(user.id);
 
     if (user.role === UserRole.PATIENT) {
       return {
@@ -405,10 +285,7 @@ export class AuthService {
     email: string;
     role: string;
   }) {
-    const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN },
-      select: { name: true, email: true },
-    });
+    const admins = await this.repository.findAdminsForNotification();
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const approveUrl = `${frontendUrl}/dashboard/admin`;

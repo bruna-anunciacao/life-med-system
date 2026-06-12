@@ -3,21 +3,20 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { ManagerRepository } from './manager.repository';
 import { AppointmentStatus, UserRole } from '@prisma/client';
 
 @Injectable()
 export class ManagerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private repository: ManagerRepository) {}
 
   async cancelAppointment(
     managerUserId: string,
     appointmentId: string,
     reason?: string,
   ) {
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: appointmentId },
-    });
+    const appointment =
+      await this.repository.findAppointmentById(appointmentId);
 
     if (!appointment) {
       throw new NotFoundException('Consulta não encontrada');
@@ -27,9 +26,8 @@ export class ManagerService {
       throw new BadRequestException('Consulta já está cancelada');
     }
 
-    const manager = await this.prisma.managerProfile.findUnique({
-      where: { userId: managerUserId },
-    });
+    const manager =
+      await this.repository.findManagerProfileByUserId(managerUserId);
 
     if (!manager) {
       throw new NotFoundException('Perfil de gestor não encontrado');
@@ -39,58 +37,29 @@ export class ManagerService {
       ? `[CANCELADO PELO GESTOR] ${reason}`
       : '[CANCELADO PELO GESTOR]';
 
-    return this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        status: AppointmentStatus.CANCELLED,
-        cancelledByManagerId: manager.id,
-        cancelledAt: new Date(),
-        notes,
-      },
-      include: {
-        patient: { include: { patientProfile: true } },
-        professional: { include: { professionalProfile: true } },
-        scheduledByManager: { include: { user: true } },
-        cancelledByManager: { include: { user: true } },
-      },
-    });
+    return this.repository.cancelAppointmentByManager(
+      appointmentId,
+      manager.id,
+      notes,
+    );
   }
 
   async getAppointmentsByManager() {
-    return this.prisma.appointment.findMany({
-      include: {
-        patient: { include: { patientProfile: true } },
-        professional: { include: { professionalProfile: true } },
-        scheduledByManager: { include: { user: true } },
-        cancelledByManager: { include: { user: true } },
-      },
-      orderBy: { dateTime: 'desc' },
-    });
+    return this.repository.findAllAppointmentsForManager();
   }
 
   async getProfessionalAvailability(professionalId: string) {
-    const professional = await this.prisma.user.findUnique({
-      where: { id: professionalId },
-      include: {
-        professionalProfile: {
-          include: {
-            specialities: true,
-          },
-        },
-      },
-    });
+    const professional =
+      await this.repository.findProfessionalWithSpecialities(professionalId);
 
     if (!professional || professional.role !== UserRole.PROFESSIONAL) {
       throw new NotFoundException('Profissional não encontrado');
     }
 
-    const availability = await this.prisma.availability.findMany({
-      where: {
+    const availability =
+      await this.repository.findActiveAvailabilityByProfessionalId(
         professionalId,
-        validUntil: null,
-      },
-      orderBy: { dayOfWeek: 'asc' },
-    });
+      );
 
     return {
       professional: {
