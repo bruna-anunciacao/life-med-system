@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, QuestionnaireAnsweredBy, UserRole } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
+import { QuestionnaireRepository } from './questionnaire.repository';
 import {
   QuestionnaireDefinitionResponseDto,
   QuestionnaireResponseDto,
@@ -31,24 +31,10 @@ type ResponseWithAnswers = Prisma.VulnerabilityQuestionnaireGetPayload<{
 
 @Injectable()
 export class QuestionnaireService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly repository: QuestionnaireRepository) {}
 
   async getActiveQuestionnaire(): Promise<QuestionnaireWithSchema> {
-    const questionnaire = await this.prisma.questionnaire.findFirst({
-      include: {
-        questions: {
-          where: { isActive: true },
-          orderBy: { order: 'asc' },
-          include: {
-            options: {
-              where: { isActive: true },
-              orderBy: { order: 'asc' },
-            },
-          },
-        },
-      },
-      orderBy: { id: 'asc' },
-    });
+    const questionnaire = await this.repository.findActiveQuestionnaire();
 
     if (!questionnaire) {
       throw new NotFoundException('Questionário não configurado.');
@@ -91,9 +77,9 @@ export class QuestionnaireService {
 
   async submitSelf(patientUserId: string, dto: SubmitQuestionnaireDto) {
     const patientProfile = await this.getPatientProfileByUserId(patientUserId);
-    const existing = await this.prisma.vulnerabilityQuestionnaire.findUnique({
-      where: { patientProfileId: patientProfile.id },
-    });
+    const existing = await this.repository.findResponseByPatientProfileId(
+      patientProfile.id,
+    );
 
     if (existing) {
       throw new ConflictException(
@@ -115,9 +101,9 @@ export class QuestionnaireService {
     dto: SubmitQuestionnaireDto,
   ) {
     const patientProfile = await this.getPatientProfileByUserId(patientUserId);
-    const existing = await this.prisma.vulnerabilityQuestionnaire.findUnique({
-      where: { patientProfileId: patientProfile.id },
-    });
+    const existing = await this.repository.findResponseByPatientProfileId(
+      patientProfile.id,
+    );
 
     if (existing) {
       throw new ConflictException(
@@ -139,9 +125,9 @@ export class QuestionnaireService {
     dto: SubmitQuestionnaireDto,
   ) {
     const patientProfile = await this.getPatientProfileByUserId(patientUserId);
-    const existing = await this.prisma.vulnerabilityQuestionnaire.findUnique({
-      where: { patientProfileId: patientProfile.id },
-    });
+    const existing = await this.repository.findResponseByPatientProfileId(
+      patientProfile.id,
+    );
 
     if (!existing) {
       throw new NotFoundException(
@@ -162,13 +148,10 @@ export class QuestionnaireService {
     patientUserId: string,
   ): Promise<QuestionnaireResponseDto | null> {
     const patientProfile = await this.getPatientProfileByUserId(patientUserId);
-    const response = await this.prisma.vulnerabilityQuestionnaire.findUnique({
-      where: { patientProfileId: patientProfile.id },
-      include: {
-        patientProfile: { include: { user: true } },
-        answers: { include: { question: true, option: true } },
-      },
-    });
+    const response =
+      await this.repository.findResponseWithAnswersByPatientProfileId(
+        patientProfile.id,
+      );
 
     if (!response) return null;
     return this.mapResponse(response);
@@ -233,54 +216,22 @@ export class QuestionnaireService {
 
     const isVulnerable = totalScore >= active.vulnerabilityThreshold;
 
-    const created = await this.prisma.$transaction(async (tx) => {
-      if (replaceExistingId) {
-        await tx.questionnaireAnswer.deleteMany({
-          where: { vulnerabilityQuestionnaireId: replaceExistingId },
-        });
-        await tx.vulnerabilityQuestionnaire.delete({
-          where: { id: replaceExistingId },
-        });
-      }
-
-      const response = await tx.vulnerabilityQuestionnaire.create({
-        data: {
-          patientProfileId,
-          questionnaireId: active.id,
-          answeredBy,
-          answeredByUserId,
-          totalScore,
-          isVulnerable,
-          responseDate: new Date(),
-          answers: {
-            create: dto.answers.map((a) => ({
-              questionId: a.questionId,
-              optionId: a.optionId,
-            })),
-          },
-        },
-        include: {
-          patientProfile: { include: { user: true } },
-          answers: { include: { question: true, option: true } },
-        },
-      });
-
-      await tx.patientProfile.update({
-        where: { id: patientProfileId },
-        data: { questionnaireCompleted: true },
-      });
-
-      return response;
+    const created = await this.repository.persistResponse({
+      dto,
+      questionnaireId: active.id,
+      answeredBy,
+      answeredByUserId,
+      patientProfileId,
+      totalScore,
+      isVulnerable,
+      replaceExistingId,
     });
 
     return this.mapResponse(created);
   }
 
   private async getPatientProfileByUserId(patientUserId: string) {
-    const patient = await this.prisma.user.findUnique({
-      where: { id: patientUserId },
-      include: { patientProfile: true },
-    });
+    const patient = await this.repository.findPatientWithProfile(patientUserId);
 
     if (
       !patient ||
@@ -293,9 +244,7 @@ export class QuestionnaireService {
     return patient.patientProfile;
   }
 
-  private mapResponse(
-    response: ResponseWithAnswers,
-  ): QuestionnaireResponseDto {
+  private mapResponse(response: ResponseWithAnswers): QuestionnaireResponseDto {
     return {
       id: response.id,
       patientId: response.patientProfile.userId,

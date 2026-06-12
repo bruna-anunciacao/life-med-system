@@ -3,15 +3,13 @@ import { UserRole, UserStatus } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { EmailVerificationService } from 'src/mail/email-verification.service';
 import { MailService } from 'src/mail/mail.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
   const password = 'Senha123!';
-  const prisma = {
-    user: {
-      findUnique: jest.fn(),
-    },
+  const repository = {
+    findUserForLogin: jest.fn(),
   };
   const jwtService = {
     sign: jest.fn(() => 'signed-token'),
@@ -25,14 +23,16 @@ describe('AuthService', () => {
     jest.clearAllMocks();
 
     service = new AuthService(
-      prisma as unknown as PrismaService,
+      repository as unknown as AuthRepository,
       jwtService as unknown as JwtService,
       mailService as unknown as MailService,
       emailVerification as unknown as EmailVerificationService,
     );
   });
 
-  const makeUser = async (overrides: Partial<Record<string, unknown>> = {}) => ({
+  const makeUser = async (
+    overrides: Partial<Record<string, unknown>> = {},
+  ) => ({
     id: 'user-id',
     email: 'usuario@lifemed.com',
     password: await bcrypt.hash(password, 4),
@@ -47,7 +47,7 @@ describe('AuthService', () => {
   });
 
   it('rejects login for blocked users without issuing a token', async () => {
-    prisma.user.findUnique.mockResolvedValue(
+    repository.findUserForLogin.mockResolvedValue(
       await makeUser({ status: UserStatus.BLOCKED }),
     );
 
@@ -61,7 +61,7 @@ describe('AuthService', () => {
   });
 
   it('blocks professional whose email is not yet confirmed', async () => {
-    prisma.user.findUnique.mockResolvedValue(
+    repository.findUserForLogin.mockResolvedValue(
       await makeUser({
         role: UserRole.PROFESSIONAL,
         emailVerified: false,
@@ -78,7 +78,7 @@ describe('AuthService', () => {
   });
 
   it('blocks professional with confirmed email but pending admin approval', async () => {
-    prisma.user.findUnique.mockResolvedValue(
+    repository.findUserForLogin.mockResolvedValue(
       await makeUser({
         role: UserRole.PROFESSIONAL,
         emailVerified: true,
@@ -95,7 +95,7 @@ describe('AuthService', () => {
   });
 
   it('lets an approved (VERIFIED) professional login', async () => {
-    prisma.user.findUnique.mockResolvedValue(
+    repository.findUserForLogin.mockResolvedValue(
       await makeUser({
         role: UserRole.PROFESSIONAL,
         emailVerified: true,
@@ -110,7 +110,7 @@ describe('AuthService', () => {
   });
 
   it('keeps verified users able to login', async () => {
-    prisma.user.findUnique.mockResolvedValue(await makeUser());
+    repository.findUserForLogin.mockResolvedValue(await makeUser());
 
     await expect(
       service.login({ email: 'usuario@lifemed.com', password }),

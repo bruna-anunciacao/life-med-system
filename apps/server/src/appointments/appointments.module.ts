@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
+import { AppointmentsRepository } from './appointments.repository';
 import { AppointmentsController } from './appointments.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { MailModule } from '../mail/mail.module';
@@ -12,6 +13,7 @@ import { AppointmentProfessionalGuard } from './guards/appointment-professional.
   controllers: [AppointmentsController],
   providers: [
     AppointmentsService,
+    AppointmentsRepository,
     AppointmentPatientOwnerGuard,
     AppointmentProfessionalGuard,
   ],

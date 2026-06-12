@@ -6,7 +6,7 @@ import {
   Logger,
   Inject,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { AppointmentsRepository } from './appointments.repository';
 import { MailService } from '../mail/mail.service';
 import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
 import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
@@ -28,7 +28,7 @@ export class AppointmentsService {
   private readonly logger = new Logger(AppointmentsService.name);
 
   constructor(
-    private prisma: PrismaService,
+    private repository: AppointmentsRepository,
     private mailService: MailService,
     @Inject(MEET_SERVICE) private meetService: MeetService,
   ) {}
@@ -39,49 +39,11 @@ export class AppointmentsService {
   ): Promise<AppointmentResponseDto> {
     const appointmentDate = new Date(dto.dateTime);
 
-    let appointment = await this.prisma.$transaction(async (tx) => {
-      const professional = await tx.user.findUnique({
-        where: { id: dto.professionalId },
-        include: { professionalProfile: true },
-      });
-
-      if (!professional) {
-        throw new NotFoundException('Profissional não encontrado');
-      }
-
-      await this.validateAvailability(tx, dto.professionalId, appointmentDate);
-
-      await this.checkScheduleConflict(
-        tx,
-        'professionalId',
-        dto.professionalId,
-        appointmentDate,
-        'Profissional não tem disponibilidade neste horário',
-      );
-
-      await this.checkScheduleConflict(
-        tx,
-        'patientId',
-        patientId,
-        appointmentDate,
-        'Você já possui um agendamento neste horário',
-      );
-
-      return tx.appointment.create({
-        data: {
-          patientId,
-          professionalId: dto.professionalId,
-          dateTime: appointmentDate,
-          notes: dto.notes,
-          status: 'PENDING',
-          modality: professional.professionalProfile?.modality ?? 'VIRTUAL',
-        },
-        include: {
-          patient: true,
-          professional: true,
-        },
-      });
-    });
+    let appointment = await this.repository.createPatientAppointment(
+      patientId,
+      dto,
+      appointmentDate,
+    );
 
     this.logger.log(`Agendamento criado com sucesso: ${appointment.id}`);
 
@@ -109,14 +71,11 @@ export class AppointmentsService {
           ],
         });
 
-        appointment = await this.prisma.appointment.update({
-          where: { id: appointment.id },
-          data: {
-            meetLink: meet.meetLink,
-            googleEventId: meet.eventId,
-          },
-          include: { patient: true, professional: true },
-        });
+        appointment = await this.repository.updateMeetData(
+          appointment.id,
+          meet.meetLink,
+          meet.eventId,
+        );
         meetLink = meet.meetLink;
       } catch (err) {
         this.logger.error(
@@ -157,136 +116,12 @@ export class AppointmentsService {
     return this.mapToResponseDto(appointment);
   }
 
-  private async validateAvailability(
-    tx: any,
-    professionalId: string,
-    appointmentDate: Date,
-  ) {
-    const dayOfWeek = appointmentDate.getDay();
-    const appointmentHour = appointmentDate.getHours();
-
-    const availability = await tx.availability.findFirst({
-      where: {
-        professionalId,
-        dayOfWeek,
-        validFrom: { lte: appointmentDate },
-        OR: [{ validUntil: null }, { validUntil: { gte: appointmentDate } }],
-      },
-    });
-
-    if (!availability) {
-      throw new BadRequestException(
-        'Profissional não tem disponibilidade neste dia da semana',
-      );
-    }
-
-    const [startHour] = availability.startTime.split(':').map(Number);
-    const [endHour] = availability.endTime.split(':').map(Number);
-
-    if (appointmentHour < startHour || appointmentHour >= endHour) {
-      throw new BadRequestException(
-        `Horário fora da disponibilidade. Disponível entre ${availability.startTime} e ${availability.endTime}`,
-      );
-    }
-
-    const blocks = await tx.scheduleBlock.findMany({
-      where: {
-        professionalId,
-        date: appointmentDate.toISOString().split('T')[0],
-      },
-    });
-
-    const aptTimeStr = new Intl.DateTimeFormat('pt-BR', {
-      timeZone: 'America/Bahia',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(appointmentDate);
-
-    for (const b of blocks) {
-      if (!b.startTime || !b.endTime) {
-        throw new BadRequestException(
-          'Profissional não tem disponibilidade neste dia (agenda bloqueada)',
-        );
-      }
-      if (aptTimeStr >= b.startTime && aptTimeStr < b.endTime) {
-        throw new BadRequestException(
-          `Horário bloqueado pelo profissional (das ${b.startTime} às ${b.endTime})`,
-        );
-      }
-    }
-  }
-
-  private async checkScheduleConflict(
-    tx: any,
-    field: 'professionalId' | 'patientId',
-    userId: string,
-    appointmentDate: Date,
-    errorMessage: string,
-  ) {
-    const endTime = new Date(
-      appointmentDate.getTime() + APPOINTMENT_DURATION_MINUTES * 60000,
-    );
-    const startBuffer = new Date(
-      appointmentDate.getTime() - APPOINTMENT_DURATION_MINUTES * 60000,
-    );
-
-    const conflict = await tx.appointment.findFirst({
-      where: {
-        [field]: userId,
-        dateTime: {
-          gte: startBuffer,
-          lt: endTime,
-        },
-        status: { not: 'CANCELLED' },
-      },
-    });
-
-    if (conflict) {
-      throw new BadRequestException(errorMessage);
-    }
-  }
-
   async listPatientAppointments(
     patientId: string,
     query: ListAppointmentsQueryDto,
   ) {
-    const page = query.page || 1;
-    const limit = query.limit || 10;
-    const skip = (page - 1) * limit;
-
-    const where = {
-      patientId,
-      ...(query.status && { status: query.status }),
-      ...(query.startDate || query.endDate
-        ? {
-            dateTime: {
-              ...(query.startDate && { gte: new Date(query.startDate) }),
-              ...(query.endDate && { lte: new Date(query.endDate) }),
-            },
-          }
-        : {}),
-    };
-
-    const [appointments, total] = await Promise.all([
-      this.prisma.appointment.findMany({
-        where,
-        include: {
-          patient: true,
-          professional: {
-            include: {
-              professionalProfile: {
-                include: { specialities: true },
-              },
-            },
-          },
-        },
-        orderBy: { dateTime: 'asc' },
-        skip,
-        take: limit,
-      }),
-      this.prisma.appointment.count({ where }),
-    ]);
+    const { appointments, total, page, limit } =
+      await this.repository.listPatientAppointments(patientId, query);
 
     return {
       data: appointments.map((a) => this.mapToResponseDto(a)),
@@ -300,42 +135,8 @@ export class AppointmentsService {
     professionalId: string,
     query: ListAppointmentsQueryDto,
   ) {
-    const page = query.page || 1;
-    const limit = query.limit || 10;
-    const skip = (page - 1) * limit;
-
-    const where = {
-      professionalId,
-      ...(query.status && { status: query.status }),
-      ...(query.startDate || query.endDate
-        ? {
-            dateTime: {
-              ...(query.startDate && { gte: new Date(query.startDate) }),
-              ...(query.endDate && { lte: new Date(query.endDate) }),
-            },
-          }
-        : {}),
-    };
-
-    const [appointments, total] = await Promise.all([
-      this.prisma.appointment.findMany({
-        where,
-        include: {
-          patient: true,
-          professional: {
-            include: {
-              professionalProfile: {
-                include: { specialities: true },
-              },
-            },
-          },
-        },
-        orderBy: { dateTime: 'asc' },
-        skip,
-        take: limit,
-      }),
-      this.prisma.appointment.count({ where }),
-    ]);
+    const { appointments, total, page, limit } =
+      await this.repository.listProfessionalAppointments(professionalId, query);
 
     return {
       data: appointments.map((a) => this.mapToResponseDto(a)),
@@ -349,9 +150,8 @@ export class AppointmentsService {
     appointmentId: string,
     dto: CancelAppointmentDto,
   ): Promise<AppointmentResponseDto> {
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: appointmentId },
-    });
+    const appointment =
+      await this.repository.findAppointmentById(appointmentId);
 
     if (!appointment) {
       throw new NotFoundException('Agendamento não encontrado');
@@ -376,17 +176,10 @@ export class AppointmentsService {
       ? `${appointment.notes}\n${cancelNote}`
       : cancelNote;
 
-    const updated = await this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        status: 'CANCELLED',
-        notes: updatedNotes,
-      },
-      include: {
-        patient: true,
-        professional: true,
-      },
-    });
+    const updated = await this.repository.cancelAppointment(
+      appointmentId,
+      updatedNotes,
+    );
 
     this.logger.log(
       `Agendamento ${appointmentId} cancelado por: ${dto.reason || 'sem motivo'}`,
@@ -435,9 +228,8 @@ export class AppointmentsService {
     professionalId: string,
     dto: UpdateAppointmentStatusDto,
   ): Promise<AppointmentResponseDto> {
-    const appointment = await this.prisma.appointment.findUnique({
-      where: { id: appointmentId },
-    });
+    const appointment =
+      await this.repository.findAppointmentById(appointmentId);
 
     if (!appointment) {
       throw new NotFoundException('Agendamento não encontrado');
@@ -464,17 +256,10 @@ export class AppointmentsService {
       );
     }
 
-    const updated = await this.prisma.appointment.update({
-      where: { id: appointmentId },
-      data: {
-        status: dto.status,
-        notes: dto.notes,
-      },
-      include: {
-        patient: true,
-        professional: true,
-      },
-    });
+    const updated = await this.repository.updateAppointmentStatus(
+      appointmentId,
+      dto,
+    );
 
     this.logger.log(
       `Agendamento ${appointmentId} status atualizado para ${dto.status} pelo profissional ${professionalId}`,
@@ -487,9 +272,8 @@ export class AppointmentsService {
     professionalId: string,
     query: AvailableSlotsQueryDto,
   ) {
-    const professional = await this.prisma.user.findUnique({
-      where: { id: professionalId },
-    });
+    const professional =
+      await this.repository.findProfessionalById(professionalId);
 
     if (!professional) {
       throw new NotFoundException('Profissional não encontrado');
@@ -498,14 +282,11 @@ export class AppointmentsService {
     const targetDate = new Date(query.date + 'T00:00:00');
     const dayOfWeek = targetDate.getDay();
 
-    const availability = await this.prisma.availability.findFirst({
-      where: {
-        professionalId,
-        dayOfWeek,
-        validFrom: { lte: targetDate },
-        OR: [{ validUntil: null }, { validUntil: { gte: targetDate } }],
-      },
-    });
+    const availability = await this.repository.findAvailabilityForSlots(
+      professionalId,
+      dayOfWeek,
+      targetDate,
+    );
 
     if (!availability) {
       return { professionalId, date: query.date, slots: [] };
@@ -517,14 +298,11 @@ export class AppointmentsService {
     const dayStart = new Date(query.date + 'T00:00:00');
     const dayEnd = new Date(query.date + 'T23:59:59');
 
-    const existingAppointments = await this.prisma.appointment.findMany({
-      where: {
-        professionalId,
-        dateTime: { gte: dayStart, lte: dayEnd },
-        status: { not: 'CANCELLED' },
-      },
-      select: { dateTime: true },
-    });
+    const existingAppointments = await this.repository.findBookedTimes(
+      professionalId,
+      dayStart,
+      dayEnd,
+    );
 
     const bookedTimes = new Set(
       existingAppointments.map((a) => {
@@ -534,12 +312,10 @@ export class AppointmentsService {
       }),
     );
 
-    const blocks = await this.prisma.scheduleBlock.findMany({
-      where: {
-        professionalId,
-        date: query.date,
-      },
-    });
+    const blocks = await this.repository.findScheduleBlocksForDate(
+      professionalId,
+      query.date,
+    );
 
     const slots: { time: string; available: boolean }[] = [];
     for (let hour = startHour; hour < endHour; hour++) {
@@ -569,68 +345,13 @@ export class AppointmentsService {
     managerUserId: string,
     dto: CreateAppointmentPatientDto & { patientId: string },
   ): Promise<AppointmentResponseDto> {
-    const patientId = dto.patientId;
     const appointmentDate = new Date(dto.dateTime);
 
-    const appointment = await this.prisma.$transaction(async (tx) => {
-      const patient = await tx.user.findUnique({
-        where: { id: patientId },
-      });
-
-      if (!patient) {
-        throw new NotFoundException('Paciente não encontrado');
-      }
-
-      const professional = await tx.user.findUnique({
-        where: { id: dto.professionalId },
-      });
-
-      if (!professional) {
-        throw new NotFoundException('Profissional não encontrado');
-      }
-
-      const manager = await tx.managerProfile.findUnique({
-        where: { userId: managerUserId },
-      });
-
-      if (!manager) {
-        throw new ForbiddenException('Perfil de gestor não encontrado');
-      }
-
-      await this.validateAvailability(tx, dto.professionalId, appointmentDate);
-
-      await this.checkScheduleConflict(
-        tx,
-        'professionalId',
-        dto.professionalId,
-        appointmentDate,
-        'Profissional não tem disponibilidade neste horário',
-      );
-
-      await this.checkScheduleConflict(
-        tx,
-        'patientId',
-        patientId,
-        appointmentDate,
-        'Paciente já possui um agendamento neste horário',
-      );
-
-      return tx.appointment.create({
-        data: {
-          patientId,
-          professionalId: dto.professionalId,
-          dateTime: appointmentDate,
-          notes: dto.notes,
-          status: 'PENDING',
-          scheduledByManagerId: manager.id,
-        },
-        include: {
-          patient: true,
-          professional: true,
-          scheduledByManager: { include: { user: true } },
-        },
-      });
-    });
+    const appointment = await this.repository.createAppointmentByManager(
+      managerUserId,
+      dto,
+      appointmentDate,
+    );
 
     this.logger.log(
       `Agendamento criado pelo gestor ${managerUserId}: ${appointment.id}`,

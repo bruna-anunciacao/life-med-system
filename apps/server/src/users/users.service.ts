@@ -1,36 +1,22 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { UsersRepository } from './users.repository';
 import { MailService } from 'src/mail/mail.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-import { UserRole } from '@prisma/client';
 import { ListAdminUsersQueryDto } from 'src/admin/dto/list-admin-users-query-dto';
 @Injectable()
 export class UsersService {
   constructor(
-    private prisma: PrismaService,
+    private repository: UsersRepository,
     private mailService: MailService,
   ) {}
 
   async findOne(id: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-      omit: {
-        password: true,
-      },
-      include: {
-        patientProfile: {
-          include: {
-            questionnaire: true,
-          },
-        },
-        professionalProfile: {
-          include: {
-            specialities: true,
-          },
-        },
-      },
-    });
+    const user = await this.repository.findByIdWithProfiles(id);
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
@@ -38,13 +24,7 @@ export class UsersService {
   }
 
   async update(userId: string, dto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        patientProfile: true,
-        professionalProfile: { include: { specialities: true } },
-      },
-    });
+    const user = await this.repository.findForUpdate(userId);
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
@@ -65,13 +45,9 @@ export class UsersService {
 
     const specialtyIds = specialty ?? [];
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      omit: { password: true },
-      data: {
-        ...userData,
-        cpf,
-      },
+    const updatedUser = await this.repository.updateUser(userId, {
+      ...userData,
+      cpf,
     });
 
     if (
@@ -83,35 +59,14 @@ export class UsersService {
         photoUrl ||
         socialLinks)
     ) {
-      await this.prisma.professionalProfile.upsert({
-        where: { userId: userId },
-        create: {
-          userId: userId,
-          professionalLicense: professionalLicense || '',
-          modality: modality || 'VIRTUAL',
-          bio: bio,
-          photoUrl: photoUrl,
-          socialLinks: socialLinks,
-          specialities:
-            specialtyIds.length > 0
-              ? {
-                  connect: specialtyIds.map((id) => ({ id })),
-                }
-              : undefined,
-        },
-        update: {
-          professionalLicense: professionalLicense,
-          modality: modality,
-          bio: bio,
-          photoUrl: photoUrl ?? user.professionalProfile?.photoUrl,
-          socialLinks: socialLinks,
-          specialities:
-            specialtyIds.length > 0
-              ? {
-                  set: specialtyIds.map((id) => ({ id })),
-                }
-              : undefined,
-        },
+      await this.repository.upsertProfessionalProfile(userId, {
+        crm: professionalLicense,
+        modality,
+        bio,
+        photoUrl,
+        socialLinks,
+        specialtyIds,
+        currentPhotoUrl: user.professionalProfile?.photoUrl,
       });
     }
 
@@ -120,13 +75,10 @@ export class UsersService {
       user.patientProfile &&
       (phone || dateOfBirth || gender || cpf)
     ) {
-      await this.prisma.patientProfile.update({
-        where: { userId: userId },
-        data: {
-          phone,
-          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-          gender,
-        },
+      await this.repository.updatePatientProfile(userId, {
+        phone,
+        dateOfBirth,
+        gender,
       });
     }
 
@@ -134,13 +86,7 @@ export class UsersService {
   }
 
   async updateUserAsAdmin(targetId: string, dto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: targetId },
-      include: {
-        patientProfile: { include: { questionnaire: true } },
-        professionalProfile: { include: { specialities: true } },
-      },
-    });
+    const user = await this.repository.findForAdminUpdate(targetId);
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
@@ -160,9 +106,7 @@ export class UsersService {
     } = dto;
 
     if (cpf !== undefined && cpf && cpf !== user.cpf) {
-      const cpfExists = await this.prisma.user.findUnique({
-        where: { cpf },
-      });
+      const cpfExists = await this.repository.findByCpf(cpf);
       if (cpfExists && cpfExists.id !== targetId) {
         throw new BadRequestException('CPF já cadastrado');
       }
@@ -189,49 +133,24 @@ export class UsersService {
       }
     }
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id: targetId },
-      omit: { password: true },
-      data: {
-        ...userData,
-        cpf,
-        status: newStatus,
-      },
+    const updatedUser = await this.repository.updateUser(targetId, {
+      ...userData,
+      cpf,
+      status: newStatus,
     });
 
     if (
       user.role === 'PROFESSIONAL' &&
       (specialty || professionalLicense || bio || modality || photoUrl)
     ) {
-      await this.prisma.professionalProfile.upsert({
-        where: { userId: targetId },
-        create: {
-          userId: targetId,
-          professionalLicense: professionalLicense || '',
-          modality: modality || 'VIRTUAL',
-          bio: bio,
-          photoUrl: photoUrl,
-          socialLinks: socialLinks,
-          specialities:
-            specialtyIds.length > 0
-              ? {
-                  connect: specialtyIds.map((id) => ({ id })),
-                }
-              : undefined,
-        },
-        update: {
-          professionalLicense: professionalLicense,
-          modality: modality,
-          bio: bio,
-          photoUrl: photoUrl ?? user.professionalProfile?.photoUrl,
-          socialLinks: socialLinks,
-          specialities:
-            specialtyIds.length > 0
-              ? {
-                  set: specialtyIds.map((id) => ({ id })),
-                }
-              : undefined,
-        },
+      await this.repository.upsertProfessionalProfile(targetId, {
+        crm: professionalLicense,
+        modality,
+        bio,
+        photoUrl,
+        socialLinks,
+        specialtyIds,
+        currentPhotoUrl: user.professionalProfile?.photoUrl,
       });
     }
 
@@ -240,13 +159,10 @@ export class UsersService {
       user.patientProfile &&
       (phone || dateOfBirth || gender || cpf)
     ) {
-      await this.prisma.patientProfile.update({
-        where: { userId: targetId },
-        data: {
-          phone,
-          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-          gender,
-        },
+      await this.repository.updatePatientProfile(targetId, {
+        phone,
+        dateOfBirth,
+        gender,
       });
     }
 
@@ -254,16 +170,12 @@ export class UsersService {
   }
 
   async verifyUser(id: string, emailVerified: boolean) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.repository.findForUpdate(id);
 
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      omit: {
-        password: true,
-      },
-      data: { emailVerified },
+    const updatedUser = await this.repository.updateUser(id, {
+      emailVerified,
     });
 
     const emailData = { name: user.name, email: user.email };
@@ -288,39 +200,10 @@ export class UsersService {
   }
 
   async findAllUsers(query: ListAdminUsersQueryDto) {
-    return this.prisma.user.findMany({
-      where: {
-        role: query.role ?? { in: ['PATIENT', 'PROFESSIONAL', 'MANAGER'] },
-        ...(query.status && { status: query.status }),
-        ...(query.search && {
-          OR: [
-            { name: { contains: query.search, mode: 'insensitive' } },
-            { email: { contains: query.search, mode: 'insensitive' } },
-          ],
-        }),
-      },
-      include: {
-        patientProfile: true,
-        professionalProfile: { include: { specialities: true } },
-      },
-      orderBy: { [query.sortBy ?? 'name']: query.sortOrder ?? 'asc' },
-    });
+    return this.repository.findAllUsers(query);
   }
 
   async findAllProfessionals() {
-    return this.prisma.user.findMany({
-      where: { role: UserRole.PROFESSIONAL },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        status: true,
-        professionalProfile: {
-          include: {
-            specialities: true,
-          },
-        },
-      },
-    });
+    return this.repository.findAllProfessionals();
   }
 }
