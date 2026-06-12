@@ -1,0 +1,73 @@
+enum AppointmentModality {
+  VIRTUAL
+  HOME_VISIT
+  CLINIC
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Appointment {
+  id String @id @default(uuid())
+
+  professionalId String @map("professional_id")
+  professional   User   @relation("DoctorAppointments", fields: [professionalId], references: [id])
+
+  patientId String @map("patient_id")
+  patient   User   @relation("PatientAppointments", fields: [patientId], references: [id])
+
+  scheduledByManagerId String?         @map("scheduled_by_manager_id")
+  scheduledByManager   ManagerProfile? @relation("ScheduledByManager", fields: [scheduledByManagerId], references: [id])
+
+  cancelledByManagerId String?         @map("cancelled_by_manager_id")
+  cancelledByManager   ManagerProfile? @relation("CancelledByManager", fields: [cancelledByManagerId], references: [id])
+  cancelledAt          DateTime?       @map("cancelled_at")
+
+  dateTime DateTime            @map("date_time")
+  status   AppointmentStatus   @default(PENDING)
+  modality AppointmentModality @default(VIRTUAL)
+  notes    String?             @db.Text
+
+  meetLink      String? @map("meet_link")
+  googleEventId String? @map("google_event_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  medicalRecord MedicalRecord?
+
+  @@map("appointments")
+}
+
+model Availability {
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  professional   User   @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  dayOfWeek Int    @map("day_of_week")
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
+
+  validFrom  DateTime  @default(now()) @map("valid_from")
+  validUntil DateTime? @map("valid_until")
+
+  @@map("availability")
+}
+
+model ScheduleBlock {
+  id             String @id @default(uuid())
+  professionalId String @map("professional_id")
+  professional   User   @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  date      String
+  startTime String? @map("start_time")
+  endTime   String? @map("end_time")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("schedule_blocks")
+}

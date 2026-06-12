@@ -1,0 +1,24 @@
+model MedicalRecord {
+  id String @id @default(uuid())
+
+  appointmentId String      @unique @map("appointment_id")
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  patientId String @map("patient_id")
+  patient   User   @relation("PatientMedicalRecords", fields: [patientId], references: [id])
+
+  authorId String @map("author_id")
+  author   User   @relation("AuthorMedicalRecords", fields: [authorId], references: [id])
+
+  chiefComplaint String? @map("chief_complaint") @db.Text
+  diagnosis      String? @db.Text
+  treatmentPlan  String? @map("treatment_plan") @db.Text
+  prescriptions  String? @db.Text
+  internalNotes  String? @map("internal_notes") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([patientId, createdAt])
+  @@map("medical_records")
+}

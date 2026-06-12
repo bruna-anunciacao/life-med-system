@@ -1,0 +1,65 @@
+model ProfessionalProfile {
+  id                  String              @id @default(uuid())
+  userId              String              @unique @map("user_id")
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professionalLicense String              @map("professional_license")
+  specialities        Speciality[]
+  modality            AppointmentModality @default(VIRTUAL)
+  bio                 String?             @db.Text
+  photoUrl            String?             @map("photo_url")
+  socialLinks         Json?               @map("social_links")
+  price               Float?
+  payments            Json?
+
+  @@map("professional_profiles")
+}
+
+model PatientProfile {
+  id                     String                      @id @default(uuid())
+  userId                 String                      @unique @map("user_id")
+  user                   User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone                  String?
+  dateOfBirth            DateTime?                   @map("date_of_birth")
+  gender                 String?
+  questionnaireCompleted Boolean                     @default(false) @map("questionnaire_completed")
+  questionnaire          VulnerabilityQuestionnaire?
+  createdAt              DateTime                    @default(now()) @map("created_at")
+  updatedAt              DateTime                    @updatedAt @map("updated_at")
+
+  @@map("patient_profiles")
+}
+
+model ManagerProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String?
+  bio       String?  @db.Text
+  photoUrl  String?  @map("photo_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  scheduledAppointments Appointment[] @relation("ScheduledByManager")
+  cancelledAppointments Appointment[] @relation("CancelledByManager")
+
+  @@map("manager_profiles")
+}
+
+model Address {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  zipCode    String  @map("zip_code")
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("addresses")
+}
