@@ -14,6 +14,6 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
-      - run: npx prisma generate --schema=apps/server/prisma/schema.prisma
+      - run: npm --workspace server run prisma:generate
 
       - run: npm run build
