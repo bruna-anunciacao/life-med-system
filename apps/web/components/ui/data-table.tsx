@@ -1,7 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -272,6 +278,115 @@ export function DataTableMobileItem({
       )}
     >
       {children}
+    </div>
+  );
+}
+
+const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
+export function DataTablePagination({
+  page,
+  totalPages,
+  from,
+  to,
+  totalItems,
+  hasPrev,
+  hasNext,
+  onPageChange,
+  pageSize,
+  onPageSizeChange,
+  pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
+  itemLabel = "itens",
+  className,
+}: {
+  page: number;
+  totalPages: number;
+  from: number;
+  to: number;
+  totalItems: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+  onPageChange: (page: number) => void;
+  pageSize?: number;
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeOptions?: number[];
+  itemLabel?: string;
+  className?: string;
+}) {
+  const showPageSize =
+    typeof pageSize === "number" && typeof onPageSizeChange === "function";
+
+  // Nada para mostrar: sem múltiplas páginas e sem seletor de tamanho.
+  if (totalPages <= 1 && !showPageSize) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-3 border-t border-border bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6",
+        className,
+      )}
+    >
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+        <p className="text-xs text-muted-foreground">
+          Mostrando{" "}
+          <span className="font-medium text-foreground">
+            {from}–{to}
+          </span>{" "}
+          de <span className="font-medium text-foreground">{totalItems}</span>{" "}
+          {itemLabel}
+        </p>
+
+        {showPageSize && (
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Por página</span>
+            <select
+              value={pageSize}
+              onChange={(event) => onPageSizeChange(Number(event.target.value))}
+              aria-label="Itens por página"
+              className="h-8 rounded-lg border border-border bg-card px-2 text-xs font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-sky-500"
+            >
+              {pageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => onPageChange(page - 1)}
+            disabled={!hasPrev}
+            title="Página anterior"
+            aria-label="Página anterior"
+            className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Anterior</span>
+          </button>
+
+          <span className="px-3 text-xs text-muted-foreground">
+            Página <span className="font-medium text-foreground">{page}</span> de{" "}
+            <span className="font-medium text-foreground">{totalPages}</span>
+          </span>
+
+          <button
+            type="button"
+            onClick={() => onPageChange(page + 1)}
+            disabled={!hasNext}
+            title="Próxima página"
+            aria-label="Próxima página"
+            className="inline-flex h-8 items-center gap-1 rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <span className="hidden sm:inline">Próxima</span>
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
