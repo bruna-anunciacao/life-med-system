@@ -8,8 +8,7 @@ import { useIsMobile, useMounted } from '@/hooks/useIsMobile';
 import Link from 'next/link';
 import { StatsCardsSkeleton, TableSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { PageHeader as SharedPageHeader } from '@/components/shared/PageHeader';
-import { PageShell } from '../../../ui/dashboard/page-shell';
+import { PageShell, PageHeader } from '../../../ui/dashboard/page-shell';
 import { formatPhoneNumber } from '@/app/utils/formatPhone';
 import {
   DataTable,
@@ -21,18 +20,19 @@ import {
   DataTableHeadCell,
   DataTableMobileItem,
   DataTableMobileList,
+  DataTablePagination,
   DataTableRow,
   SortableHeader,
 } from '@/components/ui/data-table';
+import { usePagination } from '@/hooks/usePagination';
 import {
-  Search,
+  Plus,
   Users,
-  UserCheck,
   ClipboardCheck,
   ClipboardList,
-  X,
 } from 'lucide-react';
 import { SearchInput } from '@/components/ui/search-input';
+import { StatCard } from '@/components/shared/StatCard';
 
 type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender' | 'questionnaire';
 type SortDir = 'asc' | 'desc';
@@ -50,30 +50,6 @@ type Patient = {
     questionnaireCompleted?: boolean;
     questionnaire?: { id: string } | null;
   };
-};
-
-const getAvatarColor = (name: string) => {
-  const colors = [
-    'bg-blue-500',
-    'bg-indigo-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-red-500',
-    'bg-orange-500',
-    'bg-green-500',
-    'bg-teal-500',
-  ];
-  const hash = name.charCodeAt(0) + name.charCodeAt(name.length - 1);
-  return colors[hash % colors.length];
-};
-
-const getInitials = (name: string) => {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
 };
 
 const formatLocalDate = (dateString: string) => {
@@ -152,6 +128,11 @@ export default function PatientsPage() {
     });
   }, [filteredPatients, sortField, sortDir]);
 
+  const pagination = usePagination(sortedPatients, {
+    initialPageSize: 10,
+    resetKeys: [searchTerm, sortField, sortDir],
+  });
+
   function handleSearch(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
@@ -165,14 +146,12 @@ export default function PatientsPage() {
   if (isLoading) {
     return (
       <PageShell>
-        <div className="max-w-7xl mx-auto">
-          <PageHeaderSkeleton />
-          <StatsCardsSkeleton count={4} />
-          <div className="mb-6">
-            <div className="h-12 w-full rounded-xl bg-muted animate-pulse" />
-          </div>
-          <TableSkeleton rows={6} columns={7} isMobile={isMobile} />
+        <PageHeaderSkeleton />
+        <StatsCardsSkeleton count={4} />
+        <div className="mb-6">
+          <div className="h-12 w-full rounded-xl bg-muted animate-pulse" />
         </div>
+        <TableSkeleton rows={6} columns={7} isMobile={isMobile} />
       </PageShell>
     );
   }
@@ -189,54 +168,38 @@ export default function PatientsPage() {
 
   return (
     <PageShell>
-      <div className="max-w-7xl mx-auto">
-        <SharedPageHeader
-          title="Pacientes"
-          action={{
-            label: '+ Novo Paciente',
-            href: '/dashboard/manager/patients/new',
-            colorClass: 'bg-green-600 hover:bg-green-700',
-          }}
-        />
+      <PageHeader
+        title="Pacientes"
+        actions={
+          <Link
+            href="/dashboard/manager/patients/new"
+            title="Abrir formulário para cadastrar um novo paciente"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm transition-colors hover:opacity-90"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Novo Paciente
+          </Link>
+        }
+      />
 
-        {patients.length > 0 && (
+      {patients.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Total</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{stats.total}</p>
-                </div>
-                <Users className="w-7 h-7 text-blue-500 opacity-25" />
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Ativos</p>
-                  <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</p>
-                </div>
-                <UserCheck className="w-7 h-7 text-emerald-500 opacity-25" />
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Com questionário</p>
-                  <p className="text-2xl font-bold text-blue-600 mt-1">{stats.withQuestionnaire}</p>
-                </div>
-                <ClipboardCheck className="w-7 h-7 text-blue-500 opacity-25" />
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Sem questionário</p>
-                  <p className="text-2xl font-bold text-amber-600 mt-1">{stats.withoutQuestionnaire}</p>
-                </div>
-                <ClipboardList className="w-7 h-7 text-amber-500 opacity-25" />
-              </div>
-            </div>
+            <StatCard label="Total" value={stats.total} />
+            <StatCard
+              label="Ativos"
+              value={stats.active}
+              valueClassName="text-emerald-600"
+            />
+            <StatCard
+              label="Com questionário"
+              value={stats.withQuestionnaire}
+              valueClassName="text-blue-600"
+            />
+            <StatCard
+              label="Sem questionário"
+              value={stats.withoutQuestionnaire}
+              valueClassName="text-amber-600"
+            />
           </div>
         )}
 
@@ -277,18 +240,13 @@ export default function PatientsPage() {
         ) : isMobile ? (
           <DataTableCard>
             <DataTableMobileList>
-              {sortedPatients.map((patient) => (
+              {pagination.pageItems.map((patient) => (
                 <DataTableMobileItem
                   key={patient.id}
                   onClick={() => router.push(`/dashboard/manager/patients/${patient.id}`)}
                   title={`Ver detalhes de ${patient.name}`}
                 >
                   <div className="flex gap-3 mb-3">
-                    <div
-                      className={`${getAvatarColor(patient.name)} w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm flex-shrink-0`}
-                    >
-                      {getInitials(patient.name)}
-                    </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-foreground truncate">
                         {patient.name}
@@ -325,6 +283,19 @@ export default function PatientsPage() {
                 </DataTableMobileItem>
               ))}
             </DataTableMobileList>
+            <DataTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              from={pagination.from}
+              to={pagination.to}
+              totalItems={pagination.totalItems}
+              hasPrev={pagination.hasPrev}
+              hasNext={pagination.hasNext}
+              onPageChange={pagination.setPage}
+              pageSize={pagination.pageSize}
+              onPageSizeChange={pagination.setPageSize}
+              itemLabel="pacientes"
+            />
           </DataTableCard>
         ) : (
           <DataTableCard className="overflow-x-auto">
@@ -351,17 +322,10 @@ export default function PatientsPage() {
                 <DataTableHeadCell>Ações</DataTableHeadCell>
               </DataTableHead>
               <DataTableBody>
-                {sortedPatients.map((patient) => (
+                {pagination.pageItems.map((patient) => (
                   <DataTableRow key={patient.id}>
                     <DataTableCell>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`${getAvatarColor(patient.name)} w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-xs`}
-                        >
-                          {getInitials(patient.name)}
-                        </div>
-                        <span className="font-medium text-foreground">{patient.name}</span>
-                      </div>
+                      <span className="font-medium text-foreground">{patient.name}</span>
                     </DataTableCell>
                     <DataTableCell>{patient.email}</DataTableCell>
                     <DataTableCell>
@@ -400,9 +364,21 @@ export default function PatientsPage() {
                 ))}
               </DataTableBody>
             </DataTable>
+            <DataTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              from={pagination.from}
+              to={pagination.to}
+              totalItems={pagination.totalItems}
+              hasPrev={pagination.hasPrev}
+              hasNext={pagination.hasNext}
+              onPageChange={pagination.setPage}
+              pageSize={pagination.pageSize}
+              onPageSizeChange={pagination.setPageSize}
+              itemLabel="pacientes"
+            />
           </DataTableCard>
         )}
-      </div>
     </PageShell>
   );
 }

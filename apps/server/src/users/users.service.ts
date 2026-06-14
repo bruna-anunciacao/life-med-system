@@ -82,6 +82,17 @@ export class UsersService {
       });
     }
 
+    if (
+      user.role === 'MANAGER' &&
+      (phone !== undefined || bio !== undefined || photoUrl !== undefined)
+    ) {
+      await this.repository.upsertManagerProfile(userId, {
+        phone,
+        bio,
+        photoUrl,
+      });
+    }
+
     return updatedUser;
   }
 

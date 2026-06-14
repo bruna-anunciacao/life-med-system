@@ -88,6 +88,11 @@ export function getNavItems(role: string): NavItem[] {
           href: "/dashboard/manager/appointments/new",
           icon: CalendarPlus,
         },
+        {
+          name: "Perfil",
+          href: "/dashboard/manager/profile",
+          icon: User,
+        },
       ];
     default:
       return [

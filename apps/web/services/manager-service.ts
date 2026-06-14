@@ -62,6 +62,7 @@ export interface ManagerPatientResponse {
     dateOfBirth?: string;
     gender?: string;
     questionnaireCompleted?: boolean;
+    questionnaire?: QuestionnaireSummary | null;
   };
   questionnaire?: QuestionnaireSummary | null;
 }
@@ -141,9 +142,11 @@ export const managerService = {
     }
   },
 
-  async listPatients() {
+  async listPatients(): Promise<ManagerPatientResponse[]> {
     try {
-      const response = await api.get("/manager/patients");
+      const response = await api.get<ManagerPatientResponse[]>(
+        "/manager/patients",
+      );
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

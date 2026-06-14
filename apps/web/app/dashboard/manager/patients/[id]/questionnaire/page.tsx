@@ -1,4 +1,5 @@
 import VulnerabilityQuestionnaire from "@/components/questionnaire/VulnerabilityQuestionnaire";
+import { PageShell } from "@/app/ui/dashboard/page-shell";
 
 type Props = {
   params: Promise<{
@@ -9,5 +10,9 @@ type Props = {
 export default async function ManagerPatientQuestionnairePage({ params }: Props) {
   const { id } = await params;
 
-  return <VulnerabilityQuestionnaire mode="manager" patientId={id} />;
+  return (
+    <PageShell>
+      <VulnerabilityQuestionnaire mode="manager" patientId={id} />
+    </PageShell>
+  );
 }

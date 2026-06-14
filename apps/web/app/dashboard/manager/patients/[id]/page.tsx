@@ -19,7 +19,7 @@ import { AddressForm } from "@/components/address/AddressForm";
 import { PhoneInputBR } from "@/components/ui/phone-input-br";
 import { useQueryClient } from "@tanstack/react-query";
 import { applyCpfMask } from "@/lib/cpf";
-import { PageShell } from "../../../../ui/dashboard/page-shell";
+import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
 import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import { VulnerabilityBadge } from "@/components/shared/VulnerabilityBadge";
 
@@ -114,7 +114,7 @@ export default function PatientDetailsPage() {
   if (error || !patient) {
     return (
       <PageShell>
-        <div className="max-w-4xl mx-auto">
+        <div>
           <Button
             onClick={() => router.push("/dashboard/manager/patients")}
             variant="outline"
@@ -124,7 +124,7 @@ export default function PatientDetailsPage() {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
-          <Card className="bg-white">
+          <Card>
             <CardContent className="p-6">
               <div
                 className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800"
@@ -143,50 +143,45 @@ export default function PatientDetailsPage() {
 
   return (
     <PageShell>
-      <div className="max-w-4xl mx-auto">
+      <div>
         <Button
           onClick={() => router.push("/dashboard/manager/patients")}
-          variant="outline"
-          className="mb-6"
+          variant="ghost"
+          size="sm"
+          className="mb-4"
           title="Voltar para a lista de pacientes"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
 
-        <Card className="bg-white mb-6">
-          <CardContent className="p-8">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                  Detalhes do Paciente
-                </h1>
-                <p className="text-slate-600">
-                  {patient.email || "Email não informado"}
-                </p>
-              </div>
-              <Button
-                onClick={() =>
-                  isEditing ? handleCancelEdit() : setIsEditing(true)
-                }
-                variant={isEditing ? "outline" : "default"}
-                title={
-                  isEditing
-                    ? "Cancelar alterações"
-                    : "Habilitar modo de edição"
-                }
-                disabled={isSaving}
-              >
-                {isEditing ? "Cancelar" : "Editar"}
-              </Button>
-            </div>
+        <PageHeader
+          title="Detalhes do Paciente"
+          description={patient.email || "Email não informado"}
+          actions={
+            <Button
+              onClick={() =>
+                isEditing ? handleCancelEdit() : setIsEditing(true)
+              }
+              variant={isEditing ? "outline" : "default"}
+              title={
+                isEditing ? "Cancelar alterações" : "Habilitar modo de edição"
+              }
+              disabled={isSaving}
+            >
+              {isEditing ? "Cancelar" : "Editar"}
+            </Button>
+          }
+        />
 
+        <Card className="mb-6">
+          <CardContent className="p-6">
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="name"
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-foreground"
                     >
                       Nome Completo
                     </label>
@@ -194,13 +189,15 @@ export default function PatientDetailsPage() {
                       id="name"
                       {...register("name")}
                       disabled={!isEditing}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                        isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                      className={`w-full px-4 py-2 border border-border rounded-lg transition-colors ${
+                        isEditing
+                          ? "bg-background"
+                          : "bg-muted text-muted-foreground"
                       }`}
                       title="Nome do paciente"
                     />
                     {errors.name && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {errors.name.message}
                       </p>
                     )}
@@ -209,7 +206,7 @@ export default function PatientDetailsPage() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="cpf"
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-foreground"
                     >
                       CPF
                     </label>
@@ -221,13 +218,15 @@ export default function PatientDetailsPage() {
                       disabled={!isEditing}
                       placeholder="000.000.000-00"
                       maxLength={14}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                        isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                      className={`w-full px-4 py-2 border border-border rounded-lg transition-colors ${
+                        isEditing
+                          ? "bg-background"
+                          : "bg-muted text-muted-foreground"
                       }`}
                       title="CPF do paciente"
                     />
                     {errors.cpf && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {errors.cpf.message}
                       </p>
                     )}
@@ -236,7 +235,7 @@ export default function PatientDetailsPage() {
                   <div className="flex flex-col gap-2">
                     <label
                       htmlFor="email"
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-foreground"
                     >
                       Email
                     </label>
@@ -245,19 +244,21 @@ export default function PatientDetailsPage() {
                       type="email"
                       {...register("email")}
                       disabled={!isEditing}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                        isEditing ? "bg-white" : "bg-gray-50 text-gray-500"
+                      className={`w-full px-4 py-2 border border-border rounded-lg transition-colors ${
+                        isEditing
+                          ? "bg-background"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     />
                     {errors.email && (
-                      <p className="text-xs text-red-600">
+                      <p className="text-xs text-destructive">
                         {errors.email.message}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-foreground mb-2">
                       Telefone
                     </label>
                     <Controller
@@ -275,7 +276,7 @@ export default function PatientDetailsPage() {
                       )}
                     />
                     {errors.phone && (
-                      <p className="text-xs text-red-600 mt-1">
+                      <p className="text-xs text-destructive mt-1">
                         {errors.phone.message}
                       </p>
                     )}
@@ -284,7 +285,7 @@ export default function PatientDetailsPage() {
                   <div>
                     <label
                       htmlFor="dateOfBirth"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-foreground mb-2"
                     >
                       Data de Nascimento
                     </label>
@@ -292,13 +293,13 @@ export default function PatientDetailsPage() {
                       id="dateOfBirth"
                       type="date"
                       disabled={!isEditing}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors text-gray-900 disabled:opacity-100 disabled:[color-scheme:light] ${
-                        isEditing ? "bg-white" : "bg-gray-50"
+                      className={`w-full px-4 py-2 border border-border rounded-lg transition-colors text-foreground disabled:opacity-100 disabled:[color-scheme:light] ${
+                        isEditing ? "bg-background" : "bg-muted"
                       }`}
                       {...register("dateOfBirth")}
                     />
                     {errors.dateOfBirth && (
-                      <p className="text-xs text-red-600 mt-1">
+                      <p className="text-xs text-destructive mt-1">
                         {errors.dateOfBirth.message}
                       </p>
                     )}
@@ -307,15 +308,17 @@ export default function PatientDetailsPage() {
                   <div>
                     <label
                       htmlFor="gender"
-                      className="block text-sm font-medium text-gray-700 mb-2"
+                      className="block text-sm font-medium text-foreground mb-2"
                     >
                       Gênero
                     </label>
                     <select
                       id="gender"
                       disabled={!isEditing}
-                      className={`w-full px-4 py-2 border border-gray-300 rounded-lg transition-colors ${
-                        isEditing ? "bg-white" : "bg-gray-50 text-gray-700"
+                      className={`w-full px-4 py-2 border border-border rounded-lg transition-colors ${
+                        isEditing
+                          ? "bg-background"
+                          : "bg-muted text-muted-foreground"
                       }`}
                       {...register("gender")}
                     >
@@ -328,7 +331,7 @@ export default function PatientDetailsPage() {
                       </option>
                     </select>
                     {errors.gender && (
-                      <p className="text-xs text-red-600 mt-1">
+                      <p className="text-xs text-destructive mt-1">
                         {errors.gender.message}
                       </p>
                     )}
@@ -340,7 +343,7 @@ export default function PatientDetailsPage() {
                     <Button
                       type="submit"
                       disabled={isSaving}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
+                      className="flex-1"
                       title="Confirmar e salvar as alterações realizadas"
                     >
                       {isSaving ? "Salvando..." : "Salvar Alterações"}
@@ -360,24 +363,24 @@ export default function PatientDetailsPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white mb-4">
-            <CardContent className="p-8">
+          <Card className="mb-4">
+            <CardContent className="p-6">
               <AddressForm userId={patient?.id || ""} />
             </CardContent>
           </Card>
 
-          <Card className="bg-white">
-            <CardContent className="p-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">
                 Questionário de Vulnerabilidade
               </h2>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
+              <div className="rounded-lg border border-border bg-muted/30 p-5">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted-foreground">
                       Status do questionário
                     </p>
-                    <p className="font-medium text-slate-900">
+                    <p className="font-medium text-foreground">
                       {patient.patientProfile?.questionnaireCompleted
                         ? "Respondido"
                         : "Pendente"}
@@ -414,21 +417,21 @@ export default function PatientDetailsPage() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white mt-6">
-            <CardContent className="p-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <Card className="mt-6">
+            <CardContent className="p-6">
+              <h2 className="text-lg font-semibold text-foreground mb-4">
                 Informações do Sistema
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-slate-600">ID do Paciente</p>
-                  <p className="font-mono text-sm text-gray-900 break-all">
+                  <p className="text-sm text-muted-foreground">ID do Paciente</p>
+                  <p className="font-mono text-sm text-foreground break-all">
                     {patient.id}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600">Status</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="font-medium text-foreground">
                     {patient.status === "BLOCKED"
                       ? "Bloqueado"
                       : patient.status === "PENDING"
@@ -438,16 +441,16 @@ export default function PatientDetailsPage() {
                 </div>
                 {patient.createdAt && (
                   <div>
-                    <p className="text-sm text-slate-600">Data de Cadastro</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-muted-foreground">Data de Cadastro</p>
+                    <p className="font-medium text-foreground">
                       {new Date(patient.createdAt).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
                 )}
                 {patient.updatedAt && (
                   <div>
-                    <p className="text-sm text-slate-600">Última Atualização</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-muted-foreground">Última Atualização</p>
+                    <p className="font-medium text-foreground">
                       {new Date(patient.updatedAt).toLocaleDateString("pt-BR")}
                     </p>
                   </div>

@@ -1,5 +1,10 @@
 import VulnerabilityQuestionnaire from "@/components/questionnaire/VulnerabilityQuestionnaire";
+import { PageShell } from "@/app/ui/dashboard/page-shell";
 
 export default function PatientQuestionnairePage() {
-  return <VulnerabilityQuestionnaire mode="self" />;
+  return (
+    <PageShell>
+      <VulnerabilityQuestionnaire mode="self" />
+    </PageShell>
+  );
 }

@@ -5,14 +5,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useCreatePatientMutation } from '@/queries/useCreatePatientMutation';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAddressCep } from '@/hooks/useAddressCep';
 import { AddressFields } from '@/components/address';
 import { newPatientSchema, type NewPatientSchema } from './new-patient.validation';
 import { PhoneInputBR } from '@/components/ui/phone-input-br';
-import { PageShell } from '../../../../ui/dashboard/page-shell';
+import { PageShell, PageHeader } from '../../../../ui/dashboard/page-shell';
 
 export default function NewPatientPage() {
   const router = useRouter();
@@ -70,13 +72,25 @@ export default function NewPatientPage() {
 
   return (
     <PageShell>
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">
-            Cadastrar Novo Paciente
-          </h1>
+      <Button
+        onClick={() => router.push("/dashboard/manager/patients")}
+        variant="ghost"
+        size="sm"
+        className="mb-4"
+        title="Voltar para a lista de pacientes"
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Voltar
+      </Button>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <PageHeader
+        title="Cadastrar Novo Paciente"
+        description="Preencha os dados do paciente."
+      />
+
+      <Card>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label htmlFor="name">Nome Completo *</Label>
@@ -88,7 +102,7 @@ export default function NewPatientPage() {
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-xs text-red-600">{errors.name.message}</p>
+                <p className="text-xs text-destructive">{errors.name.message}</p>
               )}
             </div>
 
@@ -102,7 +116,7 @@ export default function NewPatientPage() {
                 {...register('email')}
               />
               {errors.email && (
-                <p className="text-xs text-red-600">{errors.email.message}</p>
+                <p className="text-xs text-destructive">{errors.email.message}</p>
               )}
             </div>
 
@@ -122,7 +136,7 @@ export default function NewPatientPage() {
                 )}
               />
               {errors.phone && (
-                <p className="text-xs text-red-600">{errors.phone.message}</p>
+                <p className="text-xs text-destructive">{errors.phone.message}</p>
               )}
             </div>
 
@@ -136,7 +150,7 @@ export default function NewPatientPage() {
                 {...register('cpf')}
               />
               {errors.cpf && (
-                <p className="text-xs text-red-600">{errors.cpf.message}</p>
+                <p className="text-xs text-destructive">{errors.cpf.message}</p>
               )}
             </div>
 
@@ -149,7 +163,7 @@ export default function NewPatientPage() {
                 {...register('dateOfBirth')}
               />
               {errors.dateOfBirth && (
-                <p className="text-xs text-red-600">{errors.dateOfBirth.message}</p>
+                <p className="text-xs text-destructive">{errors.dateOfBirth.message}</p>
               )}
             </div>
 
@@ -158,7 +172,7 @@ export default function NewPatientPage() {
               <select
                 id="gender"
                 title="Selecione o gênero do paciente"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border rounded-md text-sm bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-sky-500"
                 {...register('gender')}
               >
                 <option value="">Selecione...</option>
@@ -167,17 +181,17 @@ export default function NewPatientPage() {
                 <option value="O">Outro</option>
               </select>
               {errors.gender && (
-                <p className="text-xs text-red-600">{errors.gender.message}</p>
+                <p className="text-xs text-destructive">{errors.gender.message}</p>
               )}
             </div>
           </div>
 
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-border">
             <div className="mb-6">
-              <h2 className="text-base font-semibold text-gray-700">Endereço</h2>
-              <p className="text-sm text-gray-500">Cadastre o endereço de localização do paciente.</p>
+              <h2 className="text-base font-semibold text-foreground">Endereço</h2>
+              <p className="text-sm text-muted-foreground">Cadastre o endereço de localização do paciente.</p>
             </div>
-            
+
             <AddressFields
               register={register}
               errors={errors}
@@ -186,12 +200,12 @@ export default function NewPatientPage() {
             />
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row-reverse sm:justify-start">
             <Button
               type="submit"
               disabled={isPending}
               title="Clique para realizar o cadastro do paciente"
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              className="sm:w-auto sm:px-8"
             >
               {isPending ? 'Cadastrando...' : 'Cadastrar Paciente'}
             </Button>
@@ -200,14 +214,14 @@ export default function NewPatientPage() {
               variant="secondary"
               title="Cancelar e voltar para a tela anterior"
               onClick={() => router.push("/dashboard/manager/patients")}
-              className="flex-1"
+              className="sm:w-auto sm:px-8"
             >
               Cancelar
             </Button>
           </div>
-        </form>
-        </div>
-      </div>
+          </form>
+        </CardContent>
+      </Card>
     </PageShell>
   );
 }
