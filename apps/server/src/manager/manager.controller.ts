@@ -26,6 +26,7 @@ import { PatientsService } from '../patients/patients.service';
 import { CreatePatientDto } from '../patients/dto/create-patient.dto';
 import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
 import { CancelAppointmentDto } from '../appointments/dto/cancel-appointment-patient.dto';
+import { ListManagerAppointmentsQueryDto } from './dtos/list-manager-appointments-query.dto';
 
 @ApiTags('Manager')
 @ApiBearerAuth('access-token')
@@ -74,7 +75,9 @@ export class ManagerController {
   }
 
   @Get('patients')
-  @ApiOperation({ summary: 'Listar pacientes com busca opcional por nome ou CPF' })
+  @ApiOperation({
+    summary: 'Listar pacientes com busca opcional por nome ou CPF',
+  })
   @ApiResponse({ status: 200, description: 'Lista de pacientes.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
@@ -93,11 +96,11 @@ export class ManagerController {
     return this.patientsService.getPatient(patientId);
   }
 
-
   @Patch('appointments/:appointmentId/cancel')
   @ApiOperation({
     summary: 'Cancelar consulta',
-    description: 'Cancela uma consulta registrando o gestor que realizou o cancelamento.',
+    description:
+      'Cancela uma consulta registrando o gestor que realizou o cancelamento.',
   })
   @ApiParam({ name: 'appointmentId', description: 'ID da consulta (UUID)' })
   @ApiBody({ type: CancelAppointmentDto })
@@ -119,12 +122,16 @@ export class ManagerController {
   }
 
   @Get('appointments')
-  @ApiOperation({ summary: 'Listar consultas do manager' })
+  @Roles(UserRole.MANAGER, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Listar consultas para gestor ou admin' })
   @ApiResponse({ status: 200, description: 'Lista de consultas.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
-  async listAppointments() {
-    return this.managerService.getAppointmentsByManager();
+  @ApiResponse({
+    status: 403,
+    description: 'Acesso negado — somente MANAGER ou ADMIN.',
+  })
+  async listAppointments(@Query() query: ListManagerAppointmentsQueryDto) {
+    return this.managerService.listAppointments(query);
   }
 
   @Get('professionals/:professionalId/availability')

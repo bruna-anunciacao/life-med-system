@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ManagerRepository } from './manager.repository';
 import { AppointmentStatus, UserRole } from '@prisma/client';
+import { ListManagerAppointmentsQueryDto } from './dtos/list-manager-appointments-query.dto';
 
 @Injectable()
 export class ManagerService {
@@ -44,8 +45,50 @@ export class ManagerService {
     );
   }
 
-  async getAppointmentsByManager() {
-    return this.repository.findAllAppointmentsForManager();
+  async listAppointments(query: ListManagerAppointmentsQueryDto) {
+    const appointments =
+      await this.repository.findAllAppointmentsForManagerAndAdmin();
+
+    const response = appointments.map((appointment) => ({
+      id: appointment.id,
+      dateTime: appointment.dateTime,
+      status: appointment.status,
+      notes: appointment.notes,
+      modality: appointment.modality,
+      meetLink: appointment.meetLink,
+      createdAt: appointment.createdAt,
+      patient: {
+        id: appointment.patient.id,
+        name: appointment.patient.name,
+        email: appointment.patient.email,
+      },
+      professional: appointment.professional,
+      scheduledByManager: appointment.scheduledByManager,
+      cancelledByManager: appointment.cancelledByManager,
+      totalScore:
+        appointment.patient.patientProfile?.questionnaire?.totalScore ?? null,
+      isVulnerable:
+        appointment.patient.patientProfile?.questionnaire?.isVulnerable ?? null,
+    }));
+
+    if (query.sortBy !== 'vulnerabilityScore') {
+      return response;
+    }
+
+    const direction = query.order === 'desc' ? -1 : 1;
+
+    return response.sort((left, right) => {
+      if (left.totalScore === null && right.totalScore === null) {
+        return right.dateTime.getTime() - left.dateTime.getTime();
+      }
+      if (left.totalScore === null) return 1;
+      if (right.totalScore === null) return -1;
+
+      const scoreDifference = (left.totalScore - right.totalScore) * direction;
+      return (
+        scoreDifference || right.dateTime.getTime() - left.dateTime.getTime()
+      );
+    });
   }
 
   async getProfessionalAvailability(professionalId: string) {

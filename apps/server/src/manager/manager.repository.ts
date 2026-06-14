@@ -36,13 +36,50 @@ export class ManagerRepository {
     });
   }
 
-  findAllAppointmentsForManager() {
+  findAllAppointmentsForManagerAndAdmin() {
     return this.prisma.appointment.findMany({
-      include: {
-        patient: { include: { patientProfile: true } },
-        professional: { include: { professionalProfile: true } },
-        scheduledByManager: { include: { user: true } },
-        cancelledByManager: { include: { user: true } },
+      select: {
+        id: true,
+        dateTime: true,
+        status: true,
+        notes: true,
+        modality: true,
+        meetLink: true,
+        createdAt: true,
+        patient: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            patientProfile: {
+              select: {
+                questionnaire: {
+                  select: {
+                    totalScore: true,
+                    isVulnerable: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        professional: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        scheduledByManager: {
+          select: {
+            user: { select: { name: true } },
+          },
+        },
+        cancelledByManager: {
+          select: {
+            user: { select: { name: true } },
+          },
+        },
       },
       orderBy: { dateTime: 'desc' },
     });
