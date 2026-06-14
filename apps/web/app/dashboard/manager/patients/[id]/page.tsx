@@ -19,8 +19,9 @@ import { AddressForm } from "@/components/address/AddressForm";
 import { PhoneInputBR } from "@/components/ui/phone-input-br";
 import { useQueryClient } from "@tanstack/react-query";
 import { applyCpfMask } from "@/lib/cpf";
-import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
+import { PageShell } from "../../../../ui/dashboard/page-shell";
 import { DetailPageSkeleton } from "@/components/ui/skeletons";
+import { VulnerabilityBadge } from "@/components/shared/VulnerabilityBadge";
 
 export default function PatientDetailsPage() {
   const router = useRouter();
@@ -382,12 +383,10 @@ export default function PatientDetailsPage() {
                         : "Pendente"}
                     </p>
                     {patient.questionnaire && (
-                      <p className="text-sm text-slate-600">
-                        Pontuação: {patient.questionnaire.totalScore} |{" "}
-                        {patient.questionnaire.isVulnerable
-                          ? "Vulnerável"
-                          : "Não vulnerável"}
-                      </p>
+                      <VulnerabilityBadge
+                        totalScore={patient.questionnaire.totalScore}
+                        isVulnerable={patient.questionnaire.isVulnerable}
+                      />
                     )}
                   </div>
 
