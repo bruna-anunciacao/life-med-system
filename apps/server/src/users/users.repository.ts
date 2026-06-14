@@ -25,6 +25,7 @@ export class UsersRepository {
             specialities: true,
           },
         },
+        managerProfile: true,
       },
     });
   }
@@ -35,6 +36,7 @@ export class UsersRepository {
       include: {
         patientProfile: true,
         professionalProfile: { include: { specialities: true } },
+        managerProfile: true,
       },
     });
   }
@@ -110,6 +112,26 @@ export class UsersRepository {
         phone: data.phone,
         dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : undefined,
         gender: data.gender,
+      },
+    });
+  }
+
+  upsertManagerProfile(
+    userId: string,
+    data: Pick<UpdateUserDto, 'phone' | 'bio' | 'photoUrl'>,
+  ) {
+    return this.prisma.managerProfile.upsert({
+      where: { userId },
+      create: {
+        userId,
+        phone: data.phone,
+        bio: data.bio,
+        photoUrl: data.photoUrl,
+      },
+      update: {
+        phone: data.phone,
+        bio: data.bio,
+        photoUrl: data.photoUrl,
       },
     });
   }
