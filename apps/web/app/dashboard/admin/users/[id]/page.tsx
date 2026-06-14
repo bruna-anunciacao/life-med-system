@@ -80,7 +80,7 @@ const AdminUserProfilePage = () => {
       />
 
       <Card className="border border-gray-200 rounded-xl bg-white">
-        <CardContent className="p-12 space-y-8">
+        <CardContent className="p-8 space-y-8">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <UserProfileHeader
               name={user.name}
@@ -145,7 +145,7 @@ const AdminUserProfilePage = () => {
       </Card>
 
       <Card className="border border-gray-200 rounded-xl bg-white mt-8">
-        <CardContent className="p-12 space-y-6">
+        <CardContent className="p-8 space-y-6">
           <AddressForm userId={user?.id || ""} />
         </CardContent>
       </Card>

@@ -1,77 +1,106 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo } from "react";
+import Link from "next/link";
+import { Calendar, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/shared/StatCard";
+import { StatusBadge } from "@/components/shared/StatusBadge";
+import { VulnerabilityBadge } from "@/components/shared/VulnerabilityBadge";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadingPage } from "@/components/shared/LoadingPage";
 import { useUserQuery } from "@/queries/useUserQuery";
 import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
 import { useListAppointmentsQuery } from "@/queries/useListAppointmentsQuery";
-import { LoadingPage } from "@/components/shared/LoadingPage";
-import { Users, Calendar, FileText, Plus, ClipboardList } from "lucide-react";
-import Link from "next/link";
+import type { ManagerPatientResponse } from "@/services/manager-service";
 import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
+import { AttentionCard } from "./components/AttentionCard";
+import { VulnerablePatientsList } from "./components/VulnerablePatientsList";
+import { RecentPatientsList } from "./components/RecentPatientsList";
+
+const UPCOMING_LIMIT = 5;
+const VULNERABLE_LIMIT = 5;
+const RECENT_LIMIT = 5;
+
+const formatAppointmentDate = (dateTime: string) =>
+  new Date(dateTime).toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+const getQuestionnaire = (patient: ManagerPatientResponse) =>
+  patient.patientProfile?.questionnaire ?? patient.questionnaire ?? null;
+
+const hasNoQuestionnaire = (patient: ManagerPatientResponse) =>
+  !patient.patientProfile?.questionnaireCompleted && !getQuestionnaire(patient);
 
 const ManagerDashboard = () => {
   const { data: user, isLoading: loadingUser } = useUserQuery();
-  const { data: patients = [], isLoading: loadingPatients } =
-    useListPatientsQuery();
-  const { data: appointments = [], isLoading: loadingAppointments } =
-    useListAppointmentsQuery();
+  const { data: patients = [] } = useListPatientsQuery();
+  const { data: appointments = [] } = useListAppointmentsQuery();
 
-  const stats = [
-    {
-      title: "Pacientes",
-      value: loadingPatients ? "..." : String(patients.length),
-      icon: <Users size={24} />,
-      colorClass: "bg-blue-50 text-blue-500",
-      hint: "Total de pacientes cadastrados no sistema",
-    },
-    {
-      title: "Consultas",
-      value: loadingAppointments ? "..." : String(appointments.length),
-      icon: <Calendar size={24} />,
-      colorClass: "bg-green-50 text-green-500",
-      hint: "Total de consultas agendadas",
-    },
-    {
-      title: "Relatórios",
-      value: "0",
-      icon: <FileText size={24} />,
-      colorClass: "bg-purple-50 text-purple-500",
-      hint: "Relatórios gerais gerados pelo sistema",
-    },
-  ];
+  const stats = useMemo(() => {
+    const withoutQuestionnaire = patients.filter(hasNoQuestionnaire).length;
+    const vulnerable = patients.filter(
+      (patient) => getQuestionnaire(patient)?.isVulnerable === true,
+    ).length;
 
-  const quickActions = [
-    {
-      label: "Cadastrar Paciente",
-      href: "/dashboard/manager/patients/new",
-      icon: <Plus size={20} />,
-      color: "bg-green-600 hover:bg-green-700",
-      hint: "Abrir formulário para registrar um novo paciente",
-    },
-    {
-      label: "Agendar Consulta",
-      href: "/dashboard/manager/appointments/new",
-      icon: <Calendar size={20} />,
-      color: "bg-blue-600 hover:bg-blue-700",
-      hint: "Ir para a tela de agendamento de consultas",
-    },
-    {
-      label: "Ver Pacientes",
-      href: "/dashboard/manager/patients",
-      icon: <Users size={20} />,
-      color: "bg-purple-600 hover:bg-purple-700",
-      hint: "Visualizar a lista completa de pacientes cadastrados",
-    },
-    {
-      label: "Gerenciar Questionário",
-      href: "/dashboard/manager/questionnaires",
-      icon: <ClipboardList size={20} />,
-      color: "bg-amber-600 hover:bg-amber-700",
-      hint: "Editar perguntas e pontuação do questionário de vulnerabilidade",
-    },
-  ];
+    return {
+      totalPatients: patients.length,
+      totalAppointments: appointments.length,
+      withoutQuestionnaire,
+      vulnerable,
+    };
+  }, [patients, appointments]);
+
+  const upcomingAppointments = useMemo(() => {
+    const now = Date.now();
+    return appointments
+      .filter(
+        (appointment) =>
+          (appointment.status === "PENDING" ||
+            appointment.status === "CONFIRMED") &&
+          new Date(appointment.dateTime).getTime() >= now,
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+      )
+      .slice(0, UPCOMING_LIMIT);
+  }, [appointments]);
+
+  const vulnerablePatients = useMemo(
+    () =>
+      patients
+        .filter((patient) => getQuestionnaire(patient)?.isVulnerable === true)
+        .sort(
+          (a, b) =>
+            (getQuestionnaire(b)?.totalScore ?? 0) -
+            (getQuestionnaire(a)?.totalScore ?? 0),
+        )
+        .slice(0, VULNERABLE_LIMIT),
+    [patients],
+  );
+
+  const recentPatients = useMemo(
+    () =>
+      patients
+        .filter((patient) => Boolean(patient.createdAt))
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt ?? 0).getTime() -
+            new Date(a.createdAt ?? 0).getTime(),
+        )
+        .slice(0, RECENT_LIMIT),
+    [patients],
+  );
+
+  const pendingAppointments = useMemo(
+    () => appointments.filter((a) => a.status === "PENDING").length,
+    [appointments],
+  );
 
   if (loadingUser) {
     return <LoadingPage />;
@@ -79,84 +108,119 @@ const ManagerDashboard = () => {
 
   const userName = user?.name?.split(" ")[0] || "";
 
+  const actions = (
+    <div className="flex flex-wrap items-center gap-2">
+      <Link
+        href="/dashboard/manager/patients/new"
+        title="Abrir formulário para cadastrar um novo paciente"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm transition-colors hover:opacity-90"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Cadastrar Paciente
+      </Link>
+      <Link
+        href="/dashboard/manager/appointments/new"
+        title="Ir para a tela de agendamento de consultas"
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <Calendar className="h-3.5 w-3.5" />
+        Agendar Consulta
+      </Link>
+    </div>
+  );
+
   return (
     <PageShell>
       <PageHeader
-        title={`Bem-vindo, ${userName}!`}
-        description="Você está no painel do gestor. Gerencie pacientes e consultas."
+        title={userName ? `Olá, ${userName}!` : "Painel do Gestor"}
+        description="Gerencie pacientes e consultas."
+        actions={actions}
       />
 
-      <div className="mb-10 grid grid-cols-1 gap-6 md:grid-cols-3">
-        {stats.map((stat) => (
-          <Card key={stat.title} className="bg-white" title={stat.hint}>
-            <CardContent className="p-6">
-              <div
-                className={`mb-4 inline-flex rounded-lg p-3 ${stat.colorClass}`}
-              >
-                {stat.icon}
-              </div>
-              <p className="text-sm font-medium text-slate-600">{stat.title}</p>
-              <p className="mt-2 text-3xl font-bold text-slate-900">
-                {stat.value}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Pacientes" value={stats.totalPatients} />
+        <StatCard label="Consultas" value={stats.totalAppointments} />
+        <StatCard
+          label="Sem questionário"
+          value={stats.withoutQuestionnaire}
+          valueClassName="text-amber-600"
+        />
+        <StatCard
+          label="Pacientes vulneráveis"
+          value={stats.vulnerable}
+          valueClassName="text-red-600"
+        />
       </div>
 
-      <div className="mb-10">
-        <h2 className="mb-6 text-xl font-semibold text-gray-900">
-          Ações Rápidas
-        </h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {quickActions.map((action) => (
-            <Link key={action.label} href={action.href} title={action.hint}>
-              <Button
-                className={`w-full h-24 text-lg font-semibold text-white ${action.color}`}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="flex flex-col gap-6">
+          <section>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">
+                Próximas consultas
+              </h2>
+              <Link
+                href="/dashboard/manager/appointments"
+                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
-                <div className="flex flex-col items-center gap-2">
-                  {action.icon}
-                  {action.label}
-                </div>
-              </Button>
-            </Link>
-          ))}
+                Ver todas
+              </Link>
+            </div>
+            {upcomingAppointments.length === 0 ? (
+              <EmptyState
+                message="Nenhuma consulta agendada."
+                actionLabel="Agendar consulta"
+                actionHref="/dashboard/manager/appointments/new"
+              />
+            ) : (
+              <Card className="bg-card">
+                <CardContent className="p-0">
+                  <ul className="divide-y divide-border">
+                    {upcomingAppointments.map((appointment) => (
+                      <li
+                        key={appointment.id}
+                        className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate font-medium text-foreground">
+                            {appointment.patient.name}
+                          </p>
+                          <p className="truncate text-sm text-muted-foreground">
+                            Dr(a). {appointment.professional.name} ·{" "}
+                            {formatAppointmentDate(appointment.dateTime)}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2 self-start sm:self-center">
+                          {appointment.isVulnerable === true && (
+                            <VulnerabilityBadge
+                              totalScore={appointment.totalScore}
+                              isVulnerable={appointment.isVulnerable}
+                            />
+                          )}
+                          <StatusBadge
+                            status={appointment.status}
+                            type="appointment"
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+          </section>
+
+          <VulnerablePatientsList patients={vulnerablePatients} />
+        </div>
+
+        <div className="flex flex-col gap-6">
+          <AttentionCard
+            pendingAppointments={pendingAppointments}
+            patientsWithoutQuestionnaire={stats.withoutQuestionnaire}
+          />
+          <RecentPatientsList patients={recentPatients} />
         </div>
       </div>
-
-      <Card className="bg-white">
-        <CardContent className="p-6 md:p-8">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
-            Recursos Disponíveis
-          </h2>
-          <ul className="grid grid-cols-1 gap-3 text-slate-600 md:grid-cols-2">
-            <li className="flex items-start gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Cadastre novos pacientes sem aprovação prévia</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Edite dados de pacientes a qualquer momento</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Agende consultas com qualquer profissional</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Acompanhe o histórico de consultas</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Acesso instantâneo sem verificação de email</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-500">✓</span>
-              <span>Gere relatórios de atividades</span>
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
     </PageShell>
   );
 };
