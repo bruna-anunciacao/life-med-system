@@ -1,22 +1,24 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
+import Fuse from "fuse.js";
 import {
-  AlertCircle,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
   Calendar,
-  CheckCircle,
   Clock,
+  Plus,
   X,
-  XCircle,
 } from "lucide-react";
+import Link from "next/link";
 import { CancelConfirmDialog } from "@/app/dashboard/patient/appointments/components/CancelConfirmDialog";
+import { PageHeader } from "@/app/ui/dashboard/page-shell";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { StatCard } from "@/components/shared/StatCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { VulnerabilityBadge } from "@/components/shared/VulnerabilityBadge";
+import { SearchInput } from "@/components/ui/search-input";
 import {
   DataTable,
   DataTableBody,
@@ -27,9 +29,11 @@ import {
   DataTableHeadCell,
   DataTableMobileItem,
   DataTableMobileList,
+  DataTablePagination,
   DataTableRow,
   SortableHeader,
 } from "@/components/ui/data-table";
+import { usePagination } from "@/hooks/usePagination";
 import {
   PageHeaderSkeleton,
   StatsCardsSkeleton,
@@ -83,6 +87,7 @@ export function ManagementAppointmentsView({
     string | null
   >(null);
   const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDir, setSortDir] = useState<AppointmentSortOrder>("asc");
 
@@ -97,12 +102,27 @@ export function ManagementAppointmentsView({
   } = useListAppointmentsQuery(vulnerabilitySort);
   const cancelMutation = useCancelAppointmentManagerMutation();
 
+  const fuse = useMemo(
+    () =>
+      new Fuse(appointments, {
+        keys: ["patient.name", "professional.name"],
+        threshold: 0.35,
+        ignoreLocation: true,
+      }),
+    [appointments],
+  );
+
+  const searchedAppointments = useMemo(() => {
+    if (!searchTerm.trim()) return appointments;
+    return fuse.search(searchTerm).map((result) => result.item);
+  }, [appointments, fuse, searchTerm]);
+
   const filteredAppointments = useMemo(() => {
-    if (!statusFilter) return appointments;
-    return appointments.filter(
+    if (!statusFilter) return searchedAppointments;
+    return searchedAppointments.filter(
       (appointment) => appointment.status === statusFilter,
     );
-  }, [appointments, statusFilter]);
+  }, [searchedAppointments, statusFilter]);
 
   const sortedAppointments = useMemo(() => {
     if (!sortField || sortField === "vulnerabilityScore") {
@@ -116,6 +136,27 @@ export function ManagementAppointmentsView({
       return sortDir === "asc" ? comparison : -comparison;
     });
   }, [filteredAppointments, sortDir, sortField]);
+
+  const pagination = usePagination(sortedAppointments, {
+    initialPageSize: 10,
+    resetKeys: [statusFilter, searchTerm, sortField, sortDir],
+  });
+
+  const paginationFooter = (
+    <DataTablePagination
+      page={pagination.page}
+      totalPages={pagination.totalPages}
+      from={pagination.from}
+      to={pagination.to}
+      totalItems={pagination.totalItems}
+      hasPrev={pagination.hasPrev}
+      hasNext={pagination.hasNext}
+      onPageChange={pagination.setPage}
+      pageSize={pagination.pageSize}
+      onPageSizeChange={pagination.setPageSize}
+      itemLabel="consultas"
+    />
+  );
 
   const appointmentStats = useMemo(
     () => ({
@@ -162,7 +203,7 @@ export function ManagementAppointmentsView({
 
   if (isLoading) {
     return (
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <PageHeaderSkeleton />
         <StatsCardsSkeleton count={5} />
         <TableSkeleton
@@ -192,17 +233,19 @@ export function ManagementAppointmentsView({
     );
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="w-full">
       <PageHeader
         title="Agendamentos"
-        action={
-          canManage
-            ? {
-                label: "+ Nova Consulta",
-                href: "/dashboard/manager/appointments/new",
-                colorClass: "bg-blue-600 hover:bg-blue-700",
-              }
-            : undefined
+        actions={
+          canManage ? (
+            <Link
+              href="/dashboard/manager/appointments/new"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm hover:opacity-90"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Nova Consulta
+            </Link>
+          ) : undefined
         }
       />
 
@@ -218,69 +261,77 @@ export function ManagementAppointmentsView({
         <>
           {!isMobile && (
             <div className="grid grid-cols-2 gap-4 mb-8 lg:grid-cols-5">
-              <StatCard
-                label="Total"
-                value={appointmentStats.total}
-                icon={<Calendar className="w-8 h-8 text-blue-500 opacity-20" />}
-              />
+              <StatCard label="Total" value={appointmentStats.total} />
               <StatCard
                 label="Pendente"
                 value={appointmentStats.pending}
                 valueClassName="text-yellow-600"
-                icon={
-                  <AlertCircle className="w-8 h-8 text-yellow-500 opacity-20" />
-                }
               />
               <StatCard
                 label="Confirmado"
                 value={appointmentStats.confirmed}
                 valueClassName="text-blue-600"
-                icon={
-                  <CheckCircle className="w-8 h-8 text-blue-500 opacity-20" />
-                }
               />
               <StatCard
                 label="Concluído"
                 value={appointmentStats.completed}
                 valueClassName="text-green-600"
-                icon={
-                  <CheckCircle className="w-8 h-8 text-green-500 opacity-20" />
-                }
               />
               <StatCard
                 label="Cancelado"
                 value={appointmentStats.cancelled}
                 valueClassName="text-red-600"
-                icon={<XCircle className="w-8 h-8 text-red-500 opacity-20" />}
               />
             </div>
           )}
 
-          <div className="mb-6 flex flex-wrap gap-2">
-            <select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              className="px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-card text-foreground"
-              aria-label="Filtrar agendamentos por status"
-            >
-              <option value="">Todos os status</option>
-              <option value="PENDING">Pendente</option>
-              <option value="CONFIRMED">Confirmado</option>
-              <option value="COMPLETED">Concluído</option>
-              <option value="CANCELLED">Cancelado</option>
-              <option value="NO_SHOW">Não compareceu</option>
-            </select>
-            {isMobile && (
-              <button
-                type="button"
-                onClick={() => toggleSort("vulnerabilityScore")}
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex-1">
+              <SearchInput
+                placeholder="Buscar por paciente ou profissional..."
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="h-10 rounded-xl shadow-sm"
+                aria-label="Buscar por paciente ou profissional"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 sm:shrink-0">
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="h-10 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-sky-500"
+                aria-label="Filtrar agendamentos por status"
               >
-                Pontuação
-                {scoreSortIcon}
-              </button>
-            )}
+                <option value="">Todos os status</option>
+                <option value="PENDING">Pendente</option>
+                <option value="CONFIRMED">Confirmado</option>
+                <option value="COMPLETED">Concluído</option>
+                <option value="CANCELLED">Cancelado</option>
+                <option value="NO_SHOW">Não compareceu</option>
+              </select>
+              {isMobile && (
+                <button
+                  type="button"
+                  onClick={() => toggleSort("vulnerabilityScore")}
+                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-card px-3 text-sm text-foreground shadow-sm"
+                >
+                  Pontuação
+                  {scoreSortIcon}
+                </button>
+              )}
+            </div>
           </div>
+
+          {searchTerm && (
+            <p className="-mt-3 mb-6 text-xs text-muted-foreground">
+              {filteredAppointments.length}{" "}
+              {filteredAppointments.length === 1 ? "resultado" : "resultados"}{" "}
+              para{" "}
+              <span className="font-medium text-foreground">
+                &quot;{searchTerm}&quot;
+              </span>
+            </p>
+          )}
 
           {!mounted ? (
             <div className="h-40" aria-hidden="true" />
@@ -288,25 +339,31 @@ export function ManagementAppointmentsView({
             <DataTableCard>
               <DataTableEmpty
                 icon={<Calendar className="h-8 w-8" />}
-                title="Nenhuma consulta encontrada para o filtro selecionado"
+                title={
+                  searchTerm
+                    ? `Nenhuma consulta encontrada para "${searchTerm}"`
+                    : "Nenhuma consulta encontrada para o filtro selecionado"
+                }
               />
             </DataTableCard>
           ) : isMobile ? (
             <MobileAppointments
-              appointments={sortedAppointments}
+              appointments={pagination.pageItems}
               canManage={canManage}
               isCancelling={cancelMutation.isPending}
               onCancel={openCancelDialog}
+              footer={paginationFooter}
             />
           ) : (
             <DesktopAppointments
-              appointments={sortedAppointments}
+              appointments={pagination.pageItems}
               canManage={canManage}
               isCancelling={cancelMutation.isPending}
               sortField={sortField}
               sortDir={sortDir}
               onSort={toggleSort}
               onCancel={openCancelDialog}
+              footer={paginationFooter}
             />
           )}
         </>
@@ -329,11 +386,13 @@ function MobileAppointments({
   canManage,
   isCancelling,
   onCancel,
+  footer,
 }: {
   appointments: ManagementAppointment[];
   canManage: boolean;
   isCancelling: boolean;
   onCancel: (appointmentId: string) => void;
+  footer?: ReactNode;
 }) {
   return (
     <DataTableCard>
@@ -413,6 +472,7 @@ function MobileAppointments({
           </DataTableMobileItem>
         ))}
       </DataTableMobileList>
+      {footer}
     </DataTableCard>
   );
 }
@@ -425,6 +485,7 @@ function DesktopAppointments({
   sortDir,
   onSort,
   onCancel,
+  footer,
 }: {
   appointments: ManagementAppointment[];
   canManage: boolean;
@@ -433,6 +494,7 @@ function DesktopAppointments({
   sortDir: AppointmentSortOrder;
   onSort: (field: SortField) => void;
   onCancel: (appointmentId: string) => void;
+  footer?: ReactNode;
 }) {
   return (
     <DataTableCard>
@@ -540,30 +602,7 @@ function DesktopAppointments({
           ))}
         </DataTableBody>
       </DataTable>
+      {footer}
     </DataTableCard>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  valueClassName = "text-foreground",
-  icon,
-}: {
-  label: string;
-  value: number;
-  valueClassName?: string;
-  icon: ReactNode;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs text-muted-foreground font-medium">{label}</p>
-          <p className={`text-2xl font-bold mt-1 ${valueClassName}`}>{value}</p>
-        </div>
-        {icon}
-      </div>
-    </div>
   );
 }
