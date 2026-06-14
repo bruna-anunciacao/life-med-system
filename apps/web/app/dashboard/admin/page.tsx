@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { ClipboardList, Plus, Stethoscope } from "lucide-react";
-import { adminService } from "../../../services/admin-service";
+import { adminService } from "@/services/admin-service";
 import { toast } from "sonner";
-import { UsersTable } from "./components/UsersTable";
+import { UsersTable } from "@/app/dashboard/admin/components/UsersTable";
 import { useQueryClient } from "@tanstack/react-query";
-import { PageShell } from "../../ui/dashboard/page-shell";
+import { PageShell } from "@/app/ui/dashboard/page-shell";
 
 const AdminDashboard = () => {
   const queryClient = useQueryClient();

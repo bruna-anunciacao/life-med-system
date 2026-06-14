@@ -73,6 +73,36 @@ export interface CreateAppointmentDto {
   notes?: string;
 }
 
+export type AppointmentStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "NO_SHOW";
+
+export type AppointmentSortOrder = "asc" | "desc";
+
+export interface ListAppointmentsParams {
+  sortBy?: "vulnerabilityScore";
+  order?: AppointmentSortOrder;
+}
+
+export interface ManagementAppointment {
+  id: string;
+  dateTime: string;
+  status: AppointmentStatus;
+  notes: string | null;
+  modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+  meetLink: string | null;
+  createdAt: string;
+  patient: { id: string; name: string; email: string };
+  professional: { id: string; name: string; email: string };
+  scheduledByManager: { user: { name: string } } | null;
+  cancelledByManager: { user: { name: string } } | null;
+  totalScore: number | null;
+  isVulnerable: boolean | null;
+}
+
 export const managerService = {
   async createPatient(data: CreatePatientDto) {
     try {
@@ -149,9 +179,14 @@ export const managerService = {
     }
   },
 
-  async listAppointments() {
+  async listAppointments(
+    params?: ListAppointmentsParams,
+  ): Promise<ManagementAppointment[]> {
     try {
-      const response = await api.get("/manager/appointments");
+      const response = await api.get<ManagementAppointment[]>(
+        "/manager/appointments",
+        { params },
+      );
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
