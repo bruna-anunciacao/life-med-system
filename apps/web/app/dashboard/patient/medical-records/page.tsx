@@ -10,6 +10,8 @@ import { useMedicalRecordsListForPatientQuery } from "@/queries/useMedicalRecord
 import { CalendarIcon, EyeIcon } from "../../../utils/icons";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 import { SearchInput } from "@/components/ui/search-input";
+import { TourButton } from "@/components/tour/TourButton";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const PAGE_SIZE = 10;
 
@@ -30,6 +32,7 @@ function truncate(text: string | null, max = 120) {
 
 const PatientMedicalRecordsPage = () => {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -63,9 +66,13 @@ const PatientMedicalRecordsPage = () => {
       <PageHeader
         title="Meus Prontuários"
         description={`Histórico dos prontuários das suas consultas.${total > 0 ? ` ${total} no total.` : ""}`}
+        help={<TourButton tour="patient-records" iconOnly={isMobile} />}
       />
 
-      <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
+      <Card
+        id="tour-records-search"
+        className="mb-6 border border-gray-200 rounded-xl bg-white"
+      >
         <CardContent className="p-4 sm:p-5">
           <form
             onSubmit={handleSearch}
@@ -102,6 +109,7 @@ const PatientMedicalRecordsPage = () => {
         </CardContent>
       </Card>
 
+      <div id="tour-records-list">
       {isLoading ? (
         <CardGridSkeleton count={4} minWidth={400} />
       ) : records.length === 0 ? (
@@ -176,6 +184,7 @@ const PatientMedicalRecordsPage = () => {
           ))}
         </div>
       )}
+      </div>
 
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between gap-3">

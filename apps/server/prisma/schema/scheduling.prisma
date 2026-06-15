@@ -2,6 +2,8 @@ enum AppointmentModality {
   VIRTUAL
   HOME_VISIT
   CLINIC
+
+  @@schema("scheduling")
 }
 
 enum AppointmentStatus {
@@ -10,6 +12,8 @@ enum AppointmentStatus {
   COMPLETED
   CANCELLED
   NO_SHOW
+
+  @@schema("scheduling")
 }
 
 model Appointment {
@@ -41,6 +45,7 @@ model Appointment {
   medicalRecord MedicalRecord?
 
   @@map("appointments")
+  @@schema("scheduling")
 }
 
 model Availability {
@@ -56,6 +61,7 @@ model Availability {
   validUntil DateTime? @map("valid_until")
 
   @@map("availability")
+  @@schema("scheduling")
 }
 
 model ScheduleBlock {
@@ -70,4 +76,5 @@ model ScheduleBlock {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("schedule_blocks")
+  @@schema("scheduling")
 }

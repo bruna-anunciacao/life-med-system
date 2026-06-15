@@ -33,6 +33,7 @@ export function AppSidebar({ role }: { role: string }) {
 
   return (
     <Sidebar
+      id="tour-sidebar"
       collapsible="icon"
       className="group-data-[side=left]:border-r-0"
     >

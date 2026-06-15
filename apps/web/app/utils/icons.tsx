@@ -17,5 +17,6 @@ export {
   House as HouseIcon,
   Buildings as BuildingsIcon,
   UserCheck as UserCheckIcon,
+  CheckCircle as CheckCircleIcon,
   XCircle as XCircleIcon,
 } from "@phosphor-icons/react";
