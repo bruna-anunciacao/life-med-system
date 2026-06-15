@@ -2,6 +2,8 @@ import { api } from "../lib/api";
 import { AxiosError } from "axios";
 import { API_ROUTES } from "../constants/api-routes";
 
+export type PatientApprovalStatus = "APPROVED" | "PENDING" | "REJECTED";
+
 export interface AdminUser {
   id: string;
   name: string;
@@ -16,6 +18,7 @@ export interface AdminUser {
     dateOfBirth?: string;
     gender?: string;
     questionnaireCompleted: boolean;
+    approvalStatus: PatientApprovalStatus;
   } | null;
   professionalProfile?: {
     id?: string;
@@ -84,6 +87,24 @@ export const adminService = {
       return response.data;
     } catch (error) {
       return handleError(error, "Erro ao atualizar dados do usuário.");
+    }
+  },
+
+  async updatePatientApprovalStatus(
+    patientId: string,
+    approvalStatus: PatientApprovalStatus,
+  ) {
+    try {
+      const response = await api.patch(
+        `/admin/patients/${patientId}/approval-status`,
+        { approvalStatus },
+      );
+      return response.data;
+    } catch (error) {
+      return handleError(
+        error,
+        "Erro ao atualizar status de aprovação do paciente.",
+      );
     }
   },
 };

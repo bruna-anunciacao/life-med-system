@@ -14,6 +14,12 @@ model ProfessionalProfile {
   @@map("professional_profiles")
 }
 
+enum PatientApprovalStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
 model PatientProfile {
   id                     String                      @id @default(uuid())
   userId                 String                      @unique @map("user_id")
@@ -22,6 +28,7 @@ model PatientProfile {
   dateOfBirth            DateTime?                   @map("date_of_birth")
   gender                 String?
   questionnaireCompleted Boolean                     @default(false) @map("questionnaire_completed")
+  approvalStatus         PatientApprovalStatus       @default(PENDING) @map("approval_status")
   questionnaire          VulnerabilityQuestionnaire?
   createdAt              DateTime                    @default(now()) @map("created_at")
   updatedAt              DateTime                    @updatedAt @map("updated_at")

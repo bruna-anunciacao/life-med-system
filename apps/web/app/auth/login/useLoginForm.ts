@@ -13,6 +13,27 @@ const DASHBOARD_ROUTES: Record<string, string> = {
   MANAGER: "/dashboard/manager",
 };
 
+function getPatientRoute(response: {
+  user: {
+    patientProfile?: {
+      questionnaireCompleted: boolean;
+      approvalStatus: "APPROVED" | "PENDING" | "REJECTED";
+    } | null;
+  };
+}) {
+  const profile = response.user.patientProfile;
+  if (!profile?.questionnaireCompleted) {
+    return "/dashboard/patient/questionnaire";
+  }
+  if (profile.approvalStatus === "PENDING") {
+    return "/auth/patient-pending-approval";
+  }
+  if (profile.approvalStatus === "REJECTED") {
+    return "/auth/patient-rejected";
+  }
+  return "/dashboard/patient";
+}
+
 export function useLoginForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
@@ -31,7 +52,9 @@ export function useLoginForm() {
           toast.success(`Bem-vindo(a), ${response.user.name}!`);
           form.reset();
           const route =
-            DASHBOARD_ROUTES[response.user.role] ?? "/dashboard/admin";
+            response.user.role === "PATIENT"
+              ? getPatientRoute(response)
+              : (DASHBOARD_ROUTES[response.user.role] ?? "/dashboard/admin");
           router.push(route);
         },
         onError: (error) => {

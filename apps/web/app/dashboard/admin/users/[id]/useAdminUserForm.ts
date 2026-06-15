@@ -5,7 +5,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { usersService, type UpdateProfileDto } from "../../../../../services/users-service";
+import {
+  usersService,
+  type UpdateProfileDto,
+} from "../../../../../services/users-service";
+import {
+  adminService,
+  type PatientApprovalStatus,
+} from "@/services/admin-service";
 import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
 import {
   patientFormSchema,
@@ -25,6 +32,7 @@ type UserProfile = {
     dateOfBirth?: string;
     gender?: string;
     cpf?: string;
+    approvalStatus?: PatientApprovalStatus;
   };
   professionalProfile?: {
     professionalLicense?: string;
@@ -45,17 +53,38 @@ export function useAdminUserForm() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUpdatingApproval, setIsUpdatingApproval] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const patientForm = useForm<PatientFormSchema>({
     resolver: zodResolver(patientFormSchema),
-    defaultValues: { name: "", email: "", status: "", phone: "", dateOfBirth: "", gender: "", address: "", cpf: "" },
+    defaultValues: {
+      name: "",
+      email: "",
+      status: "",
+      phone: "",
+      dateOfBirth: "",
+      gender: "",
+      address: "",
+      cpf: "",
+    },
   });
 
   const professionalForm = useForm<ProfessionalFormSchema>({
     resolver: zodResolver(professionalFormSchema),
-    defaultValues: { name: "", email: "", status: "", professionalLicense: "", primarySpecialtyId: "", secondarySpecialtyId: "", modality: "", bio: "", linkedin: "", instagram: "" },
+    defaultValues: {
+      name: "",
+      email: "",
+      status: "",
+      professionalLicense: "",
+      primarySpecialtyId: "",
+      secondarySpecialtyId: "",
+      modality: "",
+      bio: "",
+      linkedin: "",
+      instagram: "",
+    },
   });
 
   const loadProfile = async () => {
@@ -63,7 +92,10 @@ export function useAdminUserForm() {
       setIsLoading(true);
       setError(null);
       const data = await usersService.getUserById(id);
-      if (!data) { setError("Usuário não encontrado."); return; }
+      if (!data) {
+        setError("Usuário não encontrado.");
+        return;
+      }
       setUser(data);
 
       if (data.role === "PATIENT") {
@@ -82,9 +114,12 @@ export function useAdminUserForm() {
           name: data.name || "",
           email: data.email || "",
           status: data.status || "",
-          professionalLicense: data.professionalProfile?.professionalLicense || "",
-          primarySpecialtyId: data.professionalProfile?.specialities?.[0]?.id || "",
-          secondarySpecialtyId: data.professionalProfile?.specialities?.[1]?.id || "",
+          professionalLicense:
+            data.professionalProfile?.professionalLicense || "",
+          primarySpecialtyId:
+            data.professionalProfile?.specialities?.[0]?.id || "",
+          secondarySpecialtyId:
+            data.professionalProfile?.specialities?.[1]?.id || "",
           modality: data.professionalProfile?.modality || "",
           bio: data.professionalProfile?.bio || "",
           linkedin: data.professionalProfile?.socialLinks?.linkedin || "",
@@ -92,7 +127,10 @@ export function useAdminUserForm() {
         });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro ao carregar perfil do usuário.";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Erro ao carregar perfil do usuário.";
       toast.error(message);
       setError(message);
     } finally {
@@ -100,8 +138,12 @@ export function useAdminUserForm() {
     }
   };
 
-  useEffect(() => { setIsEditing(searchParams.get("edit") === "1"); }, [searchParams]);
-  useEffect(() => { void loadProfile(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setIsEditing(searchParams.get("edit") === "1");
+  }, [searchParams]);
+  useEffect(() => {
+    void loadProfile();
+  }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmitPatient = async (data: PatientFormSchema) => {
     if (!user) return;
@@ -121,7 +163,9 @@ export function useAdminUserForm() {
       setIsEditing(false);
       await loadProfile();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar dados do usuário.");
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao salvar dados do usuário.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -136,7 +180,9 @@ export function useAdminUserForm() {
         email: data.email,
         status: data.status as UpdateProfileDto["status"],
         professionalLicense: data.professionalLicense || undefined,
-        specialty: [data.primarySpecialtyId, data.secondarySpecialtyId].filter((val): val is string => Boolean(val)),
+        specialty: [data.primarySpecialtyId, data.secondarySpecialtyId].filter(
+          (val): val is string => Boolean(val),
+        ),
         modality: (data.modality || undefined) as UpdateProfileDto["modality"],
         bio: data.bio || undefined,
         socialLinks: {
@@ -148,7 +194,9 @@ export function useAdminUserForm() {
       setIsEditing(false);
       await loadProfile();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar dados do usuário.");
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao salvar dados do usuário.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -162,10 +210,31 @@ export function useAdminUserForm() {
     setIsEditing(false);
   };
 
+  const updatePatientApprovalStatus = async (
+    approvalStatus: PatientApprovalStatus,
+  ) => {
+    if (!user || user.role !== "PATIENT") return;
+    try {
+      setIsUpdatingApproval(true);
+      await adminService.updatePatientApprovalStatus(user.id, approvalStatus);
+      toast.success("Status de aprovação atualizado com sucesso.");
+      await loadProfile();
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Erro ao atualizar aprovação do paciente.",
+      );
+    } finally {
+      setIsUpdatingApproval(false);
+    }
+  };
+
   return {
     user,
     isLoading,
     isSaving,
+    isUpdatingApproval,
     isEditing,
     setIsEditing,
     error,
@@ -174,6 +243,7 @@ export function useAdminUserForm() {
     professionalForm,
     specialities,
     handleCancel,
+    updatePatientApprovalStatus,
     onSubmitPatient,
     onSubmitProfessional,
   };

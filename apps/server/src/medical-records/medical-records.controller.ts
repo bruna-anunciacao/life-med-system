@@ -33,10 +33,11 @@ import {
 } from './dto/medical-record-response.dto';
 import { ProfessionalRoleGuard } from '../professional/guards/professional-role.guard';
 import { PatientRoleGuard } from '../patients/guards/patient-role.guard';
+import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Medical Records')
 @ApiBearerAuth('access-token')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), QuestionnaireCompletionGuard)
 @Controller('medical-records')
 export class MedicalRecordsController {
   constructor(private readonly service: MedicalRecordsService) {}

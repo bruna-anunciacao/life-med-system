@@ -25,6 +25,7 @@ import { ManagerService } from './manager.service';
 import { PatientsService } from '../patients/patients.service';
 import { CreatePatientDto } from '../patients/dto/create-patient.dto';
 import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
+import { UpdatePatientApprovalStatusDto } from '../patients/dto/update-patient-approval-status.dto';
 import { CancelAppointmentDto } from '../appointments/dto/cancel-appointment-patient.dto';
 import { ListManagerAppointmentsQueryDto } from './dtos/list-manager-appointments-query.dto';
 
@@ -72,6 +73,30 @@ export class ManagerController {
     @Body() dto: UpdatePatientDto,
   ) {
     return this.patientsService.updatePatient(patientId, dto);
+  }
+
+  @Patch('patients/:patientId/approval-status')
+  @ApiOperation({
+    summary: 'Atualizar status de aprovação do paciente',
+  })
+  @ApiParam({ name: 'patientId', description: 'ID do paciente (UUID)' })
+  @ApiBody({ type: UpdatePatientApprovalStatusDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Status de aprovação atualizado com sucesso.',
+  })
+  @ApiResponse({ status: 400, description: 'Dados inválidos.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
+  @ApiResponse({ status: 404, description: 'Paciente não encontrado.' })
+  async updatePatientApprovalStatus(
+    @Param('patientId') patientId: string,
+    @Body() dto: UpdatePatientApprovalStatusDto,
+  ) {
+    return this.patientsService.updatePatientApprovalStatus(
+      patientId,
+      dto.approvalStatus,
+    );
   }
 
   @Get('patients')

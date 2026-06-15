@@ -17,6 +17,7 @@ export class AuthRepository {
         patientProfile: {
           select: {
             questionnaireCompleted: true,
+            approvalStatus: true,
           },
         },
       },

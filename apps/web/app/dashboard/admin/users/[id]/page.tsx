@@ -5,18 +5,31 @@ import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AddressForm } from "@/components/address/AddressForm";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 import { UserProfileHeader } from "./components/UserProfileHeader";
 import { PatientProfileForm } from "./components/PatientProfileForm";
 import { ProfessionalProfileForm } from "./components/ProfessionalProfileForm";
 import { useAdminUserForm } from "./useAdminUserForm";
 import { ArrowLeft } from "lucide-react";
 import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
+import type { PatientApprovalStatus } from "@/services/admin-service";
+
+const APPROVAL_ACTIONS: Array<{
+  status: PatientApprovalStatus;
+  label: string;
+  variant: "default" | "outline" | "destructive";
+}> = [
+  { status: "APPROVED", label: "Aprovar", variant: "default" },
+  { status: "PENDING", label: "Marcar em análise", variant: "outline" },
+  { status: "REJECTED", label: "Rejeitar", variant: "destructive" },
+];
 
 const AdminUserProfilePage = () => {
   const {
     user,
     isLoading,
     isSaving,
+    isUpdatingApproval,
     isEditing,
     setIsEditing,
     error,
@@ -25,15 +38,17 @@ const AdminUserProfilePage = () => {
     professionalForm,
     specialities,
     handleCancel,
+    updatePatientApprovalStatus,
     onSubmitPatient,
     onSubmitProfessional,
   } = useAdminUserForm();
 
-  if (isLoading) return (
-    <PageShell className="flex items-center justify-center min-h-[60vh]">
-      <Spinner size="lg" />
-    </PageShell>
-  );
+  if (isLoading)
+    return (
+      <PageShell className="flex items-center justify-center min-h-[60vh]">
+        <Spinner size="lg" />
+      </PageShell>
+    );
 
   if (!user) {
     return (
@@ -57,9 +72,12 @@ const AdminUserProfilePage = () => {
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
   const photoPath = user.professionalProfile?.photoUrl;
-  const canEditProfile = user.role === "PATIENT" || user.role === "PROFESSIONAL";
+  const canEditProfile =
+    user.role === "PATIENT" || user.role === "PROFESSIONAL";
   const fullPhotoUrl = photoPath
-    ? photoPath.startsWith("http") ? photoPath : `${apiBaseUrl}${photoPath}`
+    ? photoPath.startsWith("http")
+      ? photoPath
+      : `${apiBaseUrl}${photoPath}`
     : null;
 
   return (
@@ -92,9 +110,15 @@ const AdminUserProfilePage = () => {
             {canEditProfile && (
               <Button
                 size="lg"
-                onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
+                onClick={() =>
+                  isEditing ? handleCancel() : setIsEditing(true)
+                }
                 disabled={isSaving}
-                title={isEditing ? "Cancelar alterações e sair do modo de edição" : "Habilitar edição dos dados do usuário"}
+                title={
+                  isEditing
+                    ? "Cancelar alterações e sair do modo de edição"
+                    : "Habilitar edição dos dados do usuário"
+                }
               >
                 {isEditing ? "Cancelar edição" : "Editar dados"}
               </Button>
@@ -104,18 +128,62 @@ const AdminUserProfilePage = () => {
           <Separator />
 
           {user.role === "PATIENT" && (
-            <form id="admin-patient-form" onSubmit={patientForm.handleSubmit(onSubmitPatient)}>
-              <PatientProfileForm
-                register={patientForm.register}
-                errors={patientForm.formState.errors}
-                control={patientForm.control}
-                isEditing={isEditing}
-              />
-            </form>
+            <>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-700">
+                      Aprovação do paciente
+                    </p>
+                    <div className="mt-2">
+                      <StatusBadge
+                        status={
+                          user.patientProfile?.approvalStatus ?? "PENDING"
+                        }
+                        type="approval"
+                        className="px-3"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {APPROVAL_ACTIONS.map((action) => (
+                      <Button
+                        key={action.status}
+                        type="button"
+                        variant={action.variant}
+                        disabled={
+                          isUpdatingApproval ||
+                          user.patientProfile?.approvalStatus === action.status
+                        }
+                        onClick={() =>
+                          updatePatientApprovalStatus(action.status)
+                        }
+                      >
+                        {action.label}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <form
+                id="admin-patient-form"
+                onSubmit={patientForm.handleSubmit(onSubmitPatient)}
+              >
+                <PatientProfileForm
+                  register={patientForm.register}
+                  errors={patientForm.formState.errors}
+                  control={patientForm.control}
+                  isEditing={isEditing}
+                />
+              </form>
+            </>
           )}
 
           {user.role === "PROFESSIONAL" && (
-            <form id="admin-professional-form" onSubmit={professionalForm.handleSubmit(onSubmitProfessional)}>
+            <form
+              id="admin-professional-form"
+              onSubmit={professionalForm.handleSubmit(onSubmitProfessional)}
+            >
               <ProfessionalProfileForm
                 register={professionalForm.register}
                 errors={professionalForm.formState.errors}
@@ -129,10 +197,14 @@ const AdminUserProfilePage = () => {
             <>
               <Separator />
               <div className="mt-6 flex justify-end">
-                <Button 
-                  size="xl" 
-                  type="submit" 
-                  form={user.role === "PATIENT" ? "admin-patient-form" : "admin-professional-form"} 
+                <Button
+                  size="xl"
+                  type="submit"
+                  form={
+                    user.role === "PATIENT"
+                      ? "admin-patient-form"
+                      : "admin-professional-form"
+                  }
                   disabled={isSaving}
                   title="Salvar todas as alterações realizadas no perfil"
                 >

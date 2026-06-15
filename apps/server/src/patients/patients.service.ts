@@ -4,7 +4,11 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, UserRole } from '@prisma/client';
+import {
+  AppointmentStatus,
+  PatientApprovalStatus,
+  UserRole,
+} from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { PatientsRepository } from './patients.repository';
 import { ReportsService } from '../reports/reports.service';
@@ -166,6 +170,43 @@ export class PatientsService {
       gender: updatedUser.patientProfile?.gender,
       address: updatedUser.address,
       patientProfile: updatedUser.patientProfile,
+    };
+  }
+
+  async updatePatientApprovalStatus(
+    patientId: string,
+    approvalStatus: PatientApprovalStatus,
+  ) {
+    const patient = await this.repository.findPatientForUpdate(patientId);
+
+    if (!patient || patient.role !== UserRole.PATIENT) {
+      throw new NotFoundException('Paciente não encontrado');
+    }
+
+    if (!patient.patientProfile) {
+      throw new NotFoundException('Perfil do paciente não encontrado');
+    }
+
+    const updatedProfile = await this.repository.updatePatientApprovalStatus(
+      patient.patientProfile.id,
+      approvalStatus,
+    );
+
+    return {
+      id: updatedProfile.user.id,
+      email: updatedProfile.user.email,
+      name: updatedProfile.user.name,
+      cpf: updatedProfile.user.cpf,
+      role: updatedProfile.user.role,
+      status: updatedProfile.user.status,
+      emailVerified: updatedProfile.user.emailVerified,
+      createdAt: updatedProfile.user.createdAt,
+      updatedAt: updatedProfile.user.updatedAt,
+      phone: updatedProfile.phone,
+      dateOfBirth: updatedProfile.dateOfBirth,
+      gender: updatedProfile.gender,
+      patientProfile: updatedProfile,
+      questionnaire: updatedProfile.questionnaire ?? null,
     };
   }
 

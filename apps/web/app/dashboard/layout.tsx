@@ -2,18 +2,22 @@
 
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AppSidebar } from "../ui/dashboard/sidebar";
 import { MobileNav } from "../ui/dashboard/mobile-navbar";
 import { Spinner } from "@/components/ui/spinner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LifeMedLogo } from "../ui/life-med-logo";
 import Link from "next/link";
+import { useUserQuery } from "@/queries/useUserQuery";
 
 const DashboardLayout = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const router = useRouter();
+  const { data: user } = useUserQuery();
   const [role, setRole] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -24,6 +28,22 @@ const DashboardLayout = ({
     }
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (user?.role !== "PATIENT") return;
+    const profile = user.patientProfile;
+    if (!profile?.questionnaireCompleted) {
+      router.replace("/dashboard/patient/questionnaire");
+      return;
+    }
+    if (profile.approvalStatus === "PENDING") {
+      router.replace("/auth/patient-pending-approval");
+      return;
+    }
+    if (profile.approvalStatus === "REJECTED") {
+      router.replace("/auth/patient-rejected");
+    }
+  }, [router, user]);
 
   if (isLoading) {
     return (
@@ -58,9 +78,7 @@ const DashboardLayout = ({
           </Link>
         </header>
 
-        <main className="flex-1 overflow-y-auto pb-24 md:pb-0">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-0">{children}</main>
 
         <MobileNav role={role} />
       </div>
