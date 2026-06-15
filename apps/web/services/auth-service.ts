@@ -4,6 +4,7 @@ import Cookies from "js-cookie";
 import { API_ROUTES } from "../constants/api-routes";
 import {
   AUTH_TOKEN_KEY,
+  PATIENT_APPROVAL_STATUS_KEY,
   QUESTIONNAIRE_COMPLETED_KEY,
   USER_KEY,
   USER_STATUS,
@@ -68,6 +69,7 @@ export interface User {
   emailVerified: boolean;
   patientProfile?: {
     questionnaireCompleted: boolean;
+    approvalStatus: "APPROVED" | "PENDING" | "REJECTED";
   } | null;
 }
 
@@ -155,8 +157,14 @@ export const authService = {
             String(Boolean(user.patientProfile?.questionnaireCompleted)),
             { expires: 1 },
           );
+          Cookies.set(
+            PATIENT_APPROVAL_STATUS_KEY,
+            user.patientProfile?.approvalStatus ?? "PENDING",
+            { expires: 1 },
+          );
         } else {
           Cookies.remove(QUESTIONNAIRE_COMPLETED_KEY);
+          Cookies.remove(PATIENT_APPROVAL_STATUS_KEY);
         }
       }
 
@@ -255,6 +263,7 @@ export const authService = {
     Cookies.remove(USER_KEY);
     Cookies.remove(USER_STATUS);
     Cookies.remove(QUESTIONNAIRE_COMPLETED_KEY);
+    Cookies.remove(PATIENT_APPROVAL_STATUS_KEY);
 
     window.location.href = "/auth/login";
   },

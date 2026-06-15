@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { QuestionnaireAnsweredBy } from '@prisma/client';
+import { PatientApprovalStatus, QuestionnaireAnsweredBy } from '@prisma/client';
 
 export class QuestionnaireOptionDto {
   @ApiProperty()
@@ -78,6 +78,9 @@ export class QuestionnaireResponseDto {
 
   @ApiProperty()
   isVulnerable!: boolean;
+
+  @ApiProperty({ enum: PatientApprovalStatus })
+  approvalStatus!: PatientApprovalStatus;
 
   @ApiProperty()
   responseDate!: Date;

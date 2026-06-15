@@ -2,12 +2,14 @@
 
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AppSidebar } from "../ui/dashboard/sidebar";
 import { MobileNav } from "../ui/dashboard/mobile-navbar";
 import { Spinner } from "@/components/ui/spinner";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { LifeMedLogo } from "../ui/life-med-logo";
 import Link from "next/link";
+import { useUserQuery } from "@/queries/useUserQuery";
 import { NextStep, NextStepProvider } from "nextstepjs";
 import { getTours } from "@/components/tour/tours";
 import { TourCard } from "@/components/tour/TourCard";
@@ -18,6 +20,8 @@ const DashboardLayout = ({
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
+  const router = useRouter();
+  const { data: user } = useUserQuery();
   const [role, setRole] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
@@ -29,6 +33,23 @@ const DashboardLayout = ({
     }
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (user?.role !== "PATIENT") return;
+    const profile = user.patientProfile;
+    if (profile?.approvalStatus === "REJECTED") {
+      router.replace("/auth/patient-rejected");
+      return;
+    }
+    if (!profile?.questionnaireCompleted) {
+      router.replace("/dashboard/patient/questionnaire");
+      return;
+    }
+    if (profile.approvalStatus === "PENDING") {
+      router.replace("/auth/patient-pending-approval");
+      return;
+    }
+  }, [router, user]);
 
   if (isLoading) {
     return (

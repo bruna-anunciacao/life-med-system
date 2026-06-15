@@ -46,6 +46,7 @@ export interface QuestionnaireSubmitResponse {
   answeredByUserId: string;
   totalScore: number;
   isVulnerable: boolean;
+  approvalStatus: "APPROVED" | "PENDING" | "REJECTED";
   responseDate: string;
   answers: QuestionnaireAnswerSnapshot[];
 }

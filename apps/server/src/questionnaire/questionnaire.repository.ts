@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, QuestionnaireAnsweredBy } from '@prisma/client';
+import { PatientApprovalStatus, QuestionnaireAnsweredBy } from '@prisma/client';
 import { SubmitQuestionnaireDto } from './dto/submit-questionnaire.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -56,6 +56,7 @@ export class QuestionnaireRepository {
     patientProfileId: string;
     totalScore: number;
     isVulnerable: boolean;
+    approvalStatus: PatientApprovalStatus;
     replaceExistingId?: string;
   }) {
     const {
@@ -66,6 +67,7 @@ export class QuestionnaireRepository {
       patientProfileId,
       totalScore,
       isVulnerable,
+      approvalStatus,
       replaceExistingId,
     } = params;
 
@@ -103,7 +105,7 @@ export class QuestionnaireRepository {
 
       await tx.patientProfile.update({
         where: { id: patientProfileId },
-        data: { questionnaireCompleted: true },
+        data: { questionnaireCompleted: true, approvalStatus },
       });
 
       return response;

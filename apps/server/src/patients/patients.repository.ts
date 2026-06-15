@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   AppointmentStatus,
+  PatientApprovalStatus,
   Prisma,
   UserRole,
   UserStatus,
@@ -133,6 +134,24 @@ export class PatientsRepository {
       include: {
         patientProfile: true,
         address: true,
+      },
+    });
+  }
+
+  updatePatientApprovalStatus(
+    patientProfileId: string,
+    approvalStatus: PatientApprovalStatus,
+  ) {
+    return this.prisma.patientProfile.update({
+      where: { id: patientProfileId },
+      data: { approvalStatus },
+      include: {
+        user: true,
+        questionnaire: {
+          include: {
+            answers: { include: { question: true, option: true } },
+          },
+        },
       },
     });
   }

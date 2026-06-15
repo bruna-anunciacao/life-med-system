@@ -24,9 +24,11 @@ import { UpdateProfessionalSettingsDto } from './dto/update-setting.dto';
 import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
 import { ProfessionalRoleGuard } from './guards/professional-role.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
+import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 
 @ApiTags('Professional')
 @ApiBearerAuth('access-token')
+@UseGuards(AuthGuard('jwt'), QuestionnaireCompletionGuard)
 @Controller('professional')
 export class ProfessionalController {
   constructor(private readonly professionalService: ProfessionalService) {}
@@ -168,12 +170,16 @@ export class ProfessionalController {
   @UseGuards(AuthGuard('jwt'), ProfessionalRoleGuard, EmailVerifiedGuard)
   @ApiOperation({
     summary: 'Criar um bloqueio na agenda',
-    description: 'Bloqueia a agenda para o dia inteiro ou um intervalo de horas e cancela consultas afetadas.',
+    description:
+      'Bloqueia a agenda para o dia inteiro ou um intervalo de horas e cancela consultas afetadas.',
   })
   @ApiBody({ type: CreateScheduleBlockDto })
   @ApiResponse({ status: 201, description: 'Bloqueio criado com sucesso.' })
   createScheduleBlock(@Req() req, @Body() dto: CreateScheduleBlockDto) {
-    return this.professionalService.createScheduleBlock(req.user.id as string, dto);
+    return this.professionalService.createScheduleBlock(
+      req.user.id as string,
+      dto,
+    );
   }
 
   @Get('schedule-blocks')
@@ -195,6 +201,9 @@ export class ProfessionalController {
   })
   @ApiResponse({ status: 200, description: 'Bloqueio removido com sucesso.' })
   deleteScheduleBlock(@Req() req, @Param('id') id: string) {
-    return this.professionalService.deleteScheduleBlock(req.user.id as string, id);
+    return this.professionalService.deleteScheduleBlock(
+      req.user.id as string,
+      id,
+    );
   }
 }

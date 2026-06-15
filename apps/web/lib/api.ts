@@ -1,6 +1,9 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import { QUESTIONNAIRE_COMPLETED_KEY } from "./auth-constants";
+import {
+  PATIENT_APPROVAL_STATUS_KEY,
+  QUESTIONNAIRE_COMPLETED_KEY,
+} from "./auth-constants";
 const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const api = axios.create({
@@ -39,6 +42,21 @@ api.interceptors.response.use(
       Cookies.get(QUESTIONNAIRE_COMPLETED_KEY) !== "true"
     ) {
       Cookies.set(QUESTIONNAIRE_COMPLETED_KEY, "false", { expires: 1 });
+      window.location.href = payload.redirectTo;
+    }
+
+    if (
+      typeof window !== "undefined" &&
+      (payload?.code === "PATIENT_APPROVAL_PENDING" ||
+        payload?.code === "PATIENT_REJECTED") &&
+      payload?.redirectTo
+    ) {
+      Cookies.set(QUESTIONNAIRE_COMPLETED_KEY, "true", { expires: 1 });
+      Cookies.set(
+        PATIENT_APPROVAL_STATUS_KEY,
+        payload.code === "PATIENT_REJECTED" ? "REJECTED" : "PENDING",
+        { expires: 1 },
+      );
       window.location.href = payload.redirectTo;
     }
 

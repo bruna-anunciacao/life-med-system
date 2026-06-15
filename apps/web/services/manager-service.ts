@@ -1,6 +1,8 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
 
+export type PatientApprovalStatus = "APPROVED" | "PENDING" | "REJECTED";
+
 export interface CreatePatientDto {
   name: string;
   email: string;
@@ -62,6 +64,7 @@ export interface ManagerPatientResponse {
     dateOfBirth?: string;
     gender?: string;
     questionnaireCompleted?: boolean;
+    approvalStatus?: PatientApprovalStatus;
     questionnaire?: QuestionnaireSummary | null;
   };
   questionnaire?: QuestionnaireSummary | null;
@@ -142,11 +145,35 @@ export const managerService = {
     }
   },
 
+  async updatePatientApprovalStatus(
+    patientId: string,
+    approvalStatus: PatientApprovalStatus,
+  ) {
+    try {
+      const response = await api.patch(
+        `/manager/patients/${patientId}/approval-status`,
+        { approvalStatus },
+      );
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        const message = error.response.data.message;
+
+        if (Array.isArray(message)) {
+          throw new Error(message.join(", "));
+        }
+
+        throw new Error(message || "Erro ao atualizar aprovação do paciente.");
+      }
+
+      throw new Error("Erro de conexão com o servidor.");
+    }
+  },
+
   async listPatients(): Promise<ManagerPatientResponse[]> {
     try {
-      const response = await api.get<ManagerPatientResponse[]>(
-        "/manager/patients",
-      );
+      const response =
+        await api.get<ManagerPatientResponse[]>("/manager/patients");
       return response.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {

@@ -4,7 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, QuestionnaireAnsweredBy, UserRole } from '@prisma/client';
+import {
+  PatientApprovalStatus,
+  Prisma,
+  QuestionnaireAnsweredBy,
+  UserRole,
+} from '@prisma/client';
 import { QuestionnaireRepository } from './questionnaire.repository';
 import {
   QuestionnaireDefinitionResponseDto,
@@ -215,6 +220,9 @@ export class QuestionnaireService {
     }
 
     const isVulnerable = totalScore >= active.vulnerabilityThreshold;
+    const approvalStatus = isVulnerable
+      ? PatientApprovalStatus.APPROVED
+      : PatientApprovalStatus.PENDING;
 
     const created = await this.repository.persistResponse({
       dto,
@@ -224,6 +232,7 @@ export class QuestionnaireService {
       patientProfileId,
       totalScore,
       isVulnerable,
+      approvalStatus,
       replaceExistingId,
     });
 
@@ -252,6 +261,7 @@ export class QuestionnaireService {
       answeredByUserId: response.answeredByUserId,
       totalScore: response.totalScore,
       isVulnerable: response.isVulnerable,
+      approvalStatus: response.patientProfile.approvalStatus,
       responseDate: response.responseDate,
       answers: response.answers.map((a) => ({
         questionId: a.questionId,

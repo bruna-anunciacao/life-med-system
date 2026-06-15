@@ -1,7 +1,10 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
 import Cookies from "js-cookie";
-import { QUESTIONNAIRE_COMPLETED_KEY } from "../lib/auth-constants";
+import {
+  PATIENT_APPROVAL_STATUS_KEY,
+  QUESTIONNAIRE_COMPLETED_KEY,
+} from "../lib/auth-constants";
 
 export interface UpdateProfileDto {
   name?: string;
@@ -37,10 +40,7 @@ function validateProfilePhoto(photo: File): void {
   }
 }
 
-function buildProfileFormData(
-  data: UpdateProfileDto,
-  photo: File,
-): FormData {
+function buildProfileFormData(data: UpdateProfileDto, photo: File): FormData {
   const formData = new FormData();
   formData.append("photo", photo);
   Object.entries(data).forEach(([key, value]) => {
@@ -66,6 +66,11 @@ export const usersService = {
         Cookies.set(
           QUESTIONNAIRE_COMPLETED_KEY,
           String(Boolean(user.patientProfile?.questionnaireCompleted)),
+          { expires: 1 },
+        );
+        Cookies.set(
+          PATIENT_APPROVAL_STATUS_KEY,
+          user.patientProfile?.approvalStatus ?? "PENDING",
           { expires: 1 },
         );
       }

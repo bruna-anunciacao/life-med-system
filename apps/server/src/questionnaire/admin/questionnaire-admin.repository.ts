@@ -227,7 +227,7 @@ export class QuestionnaireAdminRepository {
         where: {
           id: { in: responses.map((r) => r.patientProfileId) },
         },
-        data: { questionnaireCompleted: false },
+        data: { questionnaireCompleted: false, approvalStatus: 'PENDING' },
       });
     }
 

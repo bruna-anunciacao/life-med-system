@@ -44,10 +44,22 @@ const TYPE_TABS: { label: string; value: TypeFilter }[] = [
   { label: "Gestores", value: "MANAGER" },
 ];
 
-const TYPE_BADGE: Record<"PATIENT" | "PROFESSIONAL" | "MANAGER", { label: string; className: string }> = {
-  PATIENT: { label: "Paciente", className: "bg-blue-50 text-blue-600 border border-blue-200" },
-  PROFESSIONAL: { label: "Profissional", className: "bg-violet-50 text-violet-600 border border-violet-200" },
-  MANAGER: { label: "Gestor", className: "bg-amber-50 text-amber-700 border border-amber-200" },
+const TYPE_BADGE: Record<
+  "PATIENT" | "PROFESSIONAL" | "MANAGER",
+  { label: string; className: string }
+> = {
+  PATIENT: {
+    label: "Paciente",
+    className: "bg-blue-50 text-blue-600 border border-blue-200",
+  },
+  PROFESSIONAL: {
+    label: "Profissional",
+    className: "bg-violet-50 text-violet-600 border border-violet-200",
+  },
+  MANAGER: {
+    label: "Gestor",
+    className: "bg-amber-50 text-amber-700 border border-amber-200",
+  },
 };
 
 type Props = {
@@ -83,7 +95,8 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const mounted = useMounted();
-  const { users, isLoading, search, setSearch, typeFilter, setTypeFilter } = useAdminUsersTable();
+  const { users, isLoading, search, setSearch, typeFilter, setTypeFilter } =
+    useAdminUsersTable();
 
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -130,7 +143,9 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
   const sortedUsers = useMemo(() => {
     if (!sortField) return users;
     return [...users].sort((a, b) => {
-      const cmp = getSortValue(a, sortField).localeCompare(getSortValue(b, sortField));
+      const cmp = getSortValue(a, sortField).localeCompare(
+        getSortValue(b, sortField),
+      );
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [users, sortField, sortDir]);
@@ -139,7 +154,11 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
 
   return (
     <DataTableCard>
-      <DataTableHeader title="Usuários" count={sortedUsers.length} actions={actions} />
+      <DataTableHeader
+        title="Usuários"
+        count={sortedUsers.length}
+        actions={actions}
+      />
 
       <div id="tour-admin-users-toolbar">
       <DataTableToolbar>
@@ -160,14 +179,14 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
           ))}
         </div>
         <div className="flex-1 min-w-40 max-w-xs">
-        <SearchInput
+          <SearchInput
             placeholder="Buscar usuário..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             title="Digite o nome ou e-mail para buscar"
             className="h-9 text-sm"
           />
-      </div>
+        </div>
       </DataTableToolbar>
       </div>
 
@@ -201,16 +220,23 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium text-foreground truncate">{user.name}</p>
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.className}`}>
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {user.name}
+                      </p>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.className}`}
+                      >
                         {badge.label}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{user.email}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {user.email}
+                    </p>
                     {user.role === "PROFESSIONAL" && speciality && (
                       <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">
                         {speciality}
-                        {user.professionalProfile?.modality && ` · ${user.professionalProfile.modality}`}
+                        {user.professionalProfile?.modality &&
+                          ` · ${user.professionalProfile.modality}`}
                       </p>
                     )}
                     {user.role === "PATIENT" && user.patientProfile?.phone && (
@@ -225,16 +251,29 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                     )}
                     <div className="mt-2">
                       <StatusBadge status={user.status} type="user" />
+                      {user.role === "PATIENT" &&
+                        user.patientProfile?.approvalStatus && (
+                          <StatusBadge
+                            status={user.patientProfile.approvalStatus}
+                            type="approval"
+                            className="mt-1 px-2 text-[10px]"
+                          />
+                        )}
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-0.5 shrink-0" onClick={stopClick}>
+                  <div
+                    className="flex flex-col gap-0.5 shrink-0"
+                    onClick={stopClick}
+                  >
                     <Button
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8 text-muted-foreground hover:text-foreground"
                       title={`Visualizar detalhes de ${user.name}`}
-                      onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
+                      onClick={() =>
+                        router.push(`/dashboard/admin/users/${user.id}`)
+                      }
                     >
                       <Eye />
                     </Button>
@@ -272,7 +311,9 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                       variant="ghost"
                       className="h-8 w-8 text-muted-foreground hover:text-foreground"
                       title={`Editar dados de ${user.name}`}
-                      onClick={() => router.push(`/dashboard/admin/users/${user.id}?edit=1`)}
+                      onClick={() =>
+                        router.push(`/dashboard/admin/users/${user.id}?edit=1`)
+                      }
                     >
                       <Pencil />
                     </Button>
@@ -285,22 +326,45 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
       ) : (
         <DataTable>
           <DataTableHead>
-            <SortableHeader field="name" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+            <SortableHeader
+              field="name"
+              currentField={sortField}
+              direction={sortDir}
+              onToggle={toggleSort}
+            >
               Usuário
             </SortableHeader>
 
             {typeFilter === "all" && (
-              <SortableHeader field="type" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+              <SortableHeader
+                field="type"
+                currentField={sortField}
+                direction={sortDir}
+                onToggle={toggleSort}
+                align="center"
+              >
                 Tipo
               </SortableHeader>
             )}
 
             {typeFilter === "PATIENT" && (
               <>
-                <SortableHeader field="phone" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                <SortableHeader
+                  field="phone"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                  align="center"
+                >
                   Telefone
                 </SortableHeader>
-                <SortableHeader field="dateOfBirth" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                <SortableHeader
+                  field="dateOfBirth"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                  align="center"
+                >
                   Nascimento
                 </SortableHeader>
               </>
@@ -308,20 +372,44 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
 
             {typeFilter === "PROFESSIONAL" && (
               <>
-                <SortableHeader field="speciality" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                <SortableHeader
+                  field="speciality"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                  align="center"
+                >
                   Especialidade
                 </SortableHeader>
-                <SortableHeader field="modality" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+                <SortableHeader
+                  field="modality"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                  align="center"
+                >
                   Modalidade
                 </SortableHeader>
               </>
             )}
 
-            <SortableHeader field="status" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+            <SortableHeader
+              field="status"
+              currentField={sortField}
+              direction={sortDir}
+              onToggle={toggleSort}
+              align="center"
+            >
               Status
             </SortableHeader>
 
-            <SortableHeader field="createdAt" currentField={sortField} direction={sortDir} onToggle={toggleSort} align="center">
+            <SortableHeader
+              field="createdAt"
+              currentField={sortField}
+              direction={sortDir}
+              onToggle={toggleSort}
+              align="center"
+            >
               Cadastrado em
             </SortableHeader>
 
@@ -339,12 +427,16 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                 >
                   <DataTableCell>
                     <p className="font-medium text-foreground">{user.name}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{user.email}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {user.email}
+                    </p>
                   </DataTableCell>
 
                   {typeFilter === "all" && (
                     <DataTableCell align="center">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}
+                      >
                         {badge.label}
                       </span>
                     </DataTableCell>
@@ -353,10 +445,14 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                   {typeFilter === "PATIENT" && (
                     <>
                       <DataTableCell align="center">
-                        {user.patientProfile?.phone ?? <span className="text-muted-foreground/40">—</span>}
+                        {user.patientProfile?.phone ?? (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
                       </DataTableCell>
                       <DataTableCell align="center">
-                        {formatDate(user.patientProfile?.dateOfBirth) ?? <span className="text-muted-foreground/40">—</span>}
+                        {formatDate(user.patientProfile?.dateOfBirth) ?? (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
                       </DataTableCell>
                     </>
                   )}
@@ -364,20 +460,36 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                   {typeFilter === "PROFESSIONAL" && (
                     <>
                       <DataTableCell align="center">
-                        {speciality ?? <span className="text-muted-foreground/40">—</span>}
+                        {speciality ?? (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
                       </DataTableCell>
                       <DataTableCell align="center">
-                        {user.professionalProfile?.modality ?? <span className="text-muted-foreground/40">—</span>}
+                        {user.professionalProfile?.modality ?? (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
                       </DataTableCell>
                     </>
                   )}
 
                   <DataTableCell align="center">
-                    <StatusBadge status={user.status} type="user" />
+                    <div className="flex flex-col items-center gap-1">
+                      <StatusBadge status={user.status} type="user" />
+                      {user.role === "PATIENT" &&
+                        user.patientProfile?.approvalStatus && (
+                          <StatusBadge
+                            status={user.patientProfile.approvalStatus}
+                            type="approval"
+                            className="px-2 text-[10px]"
+                          />
+                        )}
+                    </div>
                   </DataTableCell>
 
                   <DataTableCell align="center">
-                    {formatDate(user.createdAt) ?? <span className="text-muted-foreground/40">—</span>}
+                    {formatDate(user.createdAt) ?? (
+                      <span className="text-muted-foreground/40">—</span>
+                    )}
                   </DataTableCell>
 
                   <DataTableCell align="center" onClick={stopClick}>
@@ -387,7 +499,9 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                         variant="ghost"
                         className="h-8 w-8 text-muted-foreground hover:text-foreground"
                         title={`Visualizar detalhes de ${user.name}`}
-                        onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
+                        onClick={() =>
+                          router.push(`/dashboard/admin/users/${user.id}`)
+                        }
                       >
                         <Eye />
                       </Button>

@@ -1,16 +1,20 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Fuse from 'fuse.js';
-import { useListPatientsQuery } from '@/queries/useListPatientsQuery';
-import { useIsMobile, useMounted } from '@/hooks/useIsMobile';
-import Link from 'next/link';
-import { StatsCardsSkeleton, TableSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
-import { EmptyState } from '@/components/shared/EmptyState';
-import { PageShell, PageHeader } from '../../../ui/dashboard/page-shell';
-import { TourButton } from '@/components/tour/TourButton';
-import { formatPhoneNumber } from '@/app/utils/formatPhone';
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Fuse from "fuse.js";
+import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
+import { useIsMobile, useMounted } from "@/hooks/useIsMobile";
+import Link from "next/link";
+import {
+  StatsCardsSkeleton,
+  TableSkeleton,
+  PageHeaderSkeleton,
+} from "@/components/ui/skeletons";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
+import { formatPhoneNumber } from "@/app/utils/formatPhone";
 import {
   DataTable,
   DataTableBody,
@@ -24,19 +28,22 @@ import {
   DataTablePagination,
   DataTableRow,
   SortableHeader,
-} from '@/components/ui/data-table';
-import { usePagination } from '@/hooks/usePagination';
-import {
-  Plus,
-  Users,
-  ClipboardCheck,
-  ClipboardList,
-} from 'lucide-react';
-import { SearchInput } from '@/components/ui/search-input';
-import { StatCard } from '@/components/shared/StatCard';
+} from "@/components/ui/data-table";
+import { usePagination } from "@/hooks/usePagination";
+import { Plus, Users, ClipboardCheck, ClipboardList } from "lucide-react";
+import { SearchInput } from "@/components/ui/search-input";
+import { StatCard } from "@/components/shared/StatCard";
+import { StatusBadge } from "@/components/shared/StatusBadge";
 
-type SortField = 'name' | 'email' | 'phone' | 'dateOfBirth' | 'gender' | 'questionnaire';
-type SortDir = 'asc' | 'desc';
+type SortField =
+  | "name"
+  | "email"
+  | "phone"
+  | "dateOfBirth"
+  | "gender"
+  | "questionnaire"
+  | "approval";
+type SortDir = "asc" | "desc";
 
 type Patient = {
   id: string;
@@ -49,14 +56,15 @@ type Patient = {
     dateOfBirth?: string;
     gender?: string;
     questionnaireCompleted?: boolean;
+    approvalStatus?: "APPROVED" | "PENDING" | "REJECTED";
     questionnaire?: { id: string } | null;
   };
 };
 
 const formatLocalDate = (dateString: string) => {
-  if (!dateString) return '-';
-  const date = new Date(dateString.split('T')[0] + 'T00:00:00');
-  return date.toLocaleDateString('pt-BR');
+  if (!dateString) return "-";
+  const date = new Date(dateString.split("T")[0] + "T00:00:00");
+  return date.toLocaleDateString("pt-BR");
 };
 
 export default function PatientsPage() {
@@ -64,14 +72,14 @@ export default function PatientsPage() {
   const isMobile = useIsMobile();
   const mounted = useMounted();
   const searchParams = useSearchParams();
-  const searchTerm = searchParams.get('search') ?? '';
+  const searchTerm = searchParams.get("search") ?? "";
 
   const { data: patients = [], isLoading, error } = useListPatientsQuery();
 
   const fuse = useMemo(
     () =>
       new Fuse(patients as Patient[], {
-        keys: ['name'],
+        keys: ["name"],
         threshold: 0.35,
         ignoreLocation: true,
       }),
@@ -84,39 +92,45 @@ export default function PatientsPage() {
   }, [searchTerm, fuse, patients]);
 
   const [sortField, setSortField] = useState<SortField | null>(null);
-  const [sortDir, setSortDir] = useState<SortDir>('asc');
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   function toggleSort(field: SortField) {
     if (sortField === field) {
-      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortField(field);
-      setSortDir('asc');
+      setSortDir("asc");
     }
   }
 
   function getSortValue(p: Patient, field: SortField): string {
     switch (field) {
-      case 'name':
-        return p.name ?? '';
-      case 'email':
-        return p.email ?? '';
-      case 'phone':
-        return p.patientProfile?.phone ?? '';
-      case 'dateOfBirth':
-        return p.patientProfile?.dateOfBirth ?? '';
-      case 'gender':
-        return p.patientProfile?.gender ?? '';
-      case 'questionnaire':
-        return p.patientProfile?.questionnaire ? '1' : '0';
+      case "name":
+        return p.name ?? "";
+      case "email":
+        return p.email ?? "";
+      case "phone":
+        return p.patientProfile?.phone ?? "";
+      case "dateOfBirth":
+        return p.patientProfile?.dateOfBirth ?? "";
+      case "gender":
+        return p.patientProfile?.gender ?? "";
+      case "questionnaire":
+        return p.patientProfile?.questionnaire ? "1" : "0";
+      case "approval":
+        return p.patientProfile?.approvalStatus ?? "";
     }
   }
 
   const stats = useMemo(() => {
     const list = patients as Patient[];
     const total = list.length;
-    const active = list.filter((p) => !p.status || p.status === 'VERIFIED').length;
-    const withQuestionnaire = list.filter((p) => Boolean(p.patientProfile?.questionnaire)).length;
+    const active = list.filter(
+      (p) => !p.status || p.status === "VERIFIED",
+    ).length;
+    const withQuestionnaire = list.filter((p) =>
+      Boolean(p.patientProfile?.questionnaire),
+    ).length;
     const withoutQuestionnaire = total - withQuestionnaire;
     return { total, active, withQuestionnaire, withoutQuestionnaire };
   }, [patients]);
@@ -124,8 +138,10 @@ export default function PatientsPage() {
   const sortedPatients = useMemo(() => {
     if (!sortField) return filteredPatients;
     return [...filteredPatients].sort((a, b) => {
-      const cmp = getSortValue(a, sortField).localeCompare(getSortValue(b, sortField));
-      return sortDir === 'asc' ? cmp : -cmp;
+      const cmp = getSortValue(a, sortField).localeCompare(
+        getSortValue(b, sortField),
+      );
+      return sortDir === "asc" ? cmp : -cmp;
     });
   }, [filteredPatients, sortField, sortDir]);
 
@@ -137,9 +153,9 @@ export default function PatientsPage() {
   function handleSearch(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value) {
-      params.set('search', value);
+      params.set("search", value);
     } else {
-      params.delete('search');
+      params.delete("search");
     }
     router.replace(`?${params.toString()}`);
   }
@@ -186,44 +202,49 @@ export default function PatientsPage() {
       />
 
       {patients.length > 0 && (
-          <div id="tour-mgr-patients-stats" className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-            <StatCard label="Total" value={stats.total} />
-            <StatCard
-              label="Ativos"
-              value={stats.active}
-              valueClassName="text-emerald-600"
-            />
-            <StatCard
-              label="Com questionário"
-              value={stats.withQuestionnaire}
-              valueClassName="text-blue-600"
-            />
-            <StatCard
-              label="Sem questionário"
-              value={stats.withoutQuestionnaire}
-              valueClassName="text-amber-600"
-            />
-          </div>
-        )}
-
-        <div id="tour-mgr-patients-search" className="mb-6">
-          <SearchInput
-            placeholder="Buscar paciente por nome..."
-            defaultValue={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="h-12 shadow-sm rounded-xl"
-            aria-label="Buscar paciente por nome"
+        <div
+          id="tour-mgr-patients-stats"
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6"
+        >
+          <StatCard label="Total" value={stats.total} />
+          <StatCard
+            label="Ativos"
+            value={stats.active}
+            valueClassName="text-emerald-600"
           />
-          {searchTerm && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              {filteredPatients.length}{' '}
-              {filteredPatients.length === 1 ? 'resultado' : 'resultados'} para{' '}
-              <span className="font-medium text-foreground">&quot;{searchTerm}&quot;</span>
-            </p>
-          )}
+          <StatCard
+            label="Com questionário"
+            value={stats.withQuestionnaire}
+            valueClassName="text-blue-600"
+          />
+          <StatCard
+            label="Sem questionário"
+            value={stats.withoutQuestionnaire}
+            valueClassName="text-amber-600"
+          />
         </div>
+      )}
 
-        <div id="tour-mgr-patients-table">
+      <div id="tour-mgr-patients-search" className="mb-6">
+        <SearchInput
+          placeholder="Buscar paciente por nome..."
+          defaultValue={searchTerm}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="h-12 shadow-sm rounded-xl"
+          aria-label="Buscar paciente por nome"
+        />
+        {searchTerm && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {filteredPatients.length}{" "}
+            {filteredPatients.length === 1 ? "resultado" : "resultados"} para{" "}
+            <span className="font-medium text-foreground">
+              &quot;{searchTerm}&quot;
+            </span>
+          </p>
+        )}
+      </div>
+
+      <div id="tour-mgr-patients-table">
         {!mounted ? (
           <div className="h-40" aria-hidden="true" />
         ) : filteredPatients.length === 0 ? (
@@ -247,7 +268,9 @@ export default function PatientsPage() {
               {pagination.pageItems.map((patient) => (
                 <DataTableMobileItem
                   key={patient.id}
-                  onClick={() => router.push(`/dashboard/manager/patients/${patient.id}`)}
+                  onClick={() =>
+                    router.push(`/dashboard/manager/patients/${patient.id}`)
+                  }
                   title={`Ver detalhes de ${patient.name}`}
                 >
                   <div className="flex gap-3 mb-3">
@@ -255,7 +278,18 @@ export default function PatientsPage() {
                       <h3 className="font-medium text-foreground truncate">
                         {patient.name}
                       </h3>
-                      <p className="text-xs text-muted-foreground truncate">{patient.email}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {patient.email}
+                      </p>
+                      {patient.patientProfile?.approvalStatus && (
+                        <div className="mt-2">
+                          <StatusBadge
+                            status={patient.patientProfile.approvalStatus}
+                            type="approval"
+                            className="px-2 py-0 text-[10px]"
+                          />
+                        </div>
+                      )}
                     </div>
                     {patient.patientProfile?.questionnaire ? (
                       <span className="inline-flex items-center gap-1 self-start rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
@@ -272,15 +306,16 @@ export default function PatientsPage() {
                   <div className="space-y-1.5">
                     {patient.patientProfile?.phone && (
                       <p className="text-xs text-muted-foreground">
-                        <span className="font-medium">Tel:</span> {patient.patientProfile.phone}
+                        <span className="font-medium">Tel:</span>{" "}
+                        {patient.patientProfile.phone}
                       </p>
                     )}
                     {patient.patientProfile?.dateOfBirth && (
                       <p className="text-xs text-muted-foreground">
-                        <span className="font-medium">Nascimento:</span>{' '}
-                        {new Date(patient.patientProfile.dateOfBirth).toLocaleDateString(
-                          'pt-BR',
-                        )}
+                        <span className="font-medium">Nascimento:</span>{" "}
+                        {new Date(
+                          patient.patientProfile.dateOfBirth,
+                        ).toLocaleDateString("pt-BR")}
                       </p>
                     )}
                   </div>
@@ -305,23 +340,61 @@ export default function PatientsPage() {
           <DataTableCard className="overflow-x-auto">
             <DataTable>
               <DataTableHead>
-                <SortableHeader field="name" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                <SortableHeader
+                  field="name"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
                   Nome
                 </SortableHeader>
-                <SortableHeader field="email" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                <SortableHeader
+                  field="email"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
                   Email
                 </SortableHeader>
-                <SortableHeader field="phone" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                <SortableHeader
+                  field="phone"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
                   Telefone
                 </SortableHeader>
-                <SortableHeader field="dateOfBirth" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                <SortableHeader
+                  field="dateOfBirth"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
                   Data de Nascimento
                 </SortableHeader>
-                <SortableHeader field="gender" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                <SortableHeader
+                  field="gender"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
                   Gênero
                 </SortableHeader>
-                <SortableHeader field="questionnaire" currentField={sortField} direction={sortDir} onToggle={toggleSort}>
+                <SortableHeader
+                  field="questionnaire"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
                   Questionário
+                </SortableHeader>
+                <SortableHeader
+                  field="approval"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Aprovação
                 </SortableHeader>
                 <DataTableHeadCell>Ações</DataTableHeadCell>
               </DataTableHead>
@@ -329,19 +402,21 @@ export default function PatientsPage() {
                 {pagination.pageItems.map((patient) => (
                   <DataTableRow key={patient.id}>
                     <DataTableCell>
-                      <span className="font-medium text-foreground">{patient.name}</span>
+                      <span className="font-medium text-foreground">
+                        {patient.name}
+                      </span>
                     </DataTableCell>
                     <DataTableCell>{patient.email}</DataTableCell>
                     <DataTableCell>
-                      {formatPhoneNumber(patient.patientProfile?.phone) || '-'}
+                      {formatPhoneNumber(patient.patientProfile?.phone) || "-"}
                     </DataTableCell>
                     <DataTableCell>
                       {patient.patientProfile?.dateOfBirth
                         ? formatLocalDate(patient.patientProfile.dateOfBirth)
-                        : '-'}
+                        : "-"}
                     </DataTableCell>
                     <DataTableCell>
-                      {patient.patientProfile?.gender ?? '-'}
+                      {patient.patientProfile?.gender ?? "-"}
                     </DataTableCell>
                     <DataTableCell>
                       {patient.patientProfile?.questionnaire ? (
@@ -354,6 +429,17 @@ export default function PatientsPage() {
                           <ClipboardList className="w-3 h-3" />
                           Pendente
                         </span>
+                      )}
+                    </DataTableCell>
+                    <DataTableCell>
+                      {patient.patientProfile?.approvalStatus ? (
+                        <StatusBadge
+                          status={patient.patientProfile.approvalStatus}
+                          type="approval"
+                          className="px-2"
+                        />
+                      ) : (
+                        "-"
                       )}
                     </DataTableCell>
                     <DataTableCell>
@@ -383,7 +469,7 @@ export default function PatientsPage() {
             />
           </DataTableCard>
         )}
-        </div>
+      </div>
     </PageShell>
   );
 }

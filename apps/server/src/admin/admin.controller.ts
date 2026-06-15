@@ -19,8 +19,10 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { UsersService } from 'src/users/users.service';
+import { PatientsService } from 'src/patients/patients.service';
 import { VerifyUserDto } from 'src/users/dto/verify-user.dto';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { UpdatePatientApprovalStatusDto } from 'src/patients/dto/update-patient-approval-status.dto';
 import { ListAdminUsersQueryDto } from './dto/list-admin-users-query-dto';
 
 @ApiTags('Admin')
@@ -28,7 +30,10 @@ import { ListAdminUsersQueryDto } from './dto/list-admin-users-query-dto';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 export class AdminController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly patientsService: PatientsService,
+  ) {}
 
   @Get('users')
   @ApiOperation({ summary: 'Listar usuários do sistema (Admin)' })
@@ -64,5 +69,27 @@ export class AdminController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.usersService.updateUserAsAdmin(userIdToUpdate, dto);
+  }
+
+  @Patch('patients/:patientId/approval-status')
+  @ApiOperation({
+    summary: 'Atualizar status de aprovação de um paciente (Admin)',
+  })
+  @ApiParam({ name: 'patientId', description: 'ID do paciente (UUID)' })
+  @ApiBody({ type: UpdatePatientApprovalStatusDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Status de aprovação atualizado com sucesso.',
+  })
+  @ApiResponse({ status: 403, description: 'Acesso negado — somente ADMIN.' })
+  @ApiResponse({ status: 404, description: 'Paciente não encontrado.' })
+  updatePatientApprovalStatus(
+    @Param('patientId') patientId: string,
+    @Body() dto: UpdatePatientApprovalStatusDto,
+  ) {
+    return this.patientsService.updatePatientApprovalStatus(
+      patientId,
+      dto.approvalStatus,
+    );
   }
 }

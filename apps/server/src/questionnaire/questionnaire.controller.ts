@@ -26,6 +26,7 @@ import {
 import { RolesGuard } from '../auth/guards/roles-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { QuestionnaireCompletionGuard } from './questionnaire-completion.guard';
 
 @ApiTags('Questionnaire')
 @ApiBearerAuth('access-token')
@@ -34,7 +35,7 @@ export class QuestionnaireController {
   constructor(private readonly questionnaireService: QuestionnaireService) {}
 
   @Get('questionnaire/questions')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, QuestionnaireCompletionGuard)
   @ApiOperation({
     summary: 'Listar definição do questionário de vulnerabilidade',
   })
@@ -44,7 +45,7 @@ export class QuestionnaireController {
   }
 
   @Get('questionnaire/me')
-  @UseGuards(JwtAuthGuard, PatientRoleGuard)
+  @UseGuards(JwtAuthGuard, PatientRoleGuard, QuestionnaireCompletionGuard)
   @ApiOperation({ summary: 'Resposta do paciente autenticado' })
   @ApiResponse({ status: 200, type: QuestionnaireResponseDto })
   getOwnResponse(@Request() req) {
@@ -54,7 +55,7 @@ export class QuestionnaireController {
   }
 
   @Post('questionnaire')
-  @UseGuards(JwtAuthGuard, PatientRoleGuard)
+  @UseGuards(JwtAuthGuard, PatientRoleGuard, QuestionnaireCompletionGuard)
   @ApiOperation({ summary: 'Paciente envia seu próprio questionário' })
   @ApiResponse({ status: 201, type: QuestionnaireResponseDto })
   submitSelf(@Request() req, @Body() dto: SubmitQuestionnaireDto) {
