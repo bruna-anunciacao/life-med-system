@@ -10,12 +10,22 @@ describe('AuthService', () => {
   const password = 'Senha123!';
   const repository = {
     findUserForLogin: jest.fn(),
+    findUserByEmail: jest.fn(),
+    findUserByCpf: jest.fn(),
+    createPatient: jest.fn(),
+    createPasswordReset: jest.fn(),
+    findPasswordResetByToken: jest.fn(),
+    resetPassword: jest.fn(),
   };
   const jwtService = {
     sign: jest.fn(() => 'signed-token'),
   };
-  const mailService = {};
-  const emailVerification = {};
+  const mailService = {
+    sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+  };
+  const emailVerification = {
+    sendVerification: jest.fn().mockResolvedValue(undefined),
+  };
 
   let service: AuthService;
 
@@ -128,5 +138,129 @@ describe('AuthService', () => {
         status: UserStatus.VERIFIED,
       }),
     );
+  });
+
+  describe('register', () => {
+    const dto = {
+      email: 'novo@lifemed.com',
+      cpf: '12345678900',
+      password,
+      name: 'Novo Paciente',
+    } as any;
+
+    it('rejects registration when the email already exists', async () => {
+      repository.findUserByEmail.mockResolvedValue({ id: 'existing' });
+
+      await expect(service.register(dto)).rejects.toThrow('E-mail já cadastrado');
+      expect(repository.createPatient).not.toHaveBeenCalled();
+    });
+
+    it('rejects registration when the CPF already exists', async () => {
+      repository.findUserByEmail.mockResolvedValue(null);
+      repository.findUserByCpf.mockResolvedValue({ id: 'existing' });
+
+      await expect(service.register(dto)).rejects.toThrow('CPF já cadastrado');
+      expect(repository.createPatient).not.toHaveBeenCalled();
+    });
+
+    it('hashes the password and sends a verification email on success', async () => {
+      repository.findUserByEmail.mockResolvedValue(null);
+      repository.findUserByCpf.mockResolvedValue(null);
+      repository.createPatient.mockImplementation(
+        async (_dto: unknown, passwordHash: string) => ({
+          id: 'new-user',
+          email: dto.email,
+          name: dto.name,
+          role: UserRole.PATIENT,
+          status: UserStatus.PENDING,
+          password: passwordHash,
+        }),
+      );
+
+      const result = await service.register(dto);
+
+      const [, passwordHash] = repository.createPatient.mock.calls[0];
+      expect(passwordHash).not.toBe(password);
+      expect(await bcrypt.compare(password, passwordHash)).toBe(true);
+      expect(emailVerification.sendVerification).toHaveBeenCalled();
+      expect(result).toMatchObject({ id: 'new-user', email: dto.email });
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('returns a generic message and does nothing when the email is unknown', async () => {
+      repository.findUserByEmail.mockResolvedValue(null);
+
+      const result = await service.forgotPassword({
+        email: 'desconhecido@lifemed.com',
+      } as any);
+
+      expect(result.message).toMatch(/Se o e-mail existir/);
+      expect(repository.createPasswordReset).not.toHaveBeenCalled();
+      expect(mailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+    });
+
+    it('creates a reset token and sends the email when the user exists', async () => {
+      repository.findUserByEmail.mockResolvedValue({
+        id: 'user-id',
+        name: 'Usuario',
+        email: 'usuario@lifemed.com',
+      });
+
+      const result = await service.forgotPassword({
+        email: 'usuario@lifemed.com',
+      } as any);
+
+      expect(repository.createPasswordReset).toHaveBeenCalledWith(
+        'user-id',
+        expect.any(String),
+        expect.any(Date),
+      );
+      expect(mailService.sendPasswordResetEmail).toHaveBeenCalled();
+      // Mensagem genérica idêntica à do caso desconhecido (evita enumeração).
+      expect(result.message).toMatch(/Se o e-mail existir/);
+    });
+  });
+
+  describe('resetPassword', () => {
+    it('rejects an invalid token', async () => {
+      repository.findPasswordResetByToken.mockResolvedValue(null);
+
+      await expect(
+        service.resetPassword({ token: 'bad', newPassword: password } as any),
+      ).rejects.toThrow('Token inválido');
+    });
+
+    it('rejects an expired token', async () => {
+      repository.findPasswordResetByToken.mockResolvedValue({
+        id: 'reset-1',
+        userId: 'user-id',
+        expiresAt: new Date(Date.now() - 1000),
+      });
+
+      await expect(
+        service.resetPassword({ token: 'old', newPassword: password } as any),
+      ).rejects.toThrow('Token expirado');
+      expect(repository.resetPassword).not.toHaveBeenCalled();
+    });
+
+    it('hashes the new password and persists it for a valid token', async () => {
+      repository.findPasswordResetByToken.mockResolvedValue({
+        id: 'reset-1',
+        userId: 'user-id',
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      });
+
+      await service.resetPassword({
+        token: 'valid',
+        newPassword: password,
+      } as any);
+
+      const [resetId, userId, passwordHash] =
+        repository.resetPassword.mock.calls[0];
+      expect(resetId).toBe('reset-1');
+      expect(userId).toBe('user-id');
+      expect(await bcrypt.compare(password, passwordHash)).toBe(true);
+    });
   });
 });
