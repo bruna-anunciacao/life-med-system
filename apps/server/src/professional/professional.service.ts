@@ -42,11 +42,12 @@ export class ProfessionalService {
   }
 
   async getDailySchedule(userId: string, dateString: string) {
-    const startOfDay = new Date(`${dateString}T00:00:00.000Z`);
-    const endOfDay = new Date(`${dateString}T23:59:59.999Z`);
+    // Usando offset -03:00 (Brasil) para pegar o início e fim do dia no fuso local.
+    const startOfDay = new Date(`${dateString}T00:00:00.000-03:00`);
+    const endOfDay = new Date(`${dateString}T23:59:59.999-03:00`);
 
-    const targetDate = new Date(`${dateString}T12:00:00.000Z`);
-    const dayOfWeek = targetDate.getUTCDay();
+    const targetDate = new Date(`${dateString}T12:00:00.000-03:00`);
+    const dayOfWeek = targetDate.getDay();
 
     const availability = await this.repository.findAvailabilityForDate(
       userId,
@@ -66,16 +67,25 @@ export class ProfessionalService {
       dateString,
     );
 
+    const attendedPatientsCount =
+      await this.repository.countDistinctAttendedPatients(userId);
+
     return {
       availability,
       scheduleBlocks,
+      attendedPatientsCount,
       appointments: appointments.map((apt) => ({
         id: apt.id,
         dateTime: apt.dateTime,
         status: apt.status,
+        modality: apt.modality,
         notes: apt.notes,
+        meetLink: apt.meetLink,
         patient: {
+          id: apt.patient.id,
           name: apt.patient.name,
+          email: apt.patient.email,
+          phone: apt.patient.patientProfile?.phone ?? null,
         },
       })),
     };
@@ -159,6 +169,7 @@ export class ProfessionalService {
         id: apt.id,
         dateTime: apt.dateTime,
         status: apt.status,
+        modality: apt.modality,
         notes: apt.notes,
       })),
     };

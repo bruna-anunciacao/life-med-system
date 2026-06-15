@@ -8,6 +8,8 @@ import { AddressForm } from "@/components/address/AddressForm";
 import { usePatientProfileForm } from "./usePatientProfileForm";
 import { PatientInfoForm } from "./components/PatientInfoForm";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const PatientProfilePage = () => {
   const {
@@ -20,6 +22,7 @@ const PatientProfilePage = () => {
     handleCancel,
     onSubmit,
   } = usePatientProfileForm();
+  const isMobile = useIsMobile();
 
   if (isLoading) {
     return (
@@ -34,8 +37,10 @@ const PatientProfilePage = () => {
       <PageHeader
         title="Meu Perfil"
         description="Gerencie suas informações pessoais."
+        help={<TourButton tour="patient-profile" iconOnly={isMobile} />}
         actions={
           <Button
+            id="tour-profile-edit"
             size="lg"
             onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
             title={isEditing ? "Cancelar edição" : "Habilitar edição do perfil"}
@@ -45,7 +50,7 @@ const PatientProfilePage = () => {
         }
       />
 
-      <Card className="border border-gray-200 rounded-xl bg-white">
+      <Card id="tour-profile-info" className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-12 space-y-8">
           <div className="flex items-center gap-5">
             <div className="w-16 h-16 flex items-center justify-center rounded-full bg-[#e6f1ff] border-2 border-[#006fee] text-2xl font-bold text-[#006fee] flex-shrink-0">
@@ -101,7 +106,7 @@ const PatientProfilePage = () => {
         </CardContent>
       </Card>
 
-      <Card className="border border-gray-200 rounded-xl bg-white mt-8">
+      <Card id="tour-profile-address" className="border border-gray-200 rounded-xl bg-white mt-8">
         <CardContent className="p-12 space-y-6">
           <AddressForm userId={user?.id || ""} />
         </CardContent>

@@ -13,13 +13,14 @@ import { ScheduleTimeline } from "./components/ScheduleTimeline";
 import ScheduleModal from "./scheduleModal";
 import { BlockScheduleModal } from "./components/BlockScheduleModal";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 
 type Appointment = {
   id: string;
   dateTime: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
   notes?: string;
-  patient: { name: string };
+  patient: { id?: string; name: string };
 };
 
 const SchedulePage = () => {
@@ -62,20 +63,24 @@ const SchedulePage = () => {
         scheduleBlocks: blocks,
       };
 
-    const startHour = parseInt(
-      scheduleData.availability.startTime.split(":")[0],
-      10,
-    );
-    const endHour = parseInt(
-      scheduleData.availability.endTime.split(":")[0],
-      10,
-    );
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(":");
+      return parseInt(h || "0", 10) * 60 + parseInt(m || "0", 10);
+    };
 
+    const startMinutes = toMinutes(scheduleData.availability.startTime);
+    const endMinutes = toMinutes(scheduleData.availability.endTime);
+
+    // Gera slots de 30 em 30 min, alinhados na hora/meia-hora, cobrindo
+    // qualquer horário com início dentro da janela de disponibilidade.
     const slots: string[] = [];
-    for (let i = startHour; i < endHour; i++) {
-      const hourStr = i.toString().padStart(2, "0");
-      slots.push(`${hourStr}:00`);
-      slots.push(`${hourStr}:30`);
+    const firstSlot = Math.floor(startMinutes / 30) * 30;
+    for (let m = firstSlot; m < endMinutes; m += 30) {
+      const hourStr = Math.floor(m / 60)
+        .toString()
+        .padStart(2, "0");
+      const minStr = (m % 60).toString().padStart(2, "0");
+      slots.push(`${hourStr}:${minStr}`);
     }
 
     return { appointments: appts, timeSlots: slots, isAvailableToday: true, scheduleBlocks: blocks };
@@ -89,16 +94,19 @@ const SchedulePage = () => {
       parseInt(slotHourStr || "0", 10) * 60 +
       parseInt(slotMinuteStr || "0", 10);
 
+    // Cada slot cobre uma janela de 30 min; a consulta aparece no slot cujo
+    // intervalo contém o horário de início dela (assim consultas em horários
+    // "quebrados" como 23:40 também são exibidas, no slot 23:30).
     const overlappingApts = appointments.filter((apt) => {
       const aptDate = new Date(apt.dateTime);
 
       if (!isSameDay(aptDate, selectedDate)) return false;
 
-      const aptTotalMinutes = aptDate.getHours() * 60 + aptDate.getMinutes();
-      const aptEndMinutes = aptTotalMinutes + 60;
+      const aptStartMinutes = aptDate.getHours() * 60 + aptDate.getMinutes();
 
       return (
-        slotTotalMinutes >= aptTotalMinutes && slotTotalMinutes < aptEndMinutes
+        aptStartMinutes >= slotTotalMinutes &&
+        aptStartMinutes < slotTotalMinutes + 30
       );
     });
 
@@ -122,12 +130,14 @@ const SchedulePage = () => {
       <PageHeader
         title="Minha Agenda"
         description="Visualize e gerencie seus horários."
+        help={<TourButton tour="professional-schedule" />}
         actions={
           <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Button variant="outline" title="Cancelar a agenda do dia" size="lg" onClick={() => setIsBlockModalOpen(true)} className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
+            <Button id="tour-prof-sched-cancel" variant="outline" title="Cancelar a agenda do dia" size="lg" onClick={() => setIsBlockModalOpen(true)} className="w-full sm:w-auto border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700">
               Cancelar Agenda
             </Button>
             <Button
+              id="tour-prof-sched-manage"
               size="lg"
               onClick={() => setIsOpen(true)}
               className="w-full sm:w-auto"
@@ -142,6 +152,7 @@ const SchedulePage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] lg:items-start gap-6">
         <aside className="flex flex-col gap-6">
           <div
+            id="tour-prof-sched-calendar"
             className="border border-gray-200 shadow-sm bg-white rounded-[20px] p-4 overflow-x-auto"
             title="Selecione um dia para visualizar a agenda"
           >
@@ -154,7 +165,7 @@ const SchedulePage = () => {
           </div>
         </aside>
 
-        <main className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 min-h-[400px] sm:min-h-[600px] shadow-sm">
+        <main id="tour-prof-sched-timeline" className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 min-h-[400px] sm:min-h-[600px] shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mb-6 pb-4 border-b border-gray-100">
             <h2 className="text-base sm:text-xl font-semibold text-gray-700 capitalize">
               {selectedDate &&

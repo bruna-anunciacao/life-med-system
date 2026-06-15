@@ -12,6 +12,7 @@ model ProfessionalProfile {
   payments            Json?
 
   @@map("professional_profiles")
+  @@schema("profiles")
 }
 
 enum PatientApprovalStatus {
@@ -34,6 +35,7 @@ model PatientProfile {
   updatedAt              DateTime                    @updatedAt @map("updated_at")
 
   @@map("patient_profiles")
+  @@schema("profiles")
 }
 
 model ManagerProfile {
@@ -50,6 +52,7 @@ model ManagerProfile {
   cancelledAppointments Appointment[] @relation("CancelledByManager")
 
   @@map("manager_profiles")
+  @@schema("profiles")
 }
 
 model Address {
@@ -69,4 +72,5 @@ model Address {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("addresses")
+  @@schema("profiles")
 }

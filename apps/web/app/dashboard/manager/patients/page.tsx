@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/skeletons";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 import { formatPhoneNumber } from "@/app/utils/formatPhone";
 import {
   DataTable,
@@ -186,8 +187,10 @@ export default function PatientsPage() {
     <PageShell>
       <PageHeader
         title="Pacientes"
+        help={<TourButton tour="manager-patients" iconOnly={isMobile} />}
         actions={
           <Link
+            id="tour-mgr-patients-new"
             href="/dashboard/manager/patients/new"
             title="Abrir formulário para cadastrar um novo paciente"
             className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm transition-colors hover:opacity-90"
@@ -199,7 +202,10 @@ export default function PatientsPage() {
       />
 
       {patients.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div
+          id="tour-mgr-patients-stats"
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6"
+        >
           <StatCard label="Total" value={stats.total} />
           <StatCard
             label="Ativos"
@@ -219,7 +225,7 @@ export default function PatientsPage() {
         </div>
       )}
 
-      <div className="mb-6">
+      <div id="tour-mgr-patients-search" className="mb-6">
         <SearchInput
           placeholder="Buscar paciente por nome..."
           defaultValue={searchTerm}
@@ -238,230 +244,232 @@ export default function PatientsPage() {
         )}
       </div>
 
-      {!mounted ? (
-        <div className="h-40" aria-hidden="true" />
-      ) : filteredPatients.length === 0 ? (
-        searchTerm ? (
-          <DataTableCard>
-            <DataTableEmpty
-              icon={<Users className="h-8 w-8" />}
-              title={`Nenhum paciente encontrado para "${searchTerm}"`}
+      <div id="tour-mgr-patients-table">
+        {!mounted ? (
+          <div className="h-40" aria-hidden="true" />
+        ) : filteredPatients.length === 0 ? (
+          searchTerm ? (
+            <DataTableCard>
+              <DataTableEmpty
+                icon={<Users className="h-8 w-8" />}
+                title={`Nenhum paciente encontrado para "${searchTerm}"`}
+              />
+            </DataTableCard>
+          ) : (
+            <EmptyState
+              message="Nenhum paciente cadastrado"
+              actionLabel="Cadastre o primeiro paciente"
+              actionHref="/dashboard/manager/patients/new"
             />
-          </DataTableCard>
-        ) : (
-          <EmptyState
-            message="Nenhum paciente cadastrado"
-            actionLabel="Cadastre o primeiro paciente"
-            actionHref="/dashboard/manager/patients/new"
-          />
-        )
-      ) : isMobile ? (
-        <DataTableCard>
-          <DataTableMobileList>
-            {pagination.pageItems.map((patient) => (
-              <DataTableMobileItem
-                key={patient.id}
-                onClick={() =>
-                  router.push(`/dashboard/manager/patients/${patient.id}`)
-                }
-                title={`Ver detalhes de ${patient.name}`}
-              >
-                <div className="flex gap-3 mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-foreground truncate">
-                      {patient.name}
-                    </h3>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {patient.email}
-                    </p>
-                    {patient.patientProfile?.approvalStatus && (
-                      <div className="mt-2">
-                        <StatusBadge
-                          status={patient.patientProfile.approvalStatus}
-                          type="approval"
-                          className="px-2 py-0 text-[10px]"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  {patient.patientProfile?.questionnaire ? (
-                    <span className="inline-flex items-center gap-1 self-start rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
-                      <ClipboardCheck className="w-3 h-3" />
-                      Respondido
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 self-start rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
-                      <ClipboardList className="w-3 h-3" />
-                      Pendente
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  {patient.patientProfile?.phone && (
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium">Tel:</span>{" "}
-                      {patient.patientProfile.phone}
-                    </p>
-                  )}
-                  {patient.patientProfile?.dateOfBirth && (
-                    <p className="text-xs text-muted-foreground">
-                      <span className="font-medium">Nascimento:</span>{" "}
-                      {new Date(
-                        patient.patientProfile.dateOfBirth,
-                      ).toLocaleDateString("pt-BR")}
-                    </p>
-                  )}
-                </div>
-              </DataTableMobileItem>
-            ))}
-          </DataTableMobileList>
-          <DataTablePagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            from={pagination.from}
-            to={pagination.to}
-            totalItems={pagination.totalItems}
-            hasPrev={pagination.hasPrev}
-            hasNext={pagination.hasNext}
-            onPageChange={pagination.setPage}
-            pageSize={pagination.pageSize}
-            onPageSizeChange={pagination.setPageSize}
-            itemLabel="pacientes"
-          />
-        </DataTableCard>
-      ) : (
-        <DataTableCard className="overflow-x-auto">
-          <DataTable>
-            <DataTableHead>
-              <SortableHeader
-                field="name"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-              >
-                Nome
-              </SortableHeader>
-              <SortableHeader
-                field="email"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-              >
-                Email
-              </SortableHeader>
-              <SortableHeader
-                field="phone"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-              >
-                Telefone
-              </SortableHeader>
-              <SortableHeader
-                field="dateOfBirth"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-              >
-                Data de Nascimento
-              </SortableHeader>
-              <SortableHeader
-                field="gender"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-              >
-                Gênero
-              </SortableHeader>
-              <SortableHeader
-                field="questionnaire"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-              >
-                Questionário
-              </SortableHeader>
-              <SortableHeader
-                field="approval"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-              >
-                Aprovação
-              </SortableHeader>
-              <DataTableHeadCell>Ações</DataTableHeadCell>
-            </DataTableHead>
-            <DataTableBody>
+          )
+        ) : isMobile ? (
+          <DataTableCard>
+            <DataTableMobileList>
               {pagination.pageItems.map((patient) => (
-                <DataTableRow key={patient.id}>
-                  <DataTableCell>
-                    <span className="font-medium text-foreground">
-                      {patient.name}
-                    </span>
-                  </DataTableCell>
-                  <DataTableCell>{patient.email}</DataTableCell>
-                  <DataTableCell>
-                    {formatPhoneNumber(patient.patientProfile?.phone) || "-"}
-                  </DataTableCell>
-                  <DataTableCell>
-                    {patient.patientProfile?.dateOfBirth
-                      ? formatLocalDate(patient.patientProfile.dateOfBirth)
-                      : "-"}
-                  </DataTableCell>
-                  <DataTableCell>
-                    {patient.patientProfile?.gender ?? "-"}
-                  </DataTableCell>
-                  <DataTableCell>
+                <DataTableMobileItem
+                  key={patient.id}
+                  onClick={() =>
+                    router.push(`/dashboard/manager/patients/${patient.id}`)
+                  }
+                  title={`Ver detalhes de ${patient.name}`}
+                >
+                  <div className="flex gap-3 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground truncate">
+                        {patient.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {patient.email}
+                      </p>
+                      {patient.patientProfile?.approvalStatus && (
+                        <div className="mt-2">
+                          <StatusBadge
+                            status={patient.patientProfile.approvalStatus}
+                            type="approval"
+                            className="px-2 py-0 text-[10px]"
+                          />
+                        </div>
+                      )}
+                    </div>
                     {patient.patientProfile?.questionnaire ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs font-medium">
+                      <span className="inline-flex items-center gap-1 self-start rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
                         <ClipboardCheck className="w-3 h-3" />
                         Respondido
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-xs font-medium">
+                      <span className="inline-flex items-center gap-1 self-start rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-[10px] font-medium flex-shrink-0">
                         <ClipboardList className="w-3 h-3" />
                         Pendente
                       </span>
                     )}
-                  </DataTableCell>
-                  <DataTableCell>
-                    {patient.patientProfile?.approvalStatus ? (
-                      <StatusBadge
-                        status={patient.patientProfile.approvalStatus}
-                        type="approval"
-                        className="px-2"
-                      />
-                    ) : (
-                      "-"
+                  </div>
+                  <div className="space-y-1.5">
+                    {patient.patientProfile?.phone && (
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-medium">Tel:</span>{" "}
+                        {patient.patientProfile.phone}
+                      </p>
                     )}
-                  </DataTableCell>
-                  <DataTableCell>
-                    <Link
-                      href={`/dashboard/manager/patients/${patient.id}`}
-                      className="text-blue-600 hover:text-blue-700 font-medium transition"
-                    >
-                      Ver Detalhes
-                    </Link>
-                  </DataTableCell>
-                </DataTableRow>
+                    {patient.patientProfile?.dateOfBirth && (
+                      <p className="text-xs text-muted-foreground">
+                        <span className="font-medium">Nascimento:</span>{" "}
+                        {new Date(
+                          patient.patientProfile.dateOfBirth,
+                        ).toLocaleDateString("pt-BR")}
+                      </p>
+                    )}
+                  </div>
+                </DataTableMobileItem>
               ))}
-            </DataTableBody>
-          </DataTable>
-          <DataTablePagination
-            page={pagination.page}
-            totalPages={pagination.totalPages}
-            from={pagination.from}
-            to={pagination.to}
-            totalItems={pagination.totalItems}
-            hasPrev={pagination.hasPrev}
-            hasNext={pagination.hasNext}
-            onPageChange={pagination.setPage}
-            pageSize={pagination.pageSize}
-            onPageSizeChange={pagination.setPageSize}
-            itemLabel="pacientes"
-          />
-        </DataTableCard>
-      )}
+            </DataTableMobileList>
+            <DataTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              from={pagination.from}
+              to={pagination.to}
+              totalItems={pagination.totalItems}
+              hasPrev={pagination.hasPrev}
+              hasNext={pagination.hasNext}
+              onPageChange={pagination.setPage}
+              pageSize={pagination.pageSize}
+              onPageSizeChange={pagination.setPageSize}
+              itemLabel="pacientes"
+            />
+          </DataTableCard>
+        ) : (
+          <DataTableCard className="overflow-x-auto">
+            <DataTable>
+              <DataTableHead>
+                <SortableHeader
+                  field="name"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Nome
+                </SortableHeader>
+                <SortableHeader
+                  field="email"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Email
+                </SortableHeader>
+                <SortableHeader
+                  field="phone"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Telefone
+                </SortableHeader>
+                <SortableHeader
+                  field="dateOfBirth"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Data de Nascimento
+                </SortableHeader>
+                <SortableHeader
+                  field="gender"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Gênero
+                </SortableHeader>
+                <SortableHeader
+                  field="questionnaire"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Questionário
+                </SortableHeader>
+                <SortableHeader
+                  field="approval"
+                  currentField={sortField}
+                  direction={sortDir}
+                  onToggle={toggleSort}
+                >
+                  Aprovação
+                </SortableHeader>
+                <DataTableHeadCell>Ações</DataTableHeadCell>
+              </DataTableHead>
+              <DataTableBody>
+                {pagination.pageItems.map((patient) => (
+                  <DataTableRow key={patient.id}>
+                    <DataTableCell>
+                      <span className="font-medium text-foreground">
+                        {patient.name}
+                      </span>
+                    </DataTableCell>
+                    <DataTableCell>{patient.email}</DataTableCell>
+                    <DataTableCell>
+                      {formatPhoneNumber(patient.patientProfile?.phone) || "-"}
+                    </DataTableCell>
+                    <DataTableCell>
+                      {patient.patientProfile?.dateOfBirth
+                        ? formatLocalDate(patient.patientProfile.dateOfBirth)
+                        : "-"}
+                    </DataTableCell>
+                    <DataTableCell>
+                      {patient.patientProfile?.gender ?? "-"}
+                    </DataTableCell>
+                    <DataTableCell>
+                      {patient.patientProfile?.questionnaire ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-xs font-medium">
+                          <ClipboardCheck className="w-3 h-3" />
+                          Respondido
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 text-xs font-medium">
+                          <ClipboardList className="w-3 h-3" />
+                          Pendente
+                        </span>
+                      )}
+                    </DataTableCell>
+                    <DataTableCell>
+                      {patient.patientProfile?.approvalStatus ? (
+                        <StatusBadge
+                          status={patient.patientProfile.approvalStatus}
+                          type="approval"
+                          className="px-2"
+                        />
+                      ) : (
+                        "-"
+                      )}
+                    </DataTableCell>
+                    <DataTableCell>
+                      <Link
+                        href={`/dashboard/manager/patients/${patient.id}`}
+                        className="text-blue-600 hover:text-blue-700 font-medium transition"
+                      >
+                        Ver Detalhes
+                      </Link>
+                    </DataTableCell>
+                  </DataTableRow>
+                ))}
+              </DataTableBody>
+            </DataTable>
+            <DataTablePagination
+              page={pagination.page}
+              totalPages={pagination.totalPages}
+              from={pagination.from}
+              to={pagination.to}
+              totalItems={pagination.totalItems}
+              hasPrev={pagination.hasPrev}
+              hasNext={pagination.hasNext}
+              onPageChange={pagination.setPage}
+              pageSize={pagination.pageSize}
+              onPageSizeChange={pagination.setPageSize}
+              itemLabel="pacientes"
+            />
+          </DataTableCard>
+        )}
+      </div>
     </PageShell>
   );
 }

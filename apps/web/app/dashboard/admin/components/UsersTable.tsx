@@ -160,6 +160,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
         actions={actions}
       />
 
+      <div id="tour-admin-users-toolbar">
       <DataTableToolbar>
         <div className="flex rounded-lg border border-border bg-background text-sm overflow-hidden">
           {TYPE_TABS.map((tab) => (
@@ -187,7 +188,9 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
           />
         </div>
       </DataTableToolbar>
+      </div>
 
+      <div id="tour-admin-users-table">
       {isLoading || !mounted ? (
         isMobile ? (
           <TableSkeleton rows={6} columns={4} isMobile />
@@ -551,6 +554,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
           </DataTableBody>
         </DataTable>
       )}
+      </div>
     </DataTableCard>
   );
 }

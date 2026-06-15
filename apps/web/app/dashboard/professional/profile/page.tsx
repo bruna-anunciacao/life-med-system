@@ -10,6 +10,7 @@ import { ProfessionalInfoForm } from "./components/ProfessionalInfoForm";
 import { SocialLinksForm } from "./components/SocialLinksForm";
 import { useProfileForm } from "./useProfileForm";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 
 export default function PerfilPage() {
   const {
@@ -44,8 +45,10 @@ export default function PerfilPage() {
       <PageHeader
         title="Meu Perfil"
         description="Gerencie suas informações profissionais."
+        help={<TourButton tour="professional-profile" />}
         actions={
           <Button
+            id="tour-prof-profile-edit"
             size="lg"
             onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
             title={isEditing ? "Cancelar edição" : "Habilitar edição do perfil"}
@@ -55,7 +58,7 @@ export default function PerfilPage() {
         }
       />
 
-      <Card className="border border-gray-200 rounded-xl bg-white">
+      <Card id="tour-prof-profile-info" className="border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-8 space-y-8">
           <div className="flex items-center gap-5 max-[425px]:flex-col">
             <ProfileAvatar
@@ -112,7 +115,7 @@ export default function PerfilPage() {
         </CardContent>
       </Card>
 
-      <Card className="border border-gray-200 rounded-xl bg-white mt-8">
+      <Card id="tour-prof-profile-address" className="border border-gray-200 rounded-xl bg-white mt-8">
         <CardContent className="p-12 space-y-6">
           <AddressForm userId={user?.id || ""} />
         </CardContent>

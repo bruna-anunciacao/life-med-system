@@ -6,6 +6,7 @@ import { DashboardHomeSkeleton } from "@/components/ui/skeletons";
 import { useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 import { usersService } from "@/services/users-service";
 import { professionalsService } from "@/services/professionals-service";
 import {
@@ -119,11 +120,13 @@ const PatientDashboard = () => {
       <PageHeader
         title={userName ? `Olá, ${userName}!` : "Painel do Paciente"}
         description="Acompanhe suas consultas e encontre profissionais de saúde."
+        help={<TourButton tour="patient-home" iconOnly={isMobile} />}
         actions={
           <Button
+            id="tour-patient-search-btn"
             onClick={goToSearch}
             title="Buscar e agendar com novos profissionais de saúde"
-            className={`gap-2 ${isMobile ? "w-full" : ""}`}
+            className="gap-2"
           >
             <SearchIcon size={16} />
             Buscar Médicos
@@ -134,13 +137,17 @@ const PatientDashboard = () => {
       <div
         className={`mb-6 grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-[1fr_340px]"}`}
       >
-        <NextAppointmentCard
-          appointment={upcomingList[0]}
-          isMobile={isMobile}
-          onViewDetails={goToAppointments}
-          onBookNew={goToSearch}
-        />
-        <StatsCards stats={stats} isMobile={isMobile} />
+        <div id="tour-patient-next-appt">
+          <NextAppointmentCard
+            appointment={upcomingList[0]}
+            isMobile={isMobile}
+            onViewDetails={goToAppointments}
+            onBookNew={goToSearch}
+          />
+        </div>
+        <div id="tour-patient-stats">
+          <StatsCards stats={stats} isMobile={isMobile} />
+        </div>
       </div>
 
       <div
@@ -157,7 +164,7 @@ const PatientDashboard = () => {
           />
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div id="tour-patient-suggested" className="flex flex-col gap-4">
           <SuggestedDoctorsList
             professionals={professionals.slice(0, SUGGESTED_DOCTORS_LIMIT)}
             onViewAll={goToSearch}

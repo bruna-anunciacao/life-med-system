@@ -16,6 +16,7 @@ import { BookingModal } from "./components/BookingModal";
 import { AddressData } from "./components/addressMaps";
 import { getAvailableLocations, getLocationValue } from "./components/locationFilters";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 
 type Professional = {
   id: string;
@@ -101,9 +102,13 @@ const SearchDoctorsPage = () => {
       <PageHeader
         title="Buscar Médicos"
         description="Encontre profissionais de saúde voluntários e agende sua consulta gratuitamente."
+        help={<TourButton tour="patient-search" iconOnly={isMobile} />}
       />
 
-      <div title="Pesquisar e filtrar médicos por nome, especialidade ou localização">
+      <div
+        id="tour-search-bar"
+        title="Pesquisar e filtrar médicos por nome, especialidade ou localização"
+      >
         <SearchBar
           search={search}
           selectedSpecialty={selectedSpecialty}
@@ -117,28 +122,30 @@ const SearchDoctorsPage = () => {
         />
       </div>
 
-      {isLoading ? (
-        <CardGridSkeleton count={6} minWidth={360} />
-      ) : filtered.length === 0 ? (
-        <EmptySearch />
-      ) : (
-        <div
-          className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"}`}
-        >
-          {filtered.map((prof) => (
-            <div
-              key={prof.id}
-              title={`Visualizar perfil ou agendar com ${prof.name}`}
-            >
-              <DoctorCard
-                professional={prof}
-                onViewProfile={() => setSelectedProfessional(prof)}
-                onBook={() => setBookingProfessional(prof)}
-              />
-            </div>
-          ))}
-        </div>
-      )}
+      <div id="tour-search-results">
+        {isLoading ? (
+          <CardGridSkeleton count={6} minWidth={360} />
+        ) : filtered.length === 0 ? (
+          <EmptySearch />
+        ) : (
+          <div
+            className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"}`}
+          >
+            {filtered.map((prof) => (
+              <div
+                key={prof.id}
+                title={`Visualizar perfil ou agendar com ${prof.name}`}
+              >
+                <DoctorCard
+                  professional={prof}
+                  onViewProfile={() => setSelectedProfessional(prof)}
+                  onBook={() => setBookingProfessional(prof)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <SeeProfileModal
         isOpen={!!selectedProfessional}

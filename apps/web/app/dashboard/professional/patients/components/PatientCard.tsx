@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {
@@ -57,13 +58,12 @@ function formatPhone(phone: string): string {
 }
 
 export function PatientCard({ patient }: PatientCardProps) {
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const router = useRouter();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
-  const isAnyModalOpen = isProfileOpen || isHistoryOpen;
   const { data: detailData, isLoading } = usePatientDetail(
     patient.id,
-    isAnyModalOpen,
+    isHistoryOpen,
   );
 
   const nextVisitFormatted = patient.nextVisit
@@ -173,88 +173,23 @@ export function PatientCard({ patient }: PatientCardProps) {
             size="sm"
             variant="outline"
             className="flex-1 text-xs"
-            onClick={() => setIsProfileOpen(true)}
-            title="Abrir perfil detalhado do paciente"
+            onClick={() => setIsHistoryOpen(true)}
+            title="Ver histórico rápido de consultas deste paciente"
           >
-            Ver perfil
+            Histórico
           </Button>
           <Button
             size="sm"
             className="flex-1 text-xs"
-            onClick={() => setIsHistoryOpen(true)}
-            title="Ver histórico de consultas deste paciente"
+            onClick={() =>
+              router.push(`/dashboard/professional/patients/${patient.id}`)
+            }
+            title="Abrir página do paciente para gerenciar consultas"
           >
-            Histórico
+            Gerenciar
           </Button>
         </div>
       </div>
-
-      <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
-        <DialogContent className="sm:max-w-106.25 rounded-2xl">
-          <DialogHeader>
-            <DialogTitle>Perfil do paciente</DialogTitle>
-            <DialogDescription>
-              Informações detalhadas de contato e cadastro.
-            </DialogDescription>
-          </DialogHeader>
-          {isLoading || !detailData ? (
-            <div className="py-10 flex justify-center">
-              <Spinner size="md" />
-            </div>
-          ) : (
-            <div className="mt-4 flex flex-col gap-6">
-              <div className="flex items-center gap-4">
-                {renderAvatar(detailData.name, patient.photoUrl)}
-                <div>
-                  <h4
-                    className="text-lg font-semibold text-gray-900 leading-none mb-1"
-                    title={detailData.name}
-                  >
-                    {detailData.name}
-                  </h4>
-                  <span className="text-sm text-blue-600 font-medium bg-blue-50 px-2 py-0.5 rounded-md">
-                    Paciente ativo
-                  </span>
-                </div>
-              </div>
-              <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 space-y-3">
-                <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
-                    CPF
-                  </p>
-                  <p className="text-sm text-gray-900">
-                    {formatCpf(detailData.cpf)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
-                    E-mail
-                  </p>
-                  <p className="text-sm text-gray-900" title={detailData.email}>
-                    {detailData.email}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
-                    Telefone
-                  </p>
-                  <p className="text-sm text-gray-900">
-                    {formatPhone(detailData.phone)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
-                    Total de consultas
-                  </p>
-                  <p className="text-sm text-gray-900">
-                    {detailData.history.length}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="sm:max-w-125 rounded-2xl max-h-[80vh] overflow-hidden flex flex-col">
