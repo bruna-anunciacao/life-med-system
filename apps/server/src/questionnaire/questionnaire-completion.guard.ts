@@ -42,6 +42,14 @@ export class QuestionnaireCompletionGuard implements CanActivate {
       select: { questionnaireCompleted: true, approvalStatus: true },
     });
 
+    if (patientProfile?.approvalStatus === PatientApprovalStatus.REJECTED) {
+      throw new ForbiddenException({
+        code: 'PATIENT_REJECTED',
+        message: 'Cadastro do paciente rejeitado.',
+        redirectTo: PATIENT_REJECTED_PATH,
+      });
+    }
+
     if (!patientProfile?.questionnaireCompleted) {
       if (QUESTIONNAIRE_ALLOWED_WHILE_INCOMPLETE.has(routeKey)) {
         return true;
@@ -59,14 +67,6 @@ export class QuestionnaireCompletionGuard implements CanActivate {
         code: 'PATIENT_APPROVAL_PENDING',
         message: 'Cadastro do paciente aguardando aprovação.',
         redirectTo: PATIENT_PENDING_APPROVAL_PATH,
-      });
-    }
-
-    if (patientProfile.approvalStatus === PatientApprovalStatus.REJECTED) {
-      throw new ForbiddenException({
-        code: 'PATIENT_REJECTED',
-        message: 'Cadastro do paciente rejeitado.',
-        redirectTo: PATIENT_REJECTED_PATH,
       });
     }
 

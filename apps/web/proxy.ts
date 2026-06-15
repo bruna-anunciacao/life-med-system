@@ -62,6 +62,10 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(getDashboardUrl(role));
     }
 
+    if (role === "PATIENT" && patientApprovalStatus === "REJECTED") {
+      return NextResponse.redirect(patientRejectedUrl);
+    }
+
     if (
       role === "PATIENT" &&
       questionnaireCompleted === "false" &&
@@ -82,14 +86,6 @@ export function proxy(request: NextRequest) {
     if (
       role === "PATIENT" &&
       questionnaireCompleted === "true" &&
-      patientApprovalStatus === "REJECTED"
-    ) {
-      return NextResponse.redirect(patientRejectedUrl);
-    }
-
-    if (
-      role === "PATIENT" &&
-      questionnaireCompleted === "true" &&
       pathname === "/dashboard/patient/questionnaire"
     ) {
       return NextResponse.redirect(getDashboardUrl(role));
@@ -97,6 +93,13 @@ export function proxy(request: NextRequest) {
   }
 
   if (isAuthRoute && token) {
+    if (role === "PATIENT" && patientApprovalStatus === "REJECTED") {
+      if (pathname !== "/auth/patient-rejected") {
+        return NextResponse.redirect(patientRejectedUrl);
+      }
+      return NextResponse.next();
+    }
+
     if (role === "PATIENT" && questionnaireCompleted === "false") {
       return NextResponse.redirect(patientQuestionnaireUrl);
     }
@@ -104,13 +107,6 @@ export function proxy(request: NextRequest) {
     if (role === "PATIENT" && patientApprovalStatus === "PENDING") {
       if (pathname !== "/auth/patient-pending-approval") {
         return NextResponse.redirect(patientPendingApprovalUrl);
-      }
-      return NextResponse.next();
-    }
-
-    if (role === "PATIENT" && patientApprovalStatus === "REJECTED") {
-      if (pathname !== "/auth/patient-rejected") {
-        return NextResponse.redirect(patientRejectedUrl);
       }
       return NextResponse.next();
     }
