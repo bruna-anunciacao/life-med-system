@@ -1,8 +1,6 @@
 enum QuestionnaireAnsweredBy {
   PATIENT
   MANAGER
-
-  @@schema("questionnaire")
 }
 
 model Questionnaire {
@@ -14,7 +12,6 @@ model Questionnaire {
   responses VulnerabilityQuestionnaire[]
 
   @@map("questionnaires")
-  @@schema("questionnaire")
 }
 
 model Question {
@@ -30,7 +27,6 @@ model Question {
 
   @@index([questionnaireId, order])
   @@map("questions")
-  @@schema("questionnaire")
 }
 
 model QuestionOption {
@@ -46,7 +42,6 @@ model QuestionOption {
 
   @@index([questionId, order])
   @@map("question_options")
-  @@schema("questionnaire")
 }
 
 model VulnerabilityQuestionnaire {
@@ -65,7 +60,6 @@ model VulnerabilityQuestionnaire {
   answers QuestionnaireAnswer[]
 
   @@map("vulnerability_questionnaires")
-  @@schema("questionnaire")
 }
 
 model QuestionnaireAnswer {
@@ -80,5 +74,4 @@ model QuestionnaireAnswer {
 
   @@unique([vulnerabilityQuestionnaireId, questionId])
   @@map("questionnaire_answers")
-  @@schema("questionnaire")
 }
