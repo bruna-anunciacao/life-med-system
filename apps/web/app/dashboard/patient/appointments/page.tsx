@@ -19,6 +19,7 @@ import {
   AppointmentResponse,
 } from "@/services/appointments-service";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 
 function mapApiToAppointment(appt: AppointmentResponse): Appointment {
   return {
@@ -181,12 +182,12 @@ const AppointmentsPage = () => {
       <PageHeader
         title="Minhas Consultas"
         description="Acompanhe e gerencie suas consultas agendadas."
+        help={<TourButton tour="patient-appointments" iconOnly={isMobile} />}
         actions={
           <Button
             size={isMobile ? "default" : "lg"}
             onClick={() => router.push("/dashboard/patient/search")}
             title="Buscar médicos e agendar uma nova consulta"
-            className={isMobile ? "w-full" : ""}
           >
             <SearchIcon />
             Nova Consulta
@@ -194,15 +195,18 @@ const AppointmentsPage = () => {
         }
       />
 
-      <AppointmentTabs
-        activeTab={activeTab}
-        appointments={appointments}
-        onTabChange={setActiveTab}
-      />
+      <div id="tour-appt-tabs">
+        <AppointmentTabs
+          activeTab={activeTab}
+          appointments={appointments}
+          onTabChange={setActiveTab}
+        />
+      </div>
 
       {!isMobile && (
         <div className="mb-6 flex justify-end">
           <Button
+            id="tour-appt-report"
             size="lg"
             onClick={handleDownloadReport}
             disabled={isDownloadingReport || !hasReportData}
@@ -213,31 +217,34 @@ const AppointmentsPage = () => {
         </div>
       )}
 
-      {isLoading ? (
-        <CardGridSkeleton count={4} minWidth={400} />
-      ) : filtered.length === 0 ? (
-        <EmptyAppointments
-          activeTab={activeTab}
-          onSearch={() => router.push("/dashboard/patient/search")}
-        />
-      ) : (
-        <div className="flex flex-col gap-4">
-          {filtered.map((appt) => (
-            <AppointmentCard
-              key={appt.id}
-              appointment={appt}
-              onCancel={handleCancelClick}
-              onRebook={() => router.push("/dashboard/patient/search")}
-              onDetails={handleDetailsClick}
-              isMobile={isMobile}
-            />
-          ))}
-        </div>
-      )}
+      <div id="tour-appt-list">
+        {isLoading ? (
+          <CardGridSkeleton count={4} minWidth={400} />
+        ) : filtered.length === 0 ? (
+          <EmptyAppointments
+            activeTab={activeTab}
+            onSearch={() => router.push("/dashboard/patient/search")}
+          />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {filtered.map((appt) => (
+              <AppointmentCard
+                key={appt.id}
+                appointment={appt}
+                onCancel={handleCancelClick}
+                onRebook={() => router.push("/dashboard/patient/search")}
+                onDetails={handleDetailsClick}
+                isMobile={isMobile}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       {isMobile && (
         <div className="mt-6">
           <Button
+            id="tour-appt-report-mobile"
             size="default"
             onClick={handleDownloadReport}
             disabled={isDownloadingReport || !hasReportData}

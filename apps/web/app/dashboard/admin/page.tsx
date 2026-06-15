@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { UsersTable } from "@/app/dashboard/admin/components/UsersTable";
 import { useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/app/ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 
 const AdminDashboard = () => {
   const queryClient = useQueryClient();
@@ -28,6 +29,7 @@ const AdminDashboard = () => {
   const actions = (
     <div className="flex flex-wrap items-center gap-2">
       <Link
+        id="tour-admin-new-manager"
         href="/dashboard/admin/managers/new"
         className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm transition-colors hover:opacity-90"
       >
@@ -35,6 +37,7 @@ const AdminDashboard = () => {
         Cadastrar Gestor
       </Link>
       <Link
+        id="tour-admin-specialties"
         href="/dashboard/admin/specialties"
         title="Acessar painel de gerenciamento de especialidades médicas"
         className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
@@ -43,6 +46,7 @@ const AdminDashboard = () => {
         Gerenciar Especialidades
       </Link>
       <Link
+        id="tour-admin-questionnaires"
         href="/dashboard/admin/questionnaires"
         title="Editar o questionário de vulnerabilidade"
         className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
@@ -50,6 +54,7 @@ const AdminDashboard = () => {
         <ClipboardList className="h-3.5 w-3.5" />
         Gerenciar Questionário
       </Link>
+      <TourButton tour="admin-home" />
     </div>
   );
 

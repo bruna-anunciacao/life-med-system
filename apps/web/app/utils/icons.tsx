@@ -13,5 +13,10 @@ export {
   DotsThreeVertical as MoreVerticalIcon,
   Plus as PlusIcon,
   MagnifyingGlass as SearchIcon,
-  Trash as TrashIcon
+  Trash as TrashIcon,
+  House as HouseIcon,
+  Buildings as BuildingsIcon,
+  UserCheck as UserCheckIcon,
+  CheckCircle as CheckCircleIcon,
+  XCircle as XCircleIcon,
 } from "@phosphor-icons/react";

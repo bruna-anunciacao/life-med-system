@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { FormPageSkeleton } from "@/components/ui/skeletons";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 import { useManagerProfileForm } from "./useManagerProfileForm";
 import { ManagerInfoForm } from "./components/ManagerInfoForm";
 
@@ -33,8 +34,10 @@ const ManagerProfilePage = () => {
       <PageHeader
         title="Meu Perfil"
         description="Gerencie suas informações pessoais."
+        help={<TourButton tour="manager-profile" />}
         actions={
           <Button
+            id="tour-mgr-profile-edit"
             onClick={() => (isEditing ? handleCancel() : setIsEditing(true))}
             title={isEditing ? "Cancelar edição" : "Habilitar edição do perfil"}
           >
@@ -43,7 +46,7 @@ const ManagerProfilePage = () => {
         }
       />
 
-      <Card>
+      <Card id="tour-mgr-profile-info">
         <CardContent className="space-y-6 p-6">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xl font-bold text-primary">

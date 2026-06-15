@@ -6,6 +6,7 @@ import { managerService } from "../../../../../services/manager-service";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { PageShell, PageHeader } from "../../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 import { SearchBar } from "../../../patient/search/components/SearchBar";
 import { DoctorCard } from "../../../patient/search/components/DoctorCard";
 import { EmptySearch } from "../../../patient/search/components/EmptySearch";
@@ -98,9 +99,13 @@ const NewApointmentPage = () => {
 
   return (
     <PageShell>
-      <PageHeader title="Agendamento de consulta" />
+      <PageHeader
+        title="Agendamento de consulta"
+        help={<TourButton tour="manager-new-appointment" />}
+      />
 
-      <SearchBar
+      <div id="tour-mgr-new-search">
+        <SearchBar
         search={search}
         selectedSpecialty={selectedSpecialty}
         selectedLocation={selectedLocation}
@@ -111,7 +116,9 @@ const NewApointmentPage = () => {
         onSpecialtyChange={setSelectedSpecialty}
         onLocationChange={setSelectedLocation}
       />
+      </div>
 
+      <div id="tour-mgr-new-results">
       {isLoading ? (
         <div className="py-16 px-8 flex justify-center items-center">
           <Spinner size="lg" />
@@ -132,6 +139,7 @@ const NewApointmentPage = () => {
           ))}
         </div>
       )}
+      </div>
 
       <SeeProfileModal
         isOpen={!!selectedProfessional}
