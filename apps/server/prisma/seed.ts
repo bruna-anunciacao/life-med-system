@@ -288,6 +288,117 @@ async function main() {
   console.log(`  ${appointmentsCreated} Consultas criadas.`);
 
   // ─────────────────────────────────────────
+  // 6.1. CENÁRIO DE TESTE — PRONTUÁRIOS (controle de acesso entre médicos)
+  // ─────────────────────────────────────────
+  // Regra de negócio: um médico pode acessar o prontuário escrito por OUTRO
+  // médico do mesmo paciente (continuidade do cuidado), MAS apenas se ele
+  // próprio tiver vínculo de consulta (CONFIRMED/COMPLETED) com esse paciente.
+  // Sem vínculo → acesso negado (403).
+  //
+  // Este cenário monta os dois lados da regra:
+  //   • doctorA e doctorB: ambos atenderam o MESMO paciente e cada um tem um
+  //     prontuário próprio → devem conseguir ver o prontuário um do outro.
+  //   • doctorNoLink: NÃO tem nenhuma consulta com o paciente → deve receber
+  //     403 ao tentar acessar qualquer um desses prontuários.
+  console.log('⏳ Criando cenário de prontuários (controle de acesso entre médicos)...');
+
+  const sharedPatient = patients[0]; // Marcos de Almeida
+  const doctorA = professionals[0]; // Dr. Roberto Souza (Cardiologia) — tem vínculo
+  const doctorB = professionals[1]; // Dra. Ana Costa (Pediatria) — tem vínculo
+  const doctorNoLink = professionals[8]; // Dr. Tiago Freitas — SEM vínculo com o paciente
+
+  const recordScenarios = [
+    {
+      doctor: doctorA,
+      daysDiff: -25,
+      modality: AppointmentModality.CLINIC,
+      record: {
+        chiefComplaint: 'Dor torácica e palpitações há 1 semana.',
+        diagnosis: 'Arritmia cardíaca leve (extrassístoles).',
+        treatmentPlan: 'Reduzir cafeína, monitorar pressão arterial e retorno em 30 dias.',
+        prescriptions: 'Propranolol 40mg — 1 comprimido ao dia.',
+        internalNotes:
+          'Prontuário do Dr. Roberto (Cardiologia). Confidencial — anotação interna do cardiologista.',
+      },
+    },
+    {
+      doctor: doctorB,
+      daysDiff: -18,
+      modality: AppointmentModality.VIRTUAL,
+      record: {
+        chiefComplaint: 'Acompanhamento de quadro alérgico respiratório.',
+        diagnosis: 'Rinite alérgica sazonal.',
+        treatmentPlan: 'Anti-histamínico e controle ambiental de poeira.',
+        prescriptions: 'Loratadina 10mg — 1 comprimido ao dia por 15 dias.',
+        internalNotes:
+          'Prontuário da Dra. Ana (Pediatria). Confidencial — anotação interna da pediatra.',
+      },
+    },
+  ];
+
+  let recordsCreated = 0;
+  for (let i = 0; i < recordScenarios.length; i++) {
+    const { doctor, daysDiff, modality, record } = recordScenarios[i];
+
+    const apptId = generateUUID('33333333', i);
+    const recordId = generateUUID('44444444', i);
+
+    await prisma.appointment.upsert({
+      where: { id: apptId },
+      update: {
+        status: AppointmentStatus.COMPLETED,
+        modality,
+        dateTime: getRelativeDate(daysDiff),
+      },
+      create: {
+        id: apptId,
+        patientId: sharedPatient.id,
+        professionalId: doctor.id,
+        status: AppointmentStatus.COMPLETED,
+        modality,
+        dateTime: getRelativeDate(daysDiff),
+        notes: 'Consulta com prontuário registrado (cenário de teste de acesso).',
+      },
+    });
+
+    await prisma.medicalRecord.upsert({
+      where: { id: recordId },
+      update: { ...record },
+      create: {
+        id: recordId,
+        appointmentId: apptId,
+        patientId: sharedPatient.id,
+        authorId: doctor.id,
+        ...record,
+      },
+    });
+    recordsCreated++;
+  }
+
+  // Confirma que o médico "sem vínculo" realmente não tem consulta com o paciente.
+  const noLinkCount = await prisma.appointment.count({
+    where: {
+      professionalId: doctorNoLink.id,
+      patientId: sharedPatient.id,
+      status: { in: [AppointmentStatus.CONFIRMED, AppointmentStatus.COMPLETED] },
+    },
+  });
+
+  console.log(`  ${recordsCreated} prontuários criados.`);
+  console.log('  ── Cenário de teste de acesso a prontuários ──');
+  console.log(`     Paciente: ${sharedPatient.name} (${sharedPatient.email})`);
+  console.log(
+    `     ✅ ${doctorA.name} (${doctorA.email}) — autor de 1 prontuário e COM vínculo → vê o prontuário de ${doctorB.name}`,
+  );
+  console.log(
+    `     ✅ ${doctorB.name} (${doctorB.email}) — autora de 1 prontuário e COM vínculo → vê o prontuário de ${doctorA.name}`,
+  );
+  console.log(
+    `     ❌ ${doctorNoLink.name} (${doctorNoLink.email}) — SEM vínculo (${noLinkCount} consultas) → deve receber 403`,
+  );
+  console.log('     Senha de todos os usuários: Senha123!');
+
+  // ─────────────────────────────────────────
   // 7. QUESTIONÁRIO DE VULNERABILIDADE
   // ─────────────────────────────────────────
   console.log('⏳ Criando Questionário de Vulnerabilidade...');
