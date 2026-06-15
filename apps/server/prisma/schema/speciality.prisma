@@ -6,4 +6,5 @@ model Speciality {
   professionalProfiles ProfessionalProfile[]
 
   @@map("specialties")
+  @@schema("profiles")
 }
