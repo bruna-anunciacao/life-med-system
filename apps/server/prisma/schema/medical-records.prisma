@@ -21,5 +21,4 @@ model MedicalRecord {
 
   @@index([patientId, createdAt])
   @@map("medical_records")
-  @@schema("medical")
 }
