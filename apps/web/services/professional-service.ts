@@ -32,6 +32,7 @@ export interface PatientDetail {
     id: string;
     dateTime: string;
     status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+    modality?: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
     notes?: string;
   }[];
 }

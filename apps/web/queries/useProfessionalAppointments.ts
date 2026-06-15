@@ -41,6 +41,14 @@ export function useUpdateAppointmentStatusMutation() {
         queryKey: ["professionalAppointments"],
       });
 
+      queryClient.invalidateQueries({
+        queryKey: ["patient-detail"],
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["professional-patients"],
+      });
+
       toast.success("Status atualizado com sucesso!");
     },
     onError: (error: Error) => {
