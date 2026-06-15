@@ -18,7 +18,7 @@ type Appointment = {
   dateTime: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
   notes?: string;
-  patient: { name: string };
+  patient: { id?: string; name: string };
 };
 
 const STATUS_CLASS: Record<string, string> = {
@@ -113,9 +113,24 @@ export function AppointmentCard({
               {initials}
             </div>
             <div className="flex flex-col items-start gap-1 min-w-0">
-              <p className="font-semibold text-sm sm:text-[15px] text-[#0f172a] leading-none truncate max-w-full">
-                {appointment.patient.name}
-              </p>
+              {appointment.patient.id ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/professional/patients/${appointment.patient.id}`,
+                    )
+                  }
+                  title={`Abrir página de ${appointment.patient.name}`}
+                  className="font-semibold text-sm sm:text-[15px] text-[#0f172a] leading-none truncate max-w-full text-left hover:text-[#006fee] hover:underline transition-colors"
+                >
+                  {appointment.patient.name}
+                </button>
+              ) : (
+                <p className="font-semibold text-sm sm:text-[15px] text-[#0f172a] leading-none truncate max-w-full">
+                  {appointment.patient.name}
+                </p>
+              )}
               <Badge
                 className={`px-2 py-0.5 rounded-md text-[11px] font-medium border-none shadow-none w-fit ${STATUS_CLASS[appointment.status] ?? "bg-gray-100 text-gray-700"}`}
               >

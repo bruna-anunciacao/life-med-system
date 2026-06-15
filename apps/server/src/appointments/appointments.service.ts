@@ -247,15 +247,6 @@ export class AppointmentsService {
       );
     }
 
-    const requiresPastDate =
-      dto.status === AppointmentStatus.COMPLETED ||
-      dto.status === AppointmentStatus.NO_SHOW;
-    if (requiresPastDate && appointment.dateTime > new Date()) {
-      throw new BadRequestException(
-        'Só é possível marcar a consulta como realizada ou faltou após o horário agendado.',
-      );
-    }
-
     const updated = await this.repository.updateAppointmentStatus(
       appointmentId,
       dto,

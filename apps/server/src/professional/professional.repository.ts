@@ -52,10 +52,21 @@ export class ProfessionalRepository {
           lte: endOfDay,
         },
       },
-      include: {
+      select: {
+        id: true,
+        dateTime: true,
+        status: true,
+        modality: true,
+        notes: true,
+        meetLink: true,
         patient: {
           select: {
+            id: true,
             name: true,
+            email: true,
+            patientProfile: {
+              select: { phone: true },
+            },
           },
         },
       },
@@ -63,6 +74,19 @@ export class ProfessionalRepository {
         dateTime: 'asc',
       },
     });
+  }
+
+  countDistinctAttendedPatients(userId: string) {
+    return this.prisma.appointment
+      .findMany({
+        where: {
+          professionalId: userId,
+          status: AppointmentStatus.COMPLETED,
+        },
+        select: { patientId: true },
+        distinct: ['patientId'],
+      })
+      .then((rows) => rows.length);
   }
 
   findScheduleBlocksByDate(userId: string, date: string) {

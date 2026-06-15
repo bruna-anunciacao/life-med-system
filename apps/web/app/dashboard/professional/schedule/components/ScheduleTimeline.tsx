@@ -8,7 +8,7 @@ type Appointment = {
   dateTime: string;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
   notes?: string;
-  patient: { name: string };
+  patient: { id?: string; name: string };
 };
 
 type ScheduleBlock = {
