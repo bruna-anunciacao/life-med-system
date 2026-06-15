@@ -7,6 +7,7 @@ import { UsersIcon } from "../../../utils/icons";
 import { useProfessionalPatients } from "@/queries/useProfessionalPatients";
 import { PatientCard, PatientCardData } from "./components/PatientCard";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 import { SearchInput } from "@/components/ui/search-input";
 
 function onlyDigits(value: string) {
@@ -41,9 +42,9 @@ export default function PatientsPage() {
 
   return (
     <PageShell>
-      <PageHeader title="Pacientes" description={headerDescription} />
+      <PageHeader title="Pacientes" description={headerDescription} help={<TourButton tour="professional-patients" />} />
 
-      <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
+      <Card id="tour-prof-patients-search" className="mb-6 border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-4 sm:p-5">
           <label className="text-xs font-medium text-slate-600 mb-1.5 block">
             Buscar por nome, e-mail, telefone ou CPF
@@ -101,7 +102,7 @@ export default function PatientsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
+        <div id="tour-prof-patients-list" className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]">
           {filtered.map((patient) => (
             <PatientCard
               key={patient.id}

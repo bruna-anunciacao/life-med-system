@@ -77,8 +77,11 @@ function getSortValue(
 
 export function ManagementAppointmentsView({
   canManage = false,
+  headerHelp,
 }: {
   canManage?: boolean;
+  /** Botão de ajuda/tutorial opcional, exibido ao lado do título. */
+  headerHelp?: ReactNode;
 }) {
   const isMobile = useIsMobile();
   const mounted = useMounted();
@@ -236,9 +239,11 @@ export function ManagementAppointmentsView({
     <div className="w-full">
       <PageHeader
         title="Agendamentos"
+        help={headerHelp}
         actions={
           canManage ? (
             <Link
+              id="tour-mgr-appts-new"
               href="/dashboard/manager/appointments/new"
               className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm hover:opacity-90"
             >
@@ -285,7 +290,10 @@ export function ManagementAppointmentsView({
             </div>
           )}
 
-          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div
+            id="tour-mgr-appts-search"
+            className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center"
+          >
             <div className="flex-1">
               <SearchInput
                 placeholder="Buscar por paciente ou profissional..."
@@ -333,6 +341,7 @@ export function ManagementAppointmentsView({
             </p>
           )}
 
+          <div id="tour-mgr-appts-table">
           {!mounted ? (
             <div className="h-40" aria-hidden="true" />
           ) : filteredAppointments.length === 0 ? (
@@ -366,6 +375,7 @@ export function ManagementAppointmentsView({
               footer={paginationFooter}
             />
           )}
+          </div>
         </>
       )}
 

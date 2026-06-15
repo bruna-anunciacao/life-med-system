@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { StatsCardsSkeleton, TableSkeleton, PageHeaderSkeleton } from '@/components/ui/skeletons';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageShell, PageHeader } from '../../../ui/dashboard/page-shell';
+import { TourButton } from '@/components/tour/TourButton';
 import { formatPhoneNumber } from '@/app/utils/formatPhone';
 import {
   DataTable,
@@ -170,8 +171,10 @@ export default function PatientsPage() {
     <PageShell>
       <PageHeader
         title="Pacientes"
+        help={<TourButton tour="manager-patients" iconOnly={isMobile} />}
         actions={
           <Link
+            id="tour-mgr-patients-new"
             href="/dashboard/manager/patients/new"
             title="Abrir formulário para cadastrar um novo paciente"
             className="inline-flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background shadow-sm transition-colors hover:opacity-90"
@@ -183,7 +186,7 @@ export default function PatientsPage() {
       />
 
       {patients.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+          <div id="tour-mgr-patients-stats" className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
             <StatCard label="Total" value={stats.total} />
             <StatCard
               label="Ativos"
@@ -203,7 +206,7 @@ export default function PatientsPage() {
           </div>
         )}
 
-        <div className="mb-6">
+        <div id="tour-mgr-patients-search" className="mb-6">
           <SearchInput
             placeholder="Buscar paciente por nome..."
             defaultValue={searchTerm}
@@ -220,6 +223,7 @@ export default function PatientsPage() {
           )}
         </div>
 
+        <div id="tour-mgr-patients-table">
         {!mounted ? (
           <div className="h-40" aria-hidden="true" />
         ) : filteredPatients.length === 0 ? (
@@ -379,6 +383,7 @@ export default function PatientsPage() {
             />
           </DataTableCard>
         )}
+        </div>
     </PageShell>
   );
 }

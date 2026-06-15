@@ -11,6 +11,7 @@ import { useMedicalRecordsListQuery } from "@/queries/useMedicalRecords";
 import { SearchInput } from "@/components/ui/search-input";
 import { CalendarIcon, EyeIcon } from "../../../utils/icons";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 
 const PAGE_SIZE = 10;
 
@@ -77,9 +78,10 @@ const MedicalRecordsListPage = () => {
         title="Prontuários"
         description={`Prontuários médicos criados por você.{" "}
          ${total > 0 ? ` ${total} no total.` : ""}`}
+        help={<TourButton tour="professional-records" />}
       />
 
-      <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
+      <Card id="tour-prof-records-search" className="mb-6 border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-4 sm:p-5">
           <form
             onSubmit={handleSearch}
@@ -163,7 +165,7 @@ const MedicalRecordsListPage = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div id="tour-prof-records-list" className="flex flex-col gap-3">
           {records.map((record) => (
             <Card
               key={record.id}

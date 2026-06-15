@@ -15,6 +15,7 @@ import { applyCpfMask } from "@/lib/cpf";
 import { useRegisterManagerMutation } from "@/queries/useRegisterManagerMutation";
 import { registerManagerSchema, type RegisterManagerSchema } from "./register-manager.validation";
 import { PageShell, PageHeader } from "@/app/ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
 
 export default function RegisterManagerPage() {
   const router = useRouter();
@@ -78,9 +79,10 @@ export default function RegisterManagerPage() {
       <PageHeader
         title="Cadastrar gestor"
         description="Crie uma conta de gestor vinculada à administração do sistema."
+        help={<TourButton tour="admin-new-manager" />}
       />
 
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+      <div id="tour-admin-mgr-form" className="rounded-xl border border-border bg-card p-6 shadow-sm">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
@@ -141,7 +143,7 @@ export default function RegisterManagerPage() {
               {errors.bio && <p className="text-xs text-red-600">{errors.bio.message}</p>}
             </div>
 
-            <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
+            <div id="tour-admin-mgr-submit" className="flex flex-col gap-3 pt-2 sm:flex-row sm:justify-end">
               <Button type="button" variant="outline" onClick={() => router.push("/dashboard/admin")}>Cancelar</Button>
               <Button type="submit" disabled={isPending}>
                 {isPending ? "Cadastrando..." : "Cadastrar gestor"}

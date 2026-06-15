@@ -14,6 +14,8 @@ import { useListPatientsQuery } from "@/queries/useListPatientsQuery";
 import { useListAppointmentsQuery } from "@/queries/useListAppointmentsQuery";
 import type { ManagerPatientResponse } from "@/services/manager-service";
 import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
+import { TourButton } from "@/components/tour/TourButton";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { AttentionCard } from "./components/AttentionCard";
 import { VulnerablePatientsList } from "./components/VulnerablePatientsList";
 import { RecentPatientsList } from "./components/RecentPatientsList";
@@ -37,6 +39,7 @@ const hasNoQuestionnaire = (patient: ManagerPatientResponse) =>
   !patient.patientProfile?.questionnaireCompleted && !getQuestionnaire(patient);
 
 const ManagerDashboard = () => {
+  const isMobile = useIsMobile();
   const { data: user, isLoading: loadingUser } = useUserQuery();
   const { data: patients = [] } = useListPatientsQuery();
   const { data: appointments = [] } = useListAppointmentsQuery();
@@ -109,7 +112,7 @@ const ManagerDashboard = () => {
   const userName = user?.name?.split(" ")[0] || "";
 
   const actions = (
-    <div className="flex flex-wrap items-center gap-2">
+    <div id="tour-mgr-actions" className="flex flex-wrap items-center gap-2">
       <Link
         href="/dashboard/manager/patients/new"
         title="Abrir formulário para cadastrar um novo paciente"
@@ -134,10 +137,14 @@ const ManagerDashboard = () => {
       <PageHeader
         title={userName ? `Olá, ${userName}!` : "Painel do Gestor"}
         description="Gerencie pacientes e consultas."
+        help={<TourButton tour="manager-home" iconOnly={isMobile} />}
         actions={actions}
       />
 
-      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div
+        id="tour-mgr-stats"
+        className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4"
+      >
         <StatCard label="Pacientes" value={stats.totalPatients} />
         <StatCard label="Consultas" value={stats.totalAppointments} />
         <StatCard
@@ -154,7 +161,7 @@ const ManagerDashboard = () => {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
         <div className="flex flex-col gap-6">
-          <section>
+          <section id="tour-mgr-upcoming">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground">
                 Próximas consultas
@@ -213,7 +220,7 @@ const ManagerDashboard = () => {
           <VulnerablePatientsList patients={vulnerablePatients} />
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div id="tour-mgr-attention" className="flex flex-col gap-6">
           <AttentionCard
             pendingAppointments={pendingAppointments}
             patientsWithoutQuestionnaire={stats.withoutQuestionnaire}
