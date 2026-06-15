@@ -19,6 +19,8 @@ enum PatientApprovalStatus {
   APPROVED
   PENDING
   REJECTED
+
+  @@schema("profiles")
 }
 
 model PatientProfile {
