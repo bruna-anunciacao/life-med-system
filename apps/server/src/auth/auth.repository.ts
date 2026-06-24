@@ -110,6 +110,7 @@ export class AuthRepository {
         name: dto.name,
         role: UserRole.MANAGER,
         status: UserStatus.VERIFIED,
+        emailVerified: true,
         managerProfile: {
           create: {
             phone: dto.phone,
