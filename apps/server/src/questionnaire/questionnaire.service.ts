@@ -220,9 +220,11 @@ export class QuestionnaireService {
     }
 
     const isVulnerable = totalScore >= active.vulnerabilityThreshold;
-    const approvalStatus = isVulnerable
-      ? PatientApprovalStatus.APPROVED
-      : PatientApprovalStatus.PENDING;
+    // Regra de negócio: responder o questionário nunca aprova o paciente
+    // automaticamente. Independente da pontuação (mesmo atingindo o limiar de
+    // vulnerabilidade), o cadastro fica PENDING aguardando aprovação manual de
+    // um gestor/admin. O `isVulnerable` é apenas informativo para o gestor.
+    const approvalStatus = PatientApprovalStatus.PENDING;
 
     const created = await this.repository.persistResponse({
       dto,
