@@ -85,6 +85,67 @@ export class MedicalRecordsRepository {
     });
   }
 
+  async listSharedForProfessional(
+    professionalId: string,
+    query: ListMedicalRecordsQueryDto,
+  ) {
+    const page = query.page || 1;
+    const limit = query.limit || 10;
+    const skip = (page - 1) * limit;
+
+    // Pacientes que este profissional já atendeu (CONFIRMED ou COMPLETED)
+    const attended = await this.prisma.appointment.findMany({
+      where: {
+        professionalId,
+        status: { in: ['CONFIRMED', 'COMPLETED'] },
+      },
+      select: { patientId: true },
+      distinct: ['patientId'],
+    });
+
+    const patientIds = attended.map((a) => a.patientId);
+
+    if (patientIds.length === 0) {
+      return { records: [], total: 0, page, limit };
+    }
+
+    const where: Prisma.MedicalRecordWhereInput = {
+      patientId: { in: patientIds },
+      // Exclui os próprios prontuários (esses ficam em "Meus prontuários")
+      NOT: { authorId: professionalId },
+    };
+
+    if (query.search?.trim()) {
+      const term = query.search.trim();
+      where.OR = [
+        { patient: { name: { contains: term, mode: 'insensitive' } } },
+        { author: { name: { contains: term, mode: 'insensitive' } } },
+        { chiefComplaint: { contains: term, mode: 'insensitive' } },
+        { diagnosis: { contains: term, mode: 'insensitive' } },
+      ];
+    }
+
+    if (query.startDate || query.endDate) {
+      where.createdAt = {
+        ...(query.startDate && { gte: new Date(query.startDate) }),
+        ...(query.endDate && { lte: new Date(query.endDate) }),
+      };
+    }
+
+    const [records, total] = await Promise.all([
+      this.prisma.medicalRecord.findMany({
+        where,
+        include: RECORD_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.medicalRecord.count({ where }),
+    ]);
+
+    return { records, total, page, limit };
+  }
+
   updateRecord(id: string, dto: UpdateMedicalRecordDto) {
     return this.prisma.medicalRecord.update({
       where: { id },

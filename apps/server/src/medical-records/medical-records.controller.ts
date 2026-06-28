@@ -75,6 +75,20 @@ export class MedicalRecordsController {
     return this.service.list(req.user.userId, req.user.role, query);
   }
 
+  @Get('shared')
+  @UseGuards(ProfessionalRoleGuard)
+  @ApiOperation({
+    summary: 'Listar prontuários de pacientes já atendidos por outros profissionais',
+    description: 'Retorna prontuários de pacientes com os quais o profissional tem vínculo, criados por outros profissionais. Somente leitura.',
+  })
+  @ApiResponse({ status: 200, type: MedicalRecordListResponseDto })
+  listShared(
+    @Request() req: { user: { userId: string } },
+    @Query() query: ListMedicalRecordsQueryDto,
+  ) {
+    return this.service.listShared(req.user.userId, query);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Buscar prontuário por ID',
