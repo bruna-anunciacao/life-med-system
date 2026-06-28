@@ -14,6 +14,7 @@ import {
   type PatientApprovalStatus,
 } from "@/services/admin-service";
 import { useSpecialitiesQuery } from "@/queries/useSpecialitiesQuery";
+import { onlyCpfDigits } from "@/lib/cpf";
 import {
   patientFormSchema,
   professionalFormSchema,
@@ -107,7 +108,7 @@ export function useAdminUserForm() {
           dateOfBirth: data.patientProfile?.dateOfBirth?.split("T")[0] || "",
           gender: data.patientProfile?.gender || "",
           address: data.patientProfile?.address || "",
-          cpf: data.patientProfile?.cpf || "",
+          cpf: data.cpf || "",
         });
       } else {
         professionalForm.reset({
@@ -157,7 +158,7 @@ export function useAdminUserForm() {
         phone: normalizedPhone,
         dateOfBirth: data.dateOfBirth || undefined,
         gender: data.gender || undefined,
-        cpf: data.cpf || undefined,
+        cpf: data.cpf ? onlyCpfDigits(data.cpf) : undefined,
       });
       toast.success("Dados do usuário atualizados com sucesso.");
       setIsEditing(false);
