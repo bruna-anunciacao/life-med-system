@@ -247,7 +247,15 @@ export class AppointmentsService {
       );
     }
 
-
+    // Consulta já realizada não pode ser revertida para "faltou"
+    if (
+      appointment.status === AppointmentStatus.COMPLETED &&
+      dto.status === AppointmentStatus.NO_SHOW
+    ) {
+      throw new BadRequestException(
+        'Não é possível marcar como "não compareceu" uma consulta já realizada',
+      );
+    }
 
     const updated = await this.repository.updateAppointmentStatus(
       appointmentId,
