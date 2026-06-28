@@ -16,10 +16,10 @@ Plataforma digital web responsiva, sem fins lucrativos, destinada a facilitar o 
 ## Visão Geral
 
 O LifeMed atua como intermediário que permite:
-- **Profissionais de Saúde** ofertarem horários de atendimento voluntário
-- **Pacientes** agendarem serviços de saúde de forma simples e gratuita
-- **Gestores (Managers)** acompanharem agendamentos, pacientes e profissionais da sua unidade
-- **Administradores** gerenciarem usuários, especialidades e questionários do sistema
+- **Profissionais de Saúde** ofertarem horários voluntários, registrarem prontuários e visualizarem o histórico clínico de pacientes já atendidos por colegas
+- **Pacientes** responderem um questionário de vulnerabilidade, aguardarem aprovação e agendarem consultas gratuitas
+- **Gestores** acompanharem agendamentos, pacientes e profissionais de uma unidade
+- **Administradores** gerenciarem usuários, especialidades, questionários de vulnerabilidade e cadastrarem gestores
 
 ## Tecnologias
 
@@ -59,51 +59,47 @@ O LifeMed atua como intermediário que permite:
 life-med-system/
 ├── apps/
 │   ├── server/                  # Backend NestJS
-│   │   ├── prisma/              # Schema, migrações e seeds
+│   │   ├── prisma/
+│   │   │   ├── schema/          # Schema Prisma (multi-arquivo)
+│   │   │   ├── migrations/
+│   │   │   ├── seed.ts          # Seed completo (usuários demo, especialidades)
+│   │   │   └── seed-minimal.ts  # Seed mínimo
 │   │   ├── scripts/             # google-oauth-bootstrap.ts (refresh token Google)
-│   │   ├── src/
-│   │   │   ├── addresses/
-│   │   │   ├── admin/
-│   │   │   ├── appointments/
-│   │   │   ├── auth/            # JWT, guards, strategies, decorators
-│   │   │   ├── common/
-│   │   │   ├── database/
-│   │   │   ├── google-calendar/ # Integração Calendar/Meet
-│   │   │   ├── health/
-│   │   │   ├── mail/            # SMTP / Resend / Ethereal
-│   │   │   ├── manager/
-│   │   │   ├── medical-records/
-│   │   │   ├── patients/
-│   │   │   ├── prisma/
-│   │   │   ├── professional/
-│   │   │   ├── questionnaire/
-│   │   │   ├── reports/         # Geração de PDFs
-│   │   │   ├── speciality/
-│   │   │   └── users/
-│   │   └── uploads/             # Uploads locais
+│   │   └── src/
+│   │       ├── admin/
+│   │       ├── appointments/
+│   │       ├── auth/            # JWT, guards, strategies, decorators
+│   │       ├── common/
+│   │       ├── google-calendar/ # Integração Calendar/Meet
+│   │       ├── mail/            # SMTP / Resend / Ethereal
+│   │       ├── manager/
+│   │       ├── medical-records/ # Prontuários (criação, leitura, compartilhamento)
+│   │       ├── patients/
+│   │       ├── prisma/
+│   │       ├── professional/
+│   │       ├── questionnaire/   # Questionário de vulnerabilidade
+│   │       ├── speciality/
+│   │       └── users/
 │   └── web/                     # Frontend Next.js
 │       ├── app/
 │       │   ├── auth/
 │       │   ├── dashboard/
-│       │   │   ├── admin/       # Usuários, especialidades, questionários
+│       │   │   ├── admin/       # Usuários, especialidades, questionários, gestores
 │       │   │   ├── manager/     # Agendamentos, pacientes, profissionais
 │       │   │   ├── patient/     # Busca, agendamentos, prontuários
-│       │   │   └── professional/# Agenda, pacientes, prontuários
+│       │   │   └── professional/# Agenda, pacientes, prontuários (próprios e compartilhados)
 │       │   └── ui/
 │       ├── components/
 │       │   └── ui/              # Primitivos shadcn (DataTable, Sidebar, etc.)
 │       ├── config/              # env.ts (validação via Zod)
-│       ├── constants/
 │       ├── hooks/
 │       ├── lib/                 # api.ts (axios)
-│       ├── queries/             # TanStack Query
-│       ├── services/            # Camada de serviços HTTP
-│       └── public/
+│       ├── queries/             # TanStack Query hooks
+│       └── services/            # Camada de serviços HTTP
 ├── packages/
-│   ├── ui/                      # Componentes compartilhados
 │   ├── eslint-config/
 │   └── typescript-config/
-└── docs/                        # Diagramas de arquitetura (Mermaid, Eraser, C4)
+└── docs/                        # Diagramas C4, Mermaid, Eraser e ADRs
 ```
 
 ---
@@ -278,11 +274,12 @@ Gere o cliente Prisma, aplique as migrações e (opcional) popule dados iniciais
 
 ```bash
 cd apps/server
-npx prisma generate
-npx prisma migrate dev --name init
 
-# Seed completo (usuários demo, especialidades, etc.)
-npx prisma db seed
+npm run prisma:generate
+npm run prisma:migrate -- --name init
+
+# Seed completo (usuários demo, especialidades, questionário, etc.)
+npx prisma db seed --schema prisma/schema
 
 # OU seed mínimo
 npx ts-node --transpile-only prisma/seed-minimal.ts
@@ -318,8 +315,8 @@ Acesse:
 | Lint em todos workspaces | `npm run lint` |
 | Type-check em todos workspaces | `npm run check-types` |
 | Formatar código (Prettier) | `npm run format` |
-| Após `git pull` | `npm install && cd apps/server && npx prisma generate && cd ../.. && npm run dev` |
-| Após alterar `schema.prisma` | `cd apps/server && npx prisma migrate dev --name descricao && cd ../..` |
+| Após `git pull` | `npm install && cd apps/server && npm run prisma:generate && cd ../.. && npm run dev` |
+| Após alterar o schema Prisma | `cd apps/server && npm run prisma:migrate -- --name descricao && cd ../..` |
 
 ### Comandos do Backend (`apps/server`)
 
@@ -348,14 +345,16 @@ npm run lint         # eslint --max-warnings 0
 
 ### Comandos do Prisma
 
+> O schema está em `prisma/schema/` (multi-arquivo). Os comandos abaixo já incluem o caminho correto.
+
 ```bash
 cd apps/server
 
-npx prisma generate                       # gerar cliente
-npx prisma migrate dev --name nome        # criar migração em dev
-npx prisma migrate deploy                 # aplicar migrações em prod
-npx prisma studio                         # GUI no navegador
-npx prisma db seed                        # rodar seed.ts
+npm run prisma:generate                        # gerar cliente Prisma
+npm run prisma:migrate -- --name descricao     # criar migração em dev
+npx prisma migrate deploy --schema prisma/schema  # aplicar migrações em prod
+npm run prisma:studio                          # GUI no navegador (porta 5555)
+npx prisma db seed --schema prisma/schema      # rodar seed.ts
 ```
 
 ### Comandos do PostgreSQL
@@ -397,11 +396,11 @@ Cole o `GOOGLE_CALENDAR_REFRESH_TOKEN` retornado no `.env`.
 
 ## Atores do Sistema
 
-- **Administrador:** gerencia usuários, especialidades, questionários e cadastra gestores
-- **Gestor (Manager):** acompanha agendamentos, pacientes e profissionais de uma unidade
-- **Profissional de Saúde (Voluntário):** médico, psicólogo, enfermeiro ou terapeuta que oferta horários e atende
-- **Paciente (Usuário Comum):** membro da comunidade que busca atendimento gratuito
-- **Sistema (Automático):** notificações por email, criação de eventos no Google Calendar/Meet e geração de relatórios em PDF
+- **Administrador:** gerencia usuários, especialidades, questionários de vulnerabilidade e cadastra gestores
+- **Gestor:** acompanha agendamentos, pacientes e profissionais de uma unidade
+- **Profissional de Saúde (Voluntário):** oferta horários, realiza atendimentos, registra prontuários e visualiza prontuários de colegas para pacientes já atendidos
+- **Paciente:** responde o questionário de vulnerabilidade, aguarda aprovação manual e agenda consultas gratuitas
+- **Sistema:** envia notificações por email, cria eventos no Google Calendar/Meet e gera prontuários em PDF
 
 ---
 
