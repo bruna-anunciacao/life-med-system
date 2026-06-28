@@ -21,6 +21,7 @@ import {
   VideoIcon,
   HouseIcon,
   BuildingsIcon,
+  ArrowSquareOutIcon,
 } from "../../../../utils/icons";
 
 type AppointmentStatus =
@@ -32,10 +33,7 @@ type AppointmentStatus =
 
 type Modality = "VIRTUAL" | "HOME_VISIT" | "CLINIC";
 
-const STATUS_META: Record<
-  AppointmentStatus,
-  { label: string; className: string }
-> = {
+const STATUS_META: Record<AppointmentStatus, { label: string; className: string }> = {
   PENDING: {
     label: "Pendente",
     className: "bg-amber-50 text-amber-700 border border-amber-200",
@@ -58,10 +56,7 @@ const STATUS_META: Record<
   },
 };
 
-const MODALITY_META: Record<
-  Modality,
-  { label: string; icon: React.ReactNode }
-> = {
+const MODALITY_META: Record<Modality, { label: string; icon: React.ReactNode }> = {
   VIRTUAL: { label: "Online", icon: <VideoIcon size={14} /> },
   HOME_VISIT: { label: "Domiciliar", icon: <HouseIcon size={14} /> },
   CLINIC: { label: "Presencial", icon: <BuildingsIcon size={14} /> },
@@ -89,6 +84,77 @@ function formatPhone(phone: string): string {
   return formatPhoneNumber(phone);
 }
 
+const ALL_STATUSES: AppointmentStatus[] = [
+  "PENDING",
+  "CONFIRMED",
+  "COMPLETED",
+  "NO_SHOW",
+  "CANCELLED",
+];
+
+function AppointmentStatusActions({
+  apt,
+  isUpdating,
+  onAction,
+}: {
+  apt: { id: string; status: AppointmentStatus };
+  isUpdating: boolean;
+  onAction: (id: string, status: AppointmentStatus) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const otherStatuses = ALL_STATUSES.filter((s) => s !== apt.status);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        disabled={isUpdating}
+        className="text-xs text-slate-500 hover:text-slate-700 underline underline-offset-2 disabled:opacity-50"
+        title="Alterar status desta consulta"
+      >
+        Alterar status
+      </button>
+
+      {open && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute right-0 top-6 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-1 min-w-[160px]">
+            {otherStatuses.map((s) => (
+              <button
+                key={s}
+                className="w-full text-left text-[13px] px-3 py-2 rounded-lg hover:bg-slate-50 text-gray-700 flex items-center gap-2"
+                onClick={() => {
+                  setOpen(false);
+                  onAction(apt.id, s);
+                }}
+              >
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    s === "COMPLETED"
+                      ? "bg-emerald-500"
+                      : s === "CONFIRMED"
+                        ? "bg-blue-500"
+                        : s === "PENDING"
+                          ? "bg-amber-500"
+                          : s === "NO_SHOW"
+                            ? "bg-orange-500"
+                            : "bg-red-500"
+                  }`}
+                />
+                {STATUS_META[s].label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function PatientDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -113,8 +179,7 @@ export default function PatientDetailPage() {
     }[];
     const now = new Date();
     const sorted = [...history].sort(
-      (a, b) =>
-        new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
+      (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
     );
     const up = sorted
       .filter(
@@ -123,8 +188,7 @@ export default function PatientDetailPage() {
           (a.status === "CONFIRMED" || a.status === "PENDING"),
       )
       .sort(
-        (a, b) =>
-          new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
+        (a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime(),
       );
     return { upcoming: up, past: sorted };
   }, [patient]);
@@ -167,61 +231,62 @@ export default function PatientDetailPage() {
         title={patient.name}
         description="Perfil, próxima consulta e histórico do paciente."
         actions={
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={() => router.push("/dashboard/professional/patients")}
-            title="Voltar para a lista de pacientes"
-          >
-            Voltar
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() =>
+                router.push(
+                  "/dashboard/professional/medical-records?search=" +
+                    encodeURIComponent(patient.name),
+                )
+              }
+              title="Ver prontuários deste paciente"
+            >
+              <ArrowSquareOutIcon size={16} />
+              Prontuário
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => router.push("/dashboard/professional/patients")}
+              title="Voltar para a lista de pacientes"
+            >
+              Voltar
+            </Button>
+          </div>
         }
       />
 
       {/* Dados do paciente */}
       <Card className="mb-6 border border-gray-200 rounded-xl">
-        <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-          <div className="w-14 h-14 rounded-full font-semibold flex items-center justify-center text-blue-700 bg-blue-50 border border-blue-100 shrink-0 text-xl">
-            {patient.name.charAt(0).toUpperCase()}
+        <CardContent className="p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="w-16 h-16 rounded-full font-bold flex items-center justify-center text-blue-700 bg-blue-50 border border-blue-100 shrink-0 text-2xl">
+              {patient.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-gray-900">{patient.name}</h2>
+              <p className="text-sm text-gray-500">{patient.email}</p>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-2 flex-1 text-sm">
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">
-                E-mail
-              </p>
-              <p className="text-gray-900 font-medium truncate">
-                {patient.email}
-              </p>
+
+          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">CPF</p>
+              <p className="text-sm text-gray-900 font-medium">{formatCpf(patient.cpf)}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">
-                CPF
-              </p>
-              <p className="text-gray-900 font-medium">
-                {formatCpf(patient.cpf)}
-              </p>
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Telefone</p>
+              <p className="text-sm text-gray-900 font-medium">{formatPhone(patient.phone)}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">
-                Telefone
-              </p>
-              <p className="text-gray-900 font-medium">
-                {formatPhone(patient.phone)}
-              </p>
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Total de consultas</p>
+              <p className="text-2xl font-bold text-gray-900">{patient.history.length}</p>
             </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">
-                Total de consultas
-              </p>
-              <p className="text-gray-900 font-medium">
-                {patient.history.length}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider">
-                Atendimentos realizados
-              </p>
-              <p className="text-gray-900 font-medium">{completedCount}</p>
+            <div className="bg-slate-50 rounded-xl p-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Atendimentos</p>
+              <p className="text-2xl font-bold text-emerald-600">{completedCount}</p>
             </div>
           </div>
         </CardContent>
@@ -230,17 +295,15 @@ export default function PatientDetailPage() {
       {/* Próxima consulta */}
       {nextAppt && (
         <div className="mb-6">
-          <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-700">
-            <CalendarIcon size={20} weight="duotone" /> Próxima Consulta
+          <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-gray-700">
+            <CalendarIcon size={18} weight="duotone" /> Próxima Consulta
           </h2>
           <Card className="border-l-4 border-l-[#006fee]">
             <CardContent className="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1.5">
                   <ModalityBadge modality={nextAppt.modality} />
-                  <Badge
-                    className={`px-2 py-0.5 rounded text-xs font-semibold ${STATUS_META[nextAppt.status].className}`}
-                  >
+                  <Badge className={`px-2 py-0.5 rounded text-xs font-semibold ${STATUS_META[nextAppt.status].className}`}>
                     {STATUS_META[nextAppt.status].label}
                   </Badge>
                 </div>
@@ -254,12 +317,7 @@ export default function PatientDetailPage() {
                     size="sm"
                     className="bg-emerald-500 hover:bg-emerald-600 text-white"
                     disabled={isUpdating}
-                    onClick={() =>
-                      setPendingAction({
-                        id: nextAppt.id,
-                        status: "CONFIRMED",
-                      })
-                    }
+                    onClick={() => setPendingAction({ id: nextAppt.id, status: "CONFIRMED" })}
                   >
                     <CheckIcon /> Confirmar
                   </Button>
@@ -269,12 +327,7 @@ export default function PatientDetailPage() {
                   variant="outline"
                   className="text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                   disabled={isUpdating}
-                  onClick={() =>
-                    setPendingAction({
-                      id: nextAppt.id,
-                      status: "COMPLETED",
-                    })
-                  }
+                  onClick={() => setPendingAction({ id: nextAppt.id, status: "COMPLETED" })}
                 >
                   <UserCheckIcon /> Marcar Atendido
                 </Button>
@@ -283,12 +336,7 @@ export default function PatientDetailPage() {
                   variant="outline"
                   className="text-orange-600 border-orange-200 hover:bg-orange-50"
                   disabled={isUpdating}
-                  onClick={() =>
-                    setPendingAction({
-                      id: nextAppt.id,
-                      status: "NO_SHOW",
-                    })
-                  }
+                  onClick={() => setPendingAction({ id: nextAppt.id, status: "NO_SHOW" })}
                 >
                   <XCircleIcon /> Faltou
                 </Button>
@@ -297,12 +345,7 @@ export default function PatientDetailPage() {
                   variant="outline"
                   className="text-red-600 border-red-200 hover:bg-red-50"
                   disabled={isUpdating}
-                  onClick={() =>
-                    setPendingAction({
-                      id: nextAppt.id,
-                      status: "CANCELLED",
-                    })
-                  }
+                  onClick={() => setPendingAction({ id: nextAppt.id, status: "CANCELLED" })}
                 >
                   <XIcon /> Cancelar
                 </Button>
@@ -314,7 +357,7 @@ export default function PatientDetailPage() {
 
       {/* Histórico */}
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-gray-700">
+        <h2 className="mb-3 text-base font-semibold text-gray-700">
           Histórico de Consultas
         </h2>
         <Card className="border border-gray-200 rounded-xl">
@@ -348,12 +391,13 @@ export default function PatientDetailPage() {
                         )}
                       </div>
                     </div>
+
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge
-                        className={`px-2 py-1 rounded-3xl text-xs font-semibold ${meta.className}`}
-                      >
+                      <Badge className={`px-2 py-1 rounded-3xl text-xs font-semibold ${meta.className}`}>
                         {meta.label}
                       </Badge>
+
+                      {/* Ações rápidas para consultas ainda abertas */}
                       {!isClosed && (
                         <>
                           {apt.status === "PENDING" && (
@@ -362,12 +406,7 @@ export default function PatientDetailPage() {
                               variant="outline"
                               className="h-8 px-2.5 text-blue-700 border-blue-200 hover:bg-blue-50"
                               disabled={isUpdating}
-                              onClick={() =>
-                                setPendingAction({
-                                  id: apt.id,
-                                  status: "CONFIRMED",
-                                })
-                              }
+                              onClick={() => setPendingAction({ id: apt.id, status: "CONFIRMED" })}
                             >
                               <CheckIcon size={16} />
                               <span className="hidden md:inline">Confirmar</span>
@@ -378,12 +417,7 @@ export default function PatientDetailPage() {
                             variant="outline"
                             className="h-8 px-2.5 text-emerald-700 border-emerald-200 hover:bg-emerald-50"
                             disabled={isUpdating}
-                            onClick={() =>
-                              setPendingAction({
-                                id: apt.id,
-                                status: "COMPLETED",
-                              })
-                            }
+                            onClick={() => setPendingAction({ id: apt.id, status: "COMPLETED" })}
                           >
                             <UserCheckIcon size={16} />
                             <span className="hidden md:inline">Atendido</span>
@@ -393,18 +427,20 @@ export default function PatientDetailPage() {
                             variant="outline"
                             className="h-8 px-2.5 text-orange-600 border-orange-200 hover:bg-orange-50"
                             disabled={isUpdating}
-                            onClick={() =>
-                              setPendingAction({
-                                id: apt.id,
-                                status: "NO_SHOW",
-                              })
-                            }
+                            onClick={() => setPendingAction({ id: apt.id, status: "NO_SHOW" })}
                           >
                             <XCircleIcon size={16} />
                             <span className="hidden md:inline">Faltou</span>
                           </Button>
                         </>
                       )}
+
+                      {/* Permite corrigir qualquer status, inclusive fechados */}
+                      <AppointmentStatusActions
+                        apt={apt}
+                        isUpdating={isUpdating}
+                        onAction={(id, status) => setPendingAction({ id, status })}
+                      />
                     </div>
                   </div>
                 );
@@ -416,9 +452,7 @@ export default function PatientDetailPage() {
 
       <ConfirmModal
         isOpen={!!pendingAction}
-        onOpenChange={(open) => {
-          if (!open) setPendingAction(null);
-        }}
+        onOpenChange={(open) => { if (!open) setPendingAction(null); }}
         pendingStatus={pendingAction?.status || ""}
         onConfirm={handleConfirmAction}
       />

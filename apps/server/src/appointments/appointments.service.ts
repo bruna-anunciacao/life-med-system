@@ -247,14 +247,14 @@ export class AppointmentsService {
       );
     }
 
-    if (
-      dto.status === AppointmentStatus.COMPLETED &&
-      appointment.dateTime.getTime() > Date.now()
-    ) {
-      throw new BadRequestException(
-        'Consulta só pode ser concluída após o horário agendado',
-      );
-    }
+    // if (
+    //   dto.status === AppointmentStatus.COMPLETED &&
+    //   appointment.dateTime.getTime() > Date.now()
+    // ) {
+    //   throw new BadRequestException(
+    //     'Consulta só pode ser concluída após o horário agendado',
+    //   );
+    // }
 
     const updated = await this.repository.updateAppointmentStatus(
       appointmentId,
