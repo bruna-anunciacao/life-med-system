@@ -447,12 +447,14 @@ export default function PatientDetailPage() {
                         </>
                       )}
 
-                      {/* Correção de status — disponível para qualquer consulta */}
-                      <AppointmentStatusActions
-                        apt={apt}
-                        isUpdating={isUpdating}
-                        onAction={(id, status) => setPendingAction({ id, status })}
-                      />
+                      {/* Correção de status — apenas para consultas já encerradas */}
+                      {isClosed && (
+                        <AppointmentStatusActions
+                          apt={apt}
+                          isUpdating={isUpdating}
+                          onAction={(id, status) => setPendingAction({ id, status })}
+                        />
+                      )}
                     </div>
                   </div>
                 );
