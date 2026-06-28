@@ -98,8 +98,8 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
   const { users, isLoading, search, setSearch, typeFilter, setTypeFilter } =
     useAdminUsersTable();
 
-  const [sortField, setSortField] = useState<SortField | null>(null);
-  const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [sortField, setSortField] = useState<SortField | null>("createdAt");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   function toggleSort(field: SortField) {
     if (sortField === field) {

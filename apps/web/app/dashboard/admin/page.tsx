@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ClipboardList, Plus, Stethoscope } from "lucide-react";
-import { adminService } from "@/services/admin-service";
+import { adminService, type AdminUser } from "@/services/admin-service";
 import { toast } from "sonner";
 import { UsersTable } from "@/app/dashboard/admin/components/UsersTable";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,13 +16,21 @@ const AdminDashboard = () => {
     userId: string,
     newStatus: "VERIFIED" | "BLOCKED",
   ) => {
+    // Optimistic update: atualiza o cache imediatamente antes da chamada de API
+    queryClient.setQueriesData<AdminUser[]>(
+      { queryKey: ["admin-users"] },
+      (old) =>
+        old?.map((u) => (u.id === userId ? { ...u, status: newStatus } : u)) ??
+        old,
+    );
     try {
       await adminService.updateUser(userId, { status: newStatus });
       toast.success("Status do usuário atualizado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (error) {
       console.error(error);
       toast.error("Não foi possível atualizar o status do usuário. Tente novamente.");
+      // Reverte em caso de erro
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     }
   };
 

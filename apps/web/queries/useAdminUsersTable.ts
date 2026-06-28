@@ -13,7 +13,7 @@ export function useAdminUsersTable() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const typeFilter = (searchParams.get("role") as TypeFilter) ?? "all";
+  const typeFilter = (searchParams.get("role") as TypeFilter) ?? "PATIENT";
   const search = searchParams.get("search") ?? "";
 
   function setTypeFilter(value: TypeFilter) {
