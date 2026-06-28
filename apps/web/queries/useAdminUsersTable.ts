@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { adminService } from "../services/admin-service";
 
-export type TypeFilter = "all" | "PATIENT" | "PROFESSIONAL" | "MANAGER";
+export type TypeFilter = "PATIENT" | "PROFESSIONAL" | "MANAGER";
 
 const FUSE_OPTIONS = { keys: ["name", "email"], threshold: 0.3 };
 
@@ -18,11 +18,7 @@ export function useAdminUsersTable() {
 
   function setTypeFilter(value: TypeFilter) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value === "all") {
-      params.delete("role");
-    } else {
-      params.set("role", value);
-    }
+    params.set("role", value);
     router.replace(`${pathname}?${params.toString()}`);
   }
 
@@ -36,11 +32,9 @@ export function useAdminUsersTable() {
     router.replace(`${pathname}?${params.toString()}`);
   }
 
-  const role = typeFilter !== "all" ? typeFilter : undefined;
-
   const { data = [], isLoading } = useQuery({
-    queryKey: ["admin-users", { role }],
-    queryFn: () => adminService.listUsers({ role }),
+    queryKey: ["admin-users", { role: typeFilter }],
+    queryFn: () => adminService.listUsers({ role: typeFilter }),
   });
 
   const users = useMemo(() => {

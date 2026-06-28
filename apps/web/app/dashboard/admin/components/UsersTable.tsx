@@ -38,7 +38,6 @@ type SortField =
 type SortDir = "asc" | "desc";
 
 const TYPE_TABS: { label: string; value: TypeFilter }[] = [
-  { label: "Todos", value: "all" },
   { label: "Pacientes", value: "PATIENT" },
   { label: "Profissionais", value: "PROFESSIONAL" },
   { label: "Gestores", value: "MANAGER" },
@@ -335,17 +334,6 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
               Usuário
             </SortableHeader>
 
-            {typeFilter === "all" && (
-              <SortableHeader
-                field="type"
-                currentField={sortField}
-                direction={sortDir}
-                onToggle={toggleSort}
-                align="center"
-              >
-                Tipo
-              </SortableHeader>
-            )}
 
             {typeFilter === "PATIENT" && (
               <>
@@ -431,16 +419,6 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
                       {user.email}
                     </p>
                   </DataTableCell>
-
-                  {typeFilter === "all" && (
-                    <DataTableCell align="center">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.className}`}
-                      >
-                        {badge.label}
-                      </span>
-                    </DataTableCell>
-                  )}
 
                   {typeFilter === "PATIENT" && (
                     <>
