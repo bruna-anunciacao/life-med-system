@@ -79,6 +79,7 @@ const AdminUserProfilePage = () => {
       ? photoPath
       : `${apiBaseUrl}${photoPath}`
     : null;
+  console.log("user", user);
 
   return (
     <PageShell>

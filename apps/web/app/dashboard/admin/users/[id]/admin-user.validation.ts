@@ -1,5 +1,6 @@
 import * as z from "zod";
 import { isValidPhoneBR } from "@/components/ui/phone-input-br";
+import { CPF_INVALID_MESSAGE, isValidCpf } from "@/lib/cpf";
 
 export const patientFormSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -15,7 +16,12 @@ export const patientFormSchema = z.object({
   dateOfBirth: z.string().optional(),
   gender: z.string().optional(),
   address: z.string().optional(),
-  cpf: z.string().optional(),
+  cpf: z
+    .string()
+    .optional()
+    .nullable()
+    .or(z.literal(""))
+    .refine((val) => !val || isValidCpf(val), { message: CPF_INVALID_MESSAGE }),
 });
 
 export const professionalFormSchema = z.object({
