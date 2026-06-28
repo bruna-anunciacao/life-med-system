@@ -24,7 +24,6 @@ export function getNavItems(role: string): NavItem[] {
     case "ADMIN":
       return [
         { name: "Início", href: "/dashboard/admin", icon: Home },
-        { name: "Usuários", href: "/dashboard/admin/users", icon: Users },
         {
           name: "Agendamentos",
           href: "/dashboard/admin/appointments",
