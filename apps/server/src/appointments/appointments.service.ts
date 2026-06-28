@@ -247,12 +247,13 @@ export class AppointmentsService {
       );
     }
 
+    // Consulta já realizada não pode ser revertida para "faltou"
     if (
-      dto.status === AppointmentStatus.COMPLETED &&
-      appointment.dateTime.getTime() > Date.now()
+      appointment.status === AppointmentStatus.COMPLETED &&
+      dto.status === AppointmentStatus.NO_SHOW
     ) {
       throw new BadRequestException(
-        'Consulta só pode ser concluída após o horário agendado',
+        'Não é possível marcar como "não compareceu" uma consulta já realizada',
       );
     }
 

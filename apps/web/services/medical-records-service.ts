@@ -169,6 +169,17 @@ export const medicalRecordsService = {
     }
   },
 
+  async listShared(
+    params: ListMedicalRecordsParams = {},
+  ): Promise<PaginatedMedicalRecords<MedicalRecordResponse>> {
+    try {
+      const response = await api.get("/medical-records/shared", { params });
+      return response.data as PaginatedMedicalRecords<MedicalRecordResponse>;
+    } catch (error) {
+      extractErrorMessage(error, "Erro ao buscar prontuários compartilhados.");
+    }
+  },
+
   async update(
     id: string,
     data: UpdateMedicalRecordDto,

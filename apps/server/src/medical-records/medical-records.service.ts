@@ -162,6 +162,21 @@ export class MedicalRecordsService {
     };
   }
 
+  async listShared(
+    professionalId: string,
+    query: ListMedicalRecordsQueryDto,
+  ): Promise<MedicalRecordListResponseDto> {
+    const { records, total, page, limit } =
+      await this.repository.listSharedForProfessional(professionalId, query);
+
+    return {
+      data: records.map((r) => this.toResponseDto(r)),
+      page,
+      limit,
+      total,
+    };
+  }
+
   async findByPatient(
     patientId: string,
     requesterId: string,

@@ -198,26 +198,12 @@ export function AppointmentCard({
                   </>
                 )}
                 {appointment.status === "COMPLETED" && (
-                  <>
-                    <DropdownMenuItem
-                      className="cursor-pointer rounded-md focus:bg-gray-50"
-                      onClick={handleOpenRecord}
-                    >
-                      Prontuário
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer rounded-md focus:bg-gray-50"
-                      onClick={() => handleOpenModal("NO_SHOW")}
-                    >
-                      Não Compareceu
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="cursor-pointer rounded-md focus:bg-red-50 focus:text-red-600 text-red-600"
-                      onClick={() => handleOpenModal("CANCELLED")}
-                    >
-                      Cancelar
-                    </DropdownMenuItem>
-                  </>
+                  <DropdownMenuItem
+                    className="cursor-pointer rounded-md focus:bg-gray-50"
+                    onClick={handleOpenRecord}
+                  >
+                    Prontuário
+                  </DropdownMenuItem>
                 )}
                 {appointment.status === "NO_SHOW" && (
                   <>

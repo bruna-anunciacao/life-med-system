@@ -19,4 +19,5 @@ export {
   UserCheck as UserCheckIcon,
   CheckCircle as CheckCircleIcon,
   XCircle as XCircleIcon,
+  ArrowSquareOut as ArrowSquareOutIcon,
 } from "@phosphor-icons/react";

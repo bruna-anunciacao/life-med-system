@@ -7,11 +7,20 @@ import {
   UpdateMedicalRecordDto,
 } from "@/services/medical-records-service";
 
+export function useSharedMedicalRecordsQuery(params: ListMedicalRecordsParams) {
+  return useQuery({
+    queryKey: KEYS.shared(params),
+    queryFn: () => medicalRecordsService.listShared(params),
+  });
+}
+
 const KEYS = {
   list: (params: ListMedicalRecordsParams) =>
     ["medical-records", "list", params] as const,
   listForPatient: (params: ListMedicalRecordsParams) =>
     ["medical-records", "list-patient", params] as const,
+  shared: (params: ListMedicalRecordsParams) =>
+    ["medical-records", "shared", params] as const,
   byId: (id: string) => ["medical-records", "id", id] as const,
   byAppointment: (appointmentId: string) =>
     ["medical-records", "appointment", appointmentId] as const,

@@ -153,16 +153,22 @@ describe('AppointmentsService', () => {
       ).rejects.toThrow('cancelado');
     });
 
-    it('rejects marking COMPLETED before the appointment time', async () => {
+    it('allows marking COMPLETED before the appointment time (correction flow)', async () => {
       repository.findAppointmentById.mockResolvedValue(
         makeAppointment({ dateTime: hoursFromNow(24) }),
       );
-
-      await expect(
-        service.updateAppointmentStatus('appt-1', 'prof-1', {
+      repository.updateAppointmentStatus.mockResolvedValue(
+        makeAppointment({
+          dateTime: hoursFromNow(24),
           status: AppointmentStatus.COMPLETED,
-        } as any),
-      ).rejects.toThrow('após o horário agendado');
+        }),
+      );
+
+      const result = await service.updateAppointmentStatus('appt-1', 'prof-1', {
+        status: AppointmentStatus.COMPLETED,
+      } as any);
+
+      expect(result.status).toBe(AppointmentStatus.COMPLETED);
     });
 
     it('allows marking COMPLETED after the appointment time', async () => {
@@ -181,6 +187,18 @@ describe('AppointmentsService', () => {
       } as any);
 
       expect(result.status).toBe(AppointmentStatus.COMPLETED);
+    });
+
+    it('rejects reverting COMPLETED to NO_SHOW', async () => {
+      repository.findAppointmentById.mockResolvedValue(
+        makeAppointment({ status: AppointmentStatus.COMPLETED }),
+      );
+
+      await expect(
+        service.updateAppointmentStatus('appt-1', 'prof-1', {
+          status: AppointmentStatus.NO_SHOW,
+        } as any),
+      ).rejects.toThrow('não compareceu');
     });
   });
 
