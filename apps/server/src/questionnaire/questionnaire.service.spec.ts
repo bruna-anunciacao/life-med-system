@@ -3,7 +3,11 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common';
-import { QuestionnaireAnsweredBy, UserRole } from '@prisma/client';
+import {
+  PatientApprovalStatus,
+  QuestionnaireAnsweredBy,
+  UserRole,
+} from '@prisma/client';
 import { QuestionnaireRepository } from './questionnaire.repository';
 import { QuestionnaireService } from './questionnaire.service';
 
@@ -151,6 +155,46 @@ describe('QuestionnaireService', () => {
 
       expect(repository.persistResponse).toHaveBeenCalledWith(
         expect.objectContaining({ totalScore: 4, isVulnerable: true }),
+      );
+    });
+
+    it('keeps approval PENDING even when the patient is vulnerable', async () => {
+      repository.persistResponse.mockResolvedValue(
+        makePersistedResponse({ totalScore: 7, isVulnerable: true }),
+      );
+
+      await service.submitSelf(patientUserId, {
+        answers: [
+          { questionId: 'q1', optionId: 'q1-b' }, // 4
+          { questionId: 'q2', optionId: 'q2-b' }, // 3
+        ],
+      } as any);
+
+      expect(repository.persistResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isVulnerable: true,
+          approvalStatus: PatientApprovalStatus.PENDING,
+        }),
+      );
+    });
+
+    it('keeps approval PENDING when the patient is not vulnerable', async () => {
+      repository.persistResponse.mockResolvedValue(
+        makePersistedResponse({ totalScore: 1, isVulnerable: false }),
+      );
+
+      await service.submitSelf(patientUserId, {
+        answers: [
+          { questionId: 'q1', optionId: 'q1-a' }, // 1
+          { questionId: 'q2', optionId: 'q2-a' }, // 0
+        ],
+      } as any);
+
+      expect(repository.persistResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isVulnerable: false,
+          approvalStatus: PatientApprovalStatus.PENDING,
+        }),
       );
     });
   });
