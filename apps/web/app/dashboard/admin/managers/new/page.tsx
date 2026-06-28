@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PasswordField } from "@/app/auth/register/components/PasswordField";
 import { applyCpfMask } from "@/lib/cpf";
 import { useRegisterManagerMutation } from "@/queries/useRegisterManagerMutation";
 import { registerManagerSchema, type RegisterManagerSchema } from "./register-manager.validation";
@@ -27,7 +26,6 @@ export default function RegisterManagerPage() {
       name: "",
       email: "",
       cpf: "",
-      password: "",
       phone: "",
       bio: "",
     },
@@ -37,7 +35,6 @@ export default function RegisterManagerPage() {
     register,
     handleSubmit,
     setValue,
-    watch,
     control,
     formState: { errors },
   } = form;
@@ -48,12 +45,11 @@ export default function RegisterManagerPage() {
         name: data.name.trim(),
         email: data.email.trim(),
         cpf: data.cpf.replace(/\D/g, ""),
-        password: data.password,
         phone: data.phone.trim(),
         bio: data.bio?.trim() || undefined,
       });
 
-      toast.success("Gestor cadastrado com sucesso!");
+      toast.success("Gestor cadastrado! As credenciais de acesso foram enviadas por e-mail.");
       router.push("/dashboard/admin");
     } catch (error) {
       toast.error(
@@ -78,7 +74,7 @@ export default function RegisterManagerPage() {
 
       <PageHeader
         title="Cadastrar gestor"
-        description="Crie uma conta de gestor vinculada à administração do sistema."
+        description="Crie uma conta de gestor. Uma senha temporária será enviada por e-mail ao novo gestor."
         help={<TourButton tour="admin-new-manager" />}
       />
 
@@ -121,15 +117,6 @@ export default function RegisterManagerPage() {
                 {errors.phone && <p className="text-xs text-red-600">{errors.phone.message}</p>}
               </div>
             </div>
-
-            <PasswordField
-              name="password"
-              label="Senha inicial"
-              register={register}
-              errors={errors}
-              showStrengthMeter
-              currentValue={watch("password")}
-            />
 
             <div className="space-y-1.5">
               <Label htmlFor="bio">Bio (opcional)</Label>

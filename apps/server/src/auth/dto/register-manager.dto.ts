@@ -19,16 +19,6 @@ export class RegisterManagerDto {
   email!: string;
 
   @ApiProperty({
-    example: '123456',
-    description: 'Senha (mín. 6, máx. 64 caracteres)',
-  })
-  @IsString({ message: 'Senha deve ser texto' })
-  @IsNotEmpty({ message: 'Senha é obrigatória' })
-  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres' })
-  @MaxLength(64, { message: 'A senha deve ter no máximo 64 caracteres' })
-  password!: string;
-
-  @ApiProperty({
     example: 'João Silva',
     description: 'Nome completo do gestor',
   })

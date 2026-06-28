@@ -1,5 +1,4 @@
 import * as z from 'zod';
-import { passwordValidation } from '@/lib/password';
 import { requiredCpfField } from '@/lib/cpf';
 import { isValidPhoneBR } from '@/components/ui/phone-input-br';
 
@@ -10,7 +9,6 @@ export const registerManagerSchema = z.object({
     .max(100, 'Nome deve ter no máximo 100 caracteres'),
   email: z.string().min(1, 'Email é obrigatório').email('Email inválido'),
   cpf: requiredCpfField(),
-  password: passwordValidation,
   phone: z
     .string()
     .min(1, 'Telefone é obrigatório')

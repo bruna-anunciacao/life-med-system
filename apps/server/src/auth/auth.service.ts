@@ -182,9 +182,22 @@ export class AuthService {
       throw new BadRequestException('CPF já cadastrado');
     }
 
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const tempPassword = randomUUID().replace(/-/g, '').slice(0, 12) + 'A1!';
+    const passwordHash = await bcrypt.hash(tempPassword, 10);
 
     const user = await this.repository.createManager(dto, passwordHash);
+
+    this.mailService
+      .sendTempPasswordEmail(
+        { name: user.name, email: user.email },
+        tempPassword,
+      )
+      .catch((err) =>
+        console.error(
+          `Falha ao enviar credenciais para gestor ${user.email}:`,
+          err.message,
+        ),
+      );
 
     return {
       id: user.id,
