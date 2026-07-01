@@ -12,31 +12,13 @@ import {
 import { MoreVerticalIcon } from "../../../../utils/icons";
 import { ConfirmModal } from "./ConfirmModal";
 import { medicalRecordsService } from "@/services/medical-records-service";
+import type { AppointmentResponse } from "@/services/appointments-service";
+import { STATUS_META } from "../../components/appointment-meta";
 
-type Appointment = {
-  id: string;
-  dateTime: string;
-  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
-  notes?: string;
-  patient: { id?: string; name: string };
-};
+type Appointment = AppointmentResponse;
 
-const STATUS_CLASS: Record<string, string> = {
-  CONFIRMED: "bg-green-100 text-green-700 hover:bg-green-100",
-  COMPLETED: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100",
-  CANCELLED: "bg-red-100 text-red-700 hover:bg-red-100",
-  NO_SHOW: "bg-red-100 text-red-700 hover:bg-red-100",
-  PENDING: "bg-[#fef0c7] text-[#b54708] hover:bg-[#fef0c7]",
-};
-
-const STATUS_TEXT: Record<string, string> = {
-  CONFIRMED: "Confirmado",
-  COMPLETED: "Realizado",
-  CANCELLED: "Cancelado",
-  NO_SHOW: "Faltou",
-  PENDING: "Pendente",
-};
-
+// Card-specific left-border/background treatment, distinct from the badge
+// colors in STATUS_META — kept local since it's only used by this card.
 const CARD_STATUS_CLASS: Record<string, string> = {
   confirmed: "border-l-4 border-l-[#006fee] bg-blue-50/30",
   completed: "border-l-4 border-l-[#17c964] bg-emerald-50/30",
@@ -132,9 +114,9 @@ export function AppointmentCard({
                 </p>
               )}
               <Badge
-                className={`px-2 py-0.5 rounded-md text-[11px] font-medium border-none shadow-none w-fit ${STATUS_CLASS[appointment.status] ?? "bg-gray-100 text-gray-700"}`}
+                className={`px-2 py-0.5 rounded-md text-[11px] font-medium border-none shadow-none w-fit ${STATUS_META[appointment.status]?.badgeClassName ?? "bg-gray-100 text-gray-700"}`}
               >
-                {STATUS_TEXT[appointment.status] ?? appointment.status}
+                {STATUS_META[appointment.status]?.label ?? appointment.status}
               </Badge>
               {appointment.notes && (
                 <p className="text-xs italic text-gray-400 border-t border-gray-100 pt-2 line-clamp-2">

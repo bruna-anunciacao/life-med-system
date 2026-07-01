@@ -2,14 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { AppointmentCard } from "./AppointmentCard";
 import { isSameDay } from "date-fns";
+import type { AppointmentResponse } from "@/services/appointments-service";
 
-type Appointment = {
-  id: string;
-  dateTime: string;
-  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
-  notes?: string;
-  patient: { id?: string; name: string };
-};
+type Appointment = AppointmentResponse;
 
 type ScheduleBlock = {
   id: string;

@@ -23,11 +23,20 @@ export interface AvailableSlotsResponse {
   slots: AppointmentSlot[];
 }
 
+export type AppointmentStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "NO_SHOW";
+
+export type AppointmentModality = "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+
 export interface AppointmentResponse {
   id: string;
   dateTime: string;
-  status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
-  modality: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+  status: AppointmentStatus;
+  modality: AppointmentModality;
   meetLink?: string | null;
   notes?: string;
   createdAt: string;
@@ -43,6 +52,7 @@ export interface AppointmentResponse {
     id: string;
     name: string;
     email: string;
+    phone?: string | null;
   };
 }
 

@@ -56,6 +56,8 @@ const MODALITY_META: Record<Modality, { label: string; icon: React.ReactNode }> 
 };
 
 const ALL_STATUSES: AppointmentStatus[] = ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW", "CANCELLED"];
+// Histórico exclui PENDING/CONFIRMED: consultas futuras em aberto aparecem em "Próxima Consulta".
+const HISTORY_STATUSES: AppointmentStatus[] = ["COMPLETED", "NO_SHOW", "CANCELLED"];
 
 type PeriodFilter = "ALL" | "30" | "90" | "180";
 
@@ -189,10 +191,15 @@ export default function PatientDetailPage() {
     const sorted = [...history].sort(
       (a, b) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime(),
     );
+    const isFutureOpen = (a: (typeof sorted)[number]) =>
+      new Date(a.dateTime) >= now && (a.status === "CONFIRMED" || a.status === "PENDING");
     const up = sorted
-      .filter((a) => new Date(a.dateTime) >= now && (a.status === "CONFIRMED" || a.status === "PENDING"))
+      .filter(isFutureOpen)
       .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
-    return { upcoming: up, appointments: sorted };
+    // Consultas futuras ainda não realizadas já aparecem em "Próxima Consulta";
+    // o Histórico deve refletir apenas o que já ocorreu ou foi decidido.
+    const past = sorted.filter((a) => !isFutureOpen(a));
+    return { upcoming: up, appointments: past };
   }, [patient]);
 
   const filteredAppointments = useMemo(() => {
@@ -355,7 +362,7 @@ export default function PatientDetailPage() {
               className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#006fee]"
             >
               <option value="ALL">Todos os status</option>
-              {ALL_STATUSES.map((s) => (
+              {HISTORY_STATUSES.map((s) => (
                 <option key={s} value={s}>{STATUS_META[s].label}</option>
               ))}
             </select>
