@@ -117,7 +117,7 @@ async function main() {
       emailVerified: true,
       professionalProfile: {
         create: {
-          professionalLicense: 'CRM-SP 00000',
+          professionalLicense: 'CRM-BA 00000',
           specialities: { connect: [{ id: specialitiesData[0].id }, { id: specialitiesData[7].id }] },
           modality: AppointmentModality.VIRTUAL,
           bio: 'Usuário profissional padrão do sistema, usado para testes e demonstrações.',
@@ -129,22 +129,19 @@ async function main() {
     include: { professionalProfile: true },
   });
 
-  const coreProfessionalAddressExisting = await prisma.address.findUnique({
+  const coreProfessionalAddress = {
+    zipCode: '40020-000',
+    street: 'Avenida Sete de Setembro',
+    number: '1500',
+    district: 'Centro',
+    city: 'Salvador',
+    state: 'BA',
+  };
+  await prisma.address.upsert({
     where: { userId: coreProfessional.id },
+    update: { ...coreProfessionalAddress },
+    create: { userId: coreProfessional.id, ...coreProfessionalAddress },
   });
-  if (!coreProfessionalAddressExisting) {
-    await prisma.address.create({
-      data: {
-        userId: coreProfessional.id,
-        zipCode: '01310-100',
-        street: 'Avenida Paulista',
-        number: '1500',
-        district: 'Bela Vista',
-        city: 'São Paulo',
-        state: 'SP',
-      },
-    });
-  }
 
   const coreProfessionalAvailDays = [1, 2, 3, 4, 5];
   for (let d = 0; d < coreProfessionalAvailDays.length; d++) {
@@ -186,22 +183,19 @@ async function main() {
     include: { patientProfile: true },
   });
 
-  const corePatientAddressExisting = await prisma.address.findUnique({
+  const corePatientAddress = {
+    zipCode: '41830-001',
+    street: 'Avenida Paulo VI',
+    number: '3400',
+    district: 'Pituba',
+    city: 'Salvador',
+    state: 'BA',
+  };
+  await prisma.address.upsert({
     where: { userId: corePatient.id },
+    update: { ...corePatientAddress },
+    create: { userId: corePatient.id, ...corePatientAddress },
   });
-  if (!corePatientAddressExisting) {
-    await prisma.address.create({
-      data: {
-        userId: corePatient.id,
-        zipCode: '04538-133',
-        street: 'Avenida Brigadeiro Faria Lima',
-        number: '3400',
-        district: 'Itaim Bibi',
-        city: 'São Paulo',
-        state: 'SP',
-      },
-    });
-  }
 
   console.log('  Usuários fixos criados/atualizados (senha: SenhaSegura123!).');
 
@@ -211,76 +205,76 @@ async function main() {
   console.log('⏳ Criando Profissionais, Endereços e Disponibilidades...');
   const professionalsInput = [
     {
-      email: 'roberto.souza@lifemed.com', cpf: '11111111101', name: 'Dr. Roberto Souza', crm: 'CRM-SP 10001', specs: [0, 7],
-      address: { zipCode: '01310-100', street: 'Avenida Paulista', number: '1000', district: 'Bela Vista', city: 'São Paulo', state: 'SP' },
+      email: 'roberto.souza@lifemed.com', cpf: '11111111101', name: 'Dr. Roberto Souza', crm: 'CRM-BA 10001', specs: [0, 7],
+      address: { zipCode: '40020-000', street: 'Avenida Sete de Setembro', number: '1000', district: 'Centro', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'ana.costa@lifemed.com', cpf: '11111111102', name: 'Dra. Ana Costa', crm: 'CRM-SP 10002', specs: [1],
-      address: { zipCode: '01311-000', street: 'Rua Augusta', number: '2000', district: 'Consolação', city: 'São Paulo', state: 'SP' },
+      email: 'ana.costa@lifemed.com', cpf: '11111111102', name: 'Dra. Ana Costa', crm: 'CRM-BA 10002', specs: [1],
+      address: { zipCode: '41830-001', street: 'Avenida Paulo VI', number: '2000', district: 'Pituba', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'carlos.lima@lifemed.com', cpf: '11111111103', name: 'Dr. Carlos Lima', crm: 'CRM-RJ 10003', specs: [2, 7],
-      address: { zipCode: '20040-020', street: 'Avenida Rio Branco', number: '156', district: 'Centro', city: 'Rio de Janeiro', state: 'RJ' },
+      email: 'carlos.lima@lifemed.com', cpf: '11111111103', name: 'Dr. Carlos Lima', crm: 'CRM-BA 10003', specs: [2, 7],
+      address: { zipCode: '40140-110', street: 'Avenida Tancredo Neves', number: '156', district: 'Caminho das Árvores', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'fernanda.alves@lifemed.com', cpf: '11111111104', name: 'Dra. Fernanda Alves', crm: 'CRM-RJ 10004', specs: [3],
-      address: { zipCode: '22071-900', street: 'Avenida Atlântica', number: '1702', district: 'Copacabana', city: 'Rio de Janeiro', state: 'RJ' },
+      email: 'fernanda.alves@lifemed.com', cpf: '11111111104', name: 'Dra. Fernanda Alves', crm: 'CRM-BA 10004', specs: [3],
+      address: { zipCode: '41940-450', street: 'Avenida Otávio Mangabeira', number: '1702', district: 'Boca do Rio', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'joao.mendes@lifemed.com', cpf: '11111111105', name: 'Dr. João Mendes', crm: 'CRM-MG 10005', specs: [4],
-      address: { zipCode: '30112-000', street: 'Avenida Afonso Pena', number: '200', district: 'Centro', city: 'Belo Horizonte', state: 'MG' },
+      email: 'joao.mendes@lifemed.com', cpf: '11111111105', name: 'Dr. João Mendes', crm: 'CRM-BA 10005', specs: [4],
+      address: { zipCode: '40170-110', street: 'Avenida Sete de Setembro', number: '200', district: 'Vitória', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'camila.rocha@lifemed.com', cpf: '11111111106', name: 'Dra. Camila Rocha', crm: 'CRM-BA 10006', specs: [5],
       address: { zipCode: '40020-000', street: 'Avenida Sete de Setembro', number: '450', district: 'Centro', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'paulo.silva@lifemed.com', cpf: '11111111107', name: 'Dr. Paulo Silva', crm: 'CRM-CE 10007', specs: [6],
-      address: { zipCode: '60060-310', street: 'Rua Barão do Rio Branco', number: '100', district: 'Centro', city: 'Fortaleza', state: 'CE' },
+      email: 'paulo.silva@lifemed.com', cpf: '11111111107', name: 'Dr. Paulo Silva', crm: 'CRM-BA 10007', specs: [6],
+      address: { zipCode: '41810-000', street: 'Avenida Antônio Carlos Magalhães', number: '100', district: 'Itaigara', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'mariana.santos@lifemed.com', cpf: '11111111108', name: 'Dra. Mariana Santos', crm: 'CRM-BA 10008', specs: [7],
       address: { zipCode: '40140-110', street: 'Avenida Tancredo Neves', number: '620', district: 'Caminho das Árvores', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'tiago.freitas@lifemed.com', cpf: '11111111109', name: 'Dr. Tiago Freitas', crm: 'CRM-SP 10009', specs: [0],
-      address: { zipCode: '04543-011', street: 'Avenida Juscelino Kubitschek', number: '500', district: 'Itaim Bibi', city: 'São Paulo', state: 'SP' },
+      email: 'tiago.freitas@lifemed.com', cpf: '11111111109', name: 'Dr. Tiago Freitas', crm: 'CRM-BA 10009', specs: [0],
+      address: { zipCode: '40155-190', street: 'Rua Territórios', number: '500', district: 'Rio Vermelho', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'beatriz.nogueira@lifemed.com', cpf: '11111111110', name: 'Dra. Beatriz Nogueira', crm: 'CRM-DF 10010', specs: [1, 2],
-      address: { zipCode: '70040-010', street: 'Setor Bancário Sul', number: '10', district: 'Asa Sul', city: 'Brasília', state: 'DF' },
+      email: 'beatriz.nogueira@lifemed.com', cpf: '11111111110', name: 'Dra. Beatriz Nogueira', crm: 'CRM-BA 10010', specs: [1, 2],
+      address: { zipCode: '41720-020', street: 'Avenida Luís Viana Filho', number: '10', district: 'Patamares', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'gustavo.pereira@lifemed.com', cpf: '11111111111', name: 'Dr. Gustavo Pereira', crm: 'CRM-RS 10011', specs: [8],
-      address: { zipCode: '90010-150', street: 'Rua dos Andradas', number: '1001', district: 'Centro Histórico', city: 'Porto Alegre', state: 'RS' },
+      email: 'gustavo.pereira@lifemed.com', cpf: '11111111111', name: 'Dr. Gustavo Pereira', crm: 'CRM-BA 10011', specs: [8],
+      address: { zipCode: '40296-720', street: 'Rua Fonte do Boi', number: '1001', district: 'Barra', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'patricia.gomes@lifemed.com', cpf: '11111111112', name: 'Dra. Patrícia Gomes', crm: 'CRM-PR 10012', specs: [9],
-      address: { zipCode: '80010-000', street: 'Rua XV de Novembro', number: '300', district: 'Centro', city: 'Curitiba', state: 'PR' },
+      email: 'patricia.gomes@lifemed.com', cpf: '11111111112', name: 'Dra. Patrícia Gomes', crm: 'CRM-BA 10012', specs: [9],
+      address: { zipCode: '40155-060', street: 'Rua Marquês de Caravelas', number: '300', district: 'Barra', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'renata.barbosa@lifemed.com', cpf: '11111111113', name: 'Dra. Renata Barbosa', crm: 'CRM-PE 10013', specs: [0],
-      address: { zipCode: '50030-230', street: 'Avenida Guararapes', number: '250', district: 'Santo Antônio', city: 'Recife', state: 'PE' },
+      email: 'renata.barbosa@lifemed.com', cpf: '11111111113', name: 'Dra. Renata Barbosa', crm: 'CRM-BA 10013', specs: [0],
+      address: { zipCode: '41830-330', street: 'Avenida Manoel Dias da Silva', number: '250', district: 'Pituba', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'marcelo.tavares@lifemed.com', cpf: '11111111114', name: 'Dr. Marcelo Tavares', crm: 'CRM-AM 10014', specs: [3, 8],
-      address: { zipCode: '69010-070', street: 'Avenida Eduardo Ribeiro', number: '620', district: 'Centro', city: 'Manaus', state: 'AM' },
+      email: 'marcelo.tavares@lifemed.com', cpf: '11111111114', name: 'Dr. Marcelo Tavares', crm: 'CRM-BA 10014', specs: [3, 8],
+      address: { zipCode: '40243-900', street: 'Avenida Garibaldi', number: '620', district: 'Ondina', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'larissa.moura@lifemed.com', cpf: '11111111115', name: 'Dra. Larissa Moura', crm: 'CRM-SC 10015', specs: [5, 9],
-      address: { zipCode: '88010-400', street: 'Avenida Beira-Mar Norte', number: '1500', district: 'Centro', city: 'Florianópolis', state: 'SC' },
+      email: 'larissa.moura@lifemed.com', cpf: '11111111115', name: 'Dra. Larissa Moura', crm: 'CRM-BA 10015', specs: [5, 9],
+      address: { zipCode: '40015-130', street: 'Rua Chile', number: '1500', district: 'Comércio', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'bruno.cavalcante@lifemed.com', cpf: '11111111116', name: 'Dr. Bruno Cavalcante', crm: 'CRM-GO 10016', specs: [4, 6],
-      address: { zipCode: '74015-010', street: 'Avenida Goiás', number: '850', district: 'Setor Central', city: 'Goiânia', state: 'GO' },
+      email: 'bruno.cavalcante@lifemed.com', cpf: '11111111116', name: 'Dr. Bruno Cavalcante', crm: 'CRM-BA 10016', specs: [4, 6],
+      address: { zipCode: '41940-455', street: 'Avenida Octávio Mangabeira', number: '850', district: 'Armação', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'isabela.martins@lifemed.com', cpf: '11111111117', name: 'Dra. Isabela Martins', crm: 'CRM-SP 10017', specs: [1, 5],
-      address: { zipCode: '13010-141', street: 'Avenida Andrade Neves', number: '400', district: 'Centro', city: 'Campinas', state: 'SP' },
+      email: 'isabela.martins@lifemed.com', cpf: '11111111117', name: 'Dra. Isabela Martins', crm: 'CRM-BA 10017', specs: [1, 5],
+      address: { zipCode: '40225-270', street: 'Rua Waldemar Falcão', number: '400', district: 'Brotas', city: 'Salvador', state: 'BA' },
     },
     {
-      email: 'felipe.rodrigues@lifemed.com', cpf: '11111111118', name: 'Dr. Felipe Rodrigues', crm: 'CRM-RJ 10018', specs: [7, 9],
-      address: { zipCode: '24020-105', street: 'Rua Marechal Deodoro', number: '235', district: 'Centro', city: 'Niterói', state: 'RJ' },
+      email: 'felipe.rodrigues@lifemed.com', cpf: '11111111118', name: 'Dr. Felipe Rodrigues', crm: 'CRM-BA 10018', specs: [7, 9],
+      address: { zipCode: '41600-010', street: 'Avenida São Rafael', number: '235', district: 'São Rafael', city: 'Salvador', state: 'BA' },
     },
   ];
 
@@ -323,15 +317,11 @@ async function main() {
     });
     professionals.push(profUser);
 
-    const existingAddress = await prisma.address.findUnique({ where: { userId: profUser.id } });
-    if (!existingAddress) {
-      await prisma.address.create({
-        data: {
-          userId: profUser.id,
-          ...p.address,
-        },
-      });
-    }
+    await prisma.address.upsert({
+      where: { userId: profUser.id },
+      update: { ...p.address },
+      create: { userId: profUser.id, ...p.address },
+    });
 
     const days = [1, 2, 3, 4, 5];
     for (let d = 0; d < days.length; d++) {
@@ -360,15 +350,15 @@ async function main() {
   const patientsInput = [
     {
       email: 'paciente.marcos@gmail.com', cpf: '22222222201', name: 'Marcos de Almeida', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '01310-100', street: 'Avenida Paulista', number: '1000', district: 'Bela Vista', city: 'São Paulo', state: 'SP' },
+      address: { zipCode: '40020-000', street: 'Avenida Sete de Setembro', number: '1000', district: 'Centro', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.luiza@gmail.com', cpf: '22222222202', name: 'Luiza Pereira', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '20040-020', street: 'Avenida Rio Branco', number: '156', district: 'Centro', city: 'Rio de Janeiro', state: 'RJ' },
+      address: { zipCode: '41830-001', street: 'Avenida Paulo VI', number: '156', district: 'Pituba', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.fernando@gmail.com', cpf: '22222222203', name: 'Fernando Gomes', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '30112-000', street: 'Avenida Afonso Pena', number: '200', district: 'Centro', city: 'Belo Horizonte', state: 'MG' },
+      address: { zipCode: '40140-110', street: 'Avenida Tancredo Neves', number: '200', district: 'Caminho das Árvores', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.amanda@gmail.com', cpf: '22222222204', name: 'Amanda Ribeiro', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
@@ -376,31 +366,31 @@ async function main() {
     },
     {
       email: 'paciente.diego@gmail.com', cpf: '22222222205', name: 'Diego Batista', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '60060-310', street: 'Rua Barão do Rio Branco', number: '100', district: 'Centro', city: 'Fortaleza', state: 'CE' },
+      address: { zipCode: '41940-450', street: 'Avenida Otávio Mangabeira', number: '100', district: 'Boca do Rio', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.juliana@gmail.com', cpf: '22222222206', name: 'Juliana Vieira', gender: 'Feminino', approval: PatientApprovalStatus.PENDING,
-      address: { zipCode: '70040-010', street: 'Setor Bancário Sul', number: '10', district: 'Asa Sul', city: 'Brasília', state: 'DF' },
+      address: { zipCode: '40170-110', street: 'Avenida Sete de Setembro', number: '10', district: 'Vitória', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.rafael@gmail.com', cpf: '22222222207', name: 'Rafael Barros', gender: 'Masculino', approval: PatientApprovalStatus.PENDING,
-      address: { zipCode: '90010-150', street: 'Rua dos Andradas', number: '1001', district: 'Centro Histórico', city: 'Porto Alegre', state: 'RS' },
+      address: { zipCode: '41810-000', street: 'Avenida Antônio Carlos Magalhães', number: '1001', district: 'Itaigara', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.claudia@gmail.com', cpf: '22222222208', name: 'Cláudia Castro', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '80010-000', street: 'Rua XV de Novembro', number: '300', district: 'Centro', city: 'Curitiba', state: 'PR' },
+      address: { zipCode: '40155-190', street: 'Rua Territórios', number: '300', district: 'Rio Vermelho', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.ricardo@gmail.com', cpf: '22222222209', name: 'Ricardo Dias', gender: 'Masculino', approval: PatientApprovalStatus.REJECTED,
-      address: { zipCode: '01311-000', street: 'Rua Augusta', number: '2000', district: 'Consolação', city: 'São Paulo', state: 'SP' },
+      address: { zipCode: '41720-020', street: 'Avenida Luís Viana Filho', number: '2000', district: 'Patamares', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.vanessa@gmail.com', cpf: '22222222210', name: 'Vanessa Moraes', gender: 'Feminino', approval: PatientApprovalStatus.PENDING,
-      address: { zipCode: '22071-900', street: 'Avenida Atlântica', number: '1702', district: 'Copacabana', city: 'Rio de Janeiro', state: 'RJ' },
+      address: { zipCode: '40296-720', street: 'Rua Fonte do Boi', number: '1702', district: 'Barra', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.eduardo@gmail.com', cpf: '22222222211', name: 'Eduardo Nascimento', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '04543-011', street: 'Avenida Juscelino Kubitschek', number: '500', district: 'Itaim Bibi', city: 'São Paulo', state: 'SP' },
+      address: { zipCode: '41830-330', street: 'Avenida Manoel Dias da Silva', number: '500', district: 'Pituba', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.sabrina@gmail.com', cpf: '22222222212', name: 'Sabrina Cardoso', gender: 'Feminino', approval: PatientApprovalStatus.REJECTED,
@@ -408,27 +398,27 @@ async function main() {
     },
     {
       email: 'paciente.helena@gmail.com', cpf: '22222222213', name: 'Helena Farias', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '50030-230', street: 'Avenida Guararapes', number: '250', district: 'Santo Antônio', city: 'Recife', state: 'PE' },
+      address: { zipCode: '40243-900', street: 'Avenida Garibaldi', number: '250', district: 'Ondina', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.igor@gmail.com', cpf: '22222222214', name: 'Igor Correia', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '69010-070', street: 'Avenida Eduardo Ribeiro', number: '620', district: 'Centro', city: 'Manaus', state: 'AM' },
+      address: { zipCode: '40015-130', street: 'Rua Chile', number: '620', district: 'Comércio', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.natalia@gmail.com', cpf: '22222222215', name: 'Natália Duarte', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '88010-400', street: 'Avenida Beira-Mar Norte', number: '1500', district: 'Centro', city: 'Florianópolis', state: 'SC' },
+      address: { zipCode: '41940-455', street: 'Avenida Octávio Mangabeira', number: '1500', district: 'Armação', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.vitor@gmail.com', cpf: '22222222216', name: 'Vitor Azevedo', gender: 'Masculino', approval: PatientApprovalStatus.PENDING,
-      address: { zipCode: '74015-010', street: 'Avenida Goiás', number: '850', district: 'Setor Central', city: 'Goiânia', state: 'GO' },
+      address: { zipCode: '40225-270', street: 'Rua Waldemar Falcão', number: '850', district: 'Brotas', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.camille@gmail.com', cpf: '22222222217', name: 'Camille Teixeira', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
-      address: { zipCode: '13010-141', street: 'Avenida Andrade Neves', number: '400', district: 'Centro', city: 'Campinas', state: 'SP' },
+      address: { zipCode: '41600-010', street: 'Avenida São Rafael', number: '400', district: 'São Rafael', city: 'Salvador', state: 'BA' },
     },
     {
       email: 'paciente.henrique@gmail.com', cpf: '22222222218', name: 'Henrique Lopes', gender: 'Masculino', approval: PatientApprovalStatus.REJECTED,
-      address: { zipCode: '24020-105', street: 'Rua Marechal Deodoro', number: '235', district: 'Centro', city: 'Niterói', state: 'RJ' },
+      address: { zipCode: '41500-070', street: 'Avenida Dorival Caymmi', number: '235', district: 'Itapuã', city: 'Salvador', state: 'BA' },
     },
   ];
 
@@ -458,15 +448,11 @@ async function main() {
     });
     patients.push(patientUser);
 
-    const existingAddress = await prisma.address.findUnique({ where: { userId: patientUser.id } });
-    if (!existingAddress) {
-      await prisma.address.create({
-        data: {
-          userId: patientUser.id,
-          ...p.address,
-        },
-      });
-    }
+    await prisma.address.upsert({
+      where: { userId: patientUser.id },
+      update: { ...p.address },
+      create: { userId: patientUser.id, ...p.address },
+    });
   }
   console.log(`  ${patients.length} Pacientes e Endereços criados.`);
 
@@ -1191,7 +1177,7 @@ async function main() {
   console.log('   PROFISSIONAL→ profissional@lifemed.com');
   console.log('   GESTOR      → gestor@lifemed.com');
   console.log('\n📋 Credenciais de exemplo (senha: Senha123!):');
-  console.log('   PROFISSIONAL→ roberto.souza@lifemed.com (e outros 17, em 12 estados diferentes)');
+  console.log('   PROFISSIONAL→ roberto.souza@lifemed.com (e outros 17, todos em Salvador/BA, bairros diferentes)');
   console.log('   PACIENTE    → paciente.marcos@gmail.com (APPROVED, vulnerável)');
   console.log('   PACIENTE    → paciente.luiza@gmail.com  (APPROVED, não vulnerável)');
   console.log('   PACIENTE    → paciente.amanda@gmail.com (APPROVED, vulnerável — questionário respondido pelo gestor)');
