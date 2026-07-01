@@ -546,6 +546,15 @@ async function main() {
     { pIdx: 3, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 1 },
     { pIdx: 4, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 4 },
     { pIdx: 0, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.VIRTUAL, daysDiff: 9 },
+    { pIdx: 5, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -21 },
+    { pIdx: 6, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -35 },
+    { pIdx: 7, status: AppointmentStatus.NO_SHOW, modality: AppointmentModality.CLINIC, daysDiff: -18 },
+    { pIdx: 8, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.VIRTUAL, daysDiff: -28 },
+    { pIdx: 9, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.HOME_VISIT, daysDiff: -50 },
+    { pIdx: 1, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 2 },
+    { pIdx: 3, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 6 },
+    { pIdx: 10, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 13 },
+    { pIdx: 11, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 17 },
   ];
 
   for (let i = 0; i < coreProfessionalAppointments.length; i++) {
@@ -583,6 +592,12 @@ async function main() {
     { profIdx: -1, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -3 }, // Profissional padrão
     { profIdx: 5, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 4 }, // Ginecologia
     { profIdx: 6, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 11 }, // Neurologia
+    { profIdx: 7, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -55 }, // Clínica Médica
+    { profIdx: 8, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -70 }, // Cardiologia (2º cardiologista)
+    { profIdx: 9, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.HOME_VISIT, daysDiff: -85 }, // Endocrinologia
+    { profIdx: -1, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.VIRTUAL, daysDiff: -60 }, // Profissional padrão (2ª consulta, cancelada)
+    { profIdx: 10, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 18 }, // Oftalmologia
+    { profIdx: 11, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 25 }, // Cardiologia (Renata)
   ];
 
   let corePatientApptsCreated = 0;
@@ -852,6 +867,52 @@ async function main() {
   console.log(`     ✅ ${doctorB.name} — COM vínculo → vê o prontuário de ${doctorA.name}`);
   console.log(`     ❌ ${doctorNoLink.name} — SEM vínculo (${noLinkCount} consultas) → deve receber 403`);
   console.log(`     Paciente padrão: ${corePatient.name} (${corePatient.email}) — histórico com múltiplos médicos (relatório multi-médico).`);
+
+  // ─────────────────────────────────────────
+  // 6.1. CONSULTAS ASSISTIDAS PELO GESTOR PADRÃO (gestor@lifemed.com)
+  // Exercita o fluxo de agendamento/cancelamento assistido, usado no
+  // dashboard do gestor (Appointment.scheduledByManager / cancelledByManager).
+  // ─────────────────────────────────────────
+  console.log('⏳ Criando consultas assistidas pelo gestor padrão...');
+
+  if (coreManager.managerProfile) {
+    const managerAssistedAppointments = [
+      { pIdx: 0, dIdx: 0, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -35, cancelled: false },
+      { pIdx: 3, dIdx: 4, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.VIRTUAL, daysDiff: 9, cancelled: false },
+      { pIdx: 6, dIdx: 9, status: AppointmentStatus.PENDING, modality: AppointmentModality.HOME_VISIT, daysDiff: 15, cancelled: false },
+      { pIdx: 9, dIdx: 12, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.VIRTUAL, daysDiff: -12, cancelled: true },
+    ];
+
+    for (let i = 0; i < managerAssistedAppointments.length; i++) {
+      const { pIdx, dIdx, status, modality, daysDiff, cancelled } = managerAssistedAppointments[i];
+      const appointmentId = generateUUID('50000000', i);
+
+      await prisma.appointment.upsert({
+        where: { id: appointmentId },
+        update: {
+          status,
+          modality,
+          dateTime: getRelativeDate(daysDiff),
+          scheduledByManagerId: coreManager.managerProfile.id,
+          cancelledByManagerId: cancelled ? coreManager.managerProfile.id : null,
+          cancelledAt: cancelled ? getRelativeDate(daysDiff - 1) : null,
+        },
+        create: {
+          id: appointmentId,
+          patientId: patients[pIdx].id,
+          professionalId: professionals[dIdx].id,
+          status,
+          modality,
+          dateTime: getRelativeDate(daysDiff),
+          scheduledByManagerId: coreManager.managerProfile.id,
+          cancelledByManagerId: cancelled ? coreManager.managerProfile.id : null,
+          cancelledAt: cancelled ? getRelativeDate(daysDiff - 1) : null,
+          notes: status === AppointmentStatus.COMPLETED ? 'Consulta agendada de forma assistida pelo gestor padrão.' : null,
+        },
+      });
+    }
+    console.log(`  ${managerAssistedAppointments.length} consultas assistidas pelo gestor padrão criadas.`);
+  }
 
   // ─────────────────────────────────────────
   // 7. QUESTIONÁRIO DE VULNERABILIDADE
@@ -1144,22 +1205,25 @@ async function main() {
   // ─────────────────────────────────────────
   console.log('⏳ Criando bloqueios de agenda...');
 
+  const formatDateOnly = (daysDiff: number) => getRelativeDate(daysDiff).toISOString().slice(0, 10);
+
   const scheduleBlocks = [
-    { profIdx: 0, date: '2026-07-04', startTime: '12:00', endTime: '14:00' }, // almoço prolongado
-    { profIdx: 1, date: '2026-07-10', startTime: null, endTime: null },         // dia inteiro bloqueado
-    { profIdx: 2, date: '2026-07-15', startTime: '08:00', endTime: '10:00' },
+    { professionalId: professionals[0].id, date: formatDateOnly(5), startTime: '12:00', endTime: '14:00' }, // almoço prolongado
+    { professionalId: professionals[1].id, date: formatDateOnly(11), startTime: null, endTime: null },        // dia inteiro bloqueado
+    { professionalId: professionals[2].id, date: formatDateOnly(16), startTime: '08:00', endTime: '10:00' },
+    { professionalId: coreProfessional.id, date: formatDateOnly(2), startTime: '13:00', endTime: '15:00' }, // bloqueio do profissional padrão
   ];
 
   let blocksCreated = 0;
   for (let i = 0; i < scheduleBlocks.length; i++) {
-    const { profIdx, date, startTime, endTime } = scheduleBlocks[i];
+    const { professionalId, date, startTime, endTime } = scheduleBlocks[i];
     const blockId = generateUUID('55555555', i);
     const existing = await prisma.scheduleBlock.findUnique({ where: { id: blockId } });
     if (!existing) {
       await prisma.scheduleBlock.create({
         data: {
           id: blockId,
-          professionalId: professionals[profIdx].id,
+          professionalId,
           date,
           startTime,
           endTime,
@@ -1173,9 +1237,9 @@ async function main() {
   console.log('\n🎉 Seed finalizado com sucesso!');
   console.log('\n📋 Credenciais fixas obrigatórias (senha: SenhaSegura123!):');
   console.log('   ADMIN       → admin@lifemed.com');
-  console.log('   PACIENTE    → paciente@lifemed.com');
-  console.log('   PROFISSIONAL→ profissional@lifemed.com');
-  console.log('   GESTOR      → gestor@lifemed.com');
+  console.log('   PACIENTE    → paciente@lifemed.com   (APPROVED, histórico com 8+ médicos diferentes, prontuários e questionário)');
+  console.log('   PROFISSIONAL→ profissional@lifemed.com (agenda própria, disponibilidade, bloqueio de agenda e consultas em todos os status)');
+  console.log('   GESTOR      → gestor@lifemed.com      (consultas agendadas/canceladas de forma assistida)');
   console.log('\n📋 Credenciais de exemplo (senha: Senha123!):');
   console.log('   PROFISSIONAL→ roberto.souza@lifemed.com (e outros 17, todos em Salvador/BA, bairros diferentes)');
   console.log('   PACIENTE    → paciente.marcos@gmail.com (APPROVED, vulnerável)');
