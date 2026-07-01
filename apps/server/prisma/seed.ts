@@ -258,6 +258,30 @@ async function main() {
       email: 'patricia.gomes@lifemed.com', cpf: '11111111112', name: 'Dra. Patrícia Gomes', crm: 'CRM-PR 10012', specs: [9],
       address: { zipCode: '80010-000', street: 'Rua XV de Novembro', number: '300', district: 'Centro', city: 'Curitiba', state: 'PR' },
     },
+    {
+      email: 'renata.barbosa@lifemed.com', cpf: '11111111113', name: 'Dra. Renata Barbosa', crm: 'CRM-PE 10013', specs: [0],
+      address: { zipCode: '50030-230', street: 'Avenida Guararapes', number: '250', district: 'Santo Antônio', city: 'Recife', state: 'PE' },
+    },
+    {
+      email: 'marcelo.tavares@lifemed.com', cpf: '11111111114', name: 'Dr. Marcelo Tavares', crm: 'CRM-AM 10014', specs: [3, 8],
+      address: { zipCode: '69010-070', street: 'Avenida Eduardo Ribeiro', number: '620', district: 'Centro', city: 'Manaus', state: 'AM' },
+    },
+    {
+      email: 'larissa.moura@lifemed.com', cpf: '11111111115', name: 'Dra. Larissa Moura', crm: 'CRM-SC 10015', specs: [5, 9],
+      address: { zipCode: '88010-400', street: 'Avenida Beira-Mar Norte', number: '1500', district: 'Centro', city: 'Florianópolis', state: 'SC' },
+    },
+    {
+      email: 'bruno.cavalcante@lifemed.com', cpf: '11111111116', name: 'Dr. Bruno Cavalcante', crm: 'CRM-GO 10016', specs: [4, 6],
+      address: { zipCode: '74015-010', street: 'Avenida Goiás', number: '850', district: 'Setor Central', city: 'Goiânia', state: 'GO' },
+    },
+    {
+      email: 'isabela.martins@lifemed.com', cpf: '11111111117', name: 'Dra. Isabela Martins', crm: 'CRM-SP 10017', specs: [1, 5],
+      address: { zipCode: '13010-141', street: 'Avenida Andrade Neves', number: '400', district: 'Centro', city: 'Campinas', state: 'SP' },
+    },
+    {
+      email: 'felipe.rodrigues@lifemed.com', cpf: '11111111118', name: 'Dr. Felipe Rodrigues', crm: 'CRM-RJ 10018', specs: [7, 9],
+      address: { zipCode: '24020-105', street: 'Rua Marechal Deodoro', number: '235', district: 'Centro', city: 'Niterói', state: 'RJ' },
+    },
   ];
 
   const professionals: any[] = [];
@@ -382,6 +406,30 @@ async function main() {
       email: 'paciente.sabrina@gmail.com', cpf: '22222222212', name: 'Sabrina Cardoso', gender: 'Feminino', approval: PatientApprovalStatus.REJECTED,
       address: { zipCode: '40140-110', street: 'Avenida Tancredo Neves', number: '620', district: 'Caminho das Árvores', city: 'Salvador', state: 'BA' },
     },
+    {
+      email: 'paciente.helena@gmail.com', cpf: '22222222213', name: 'Helena Farias', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '50030-230', street: 'Avenida Guararapes', number: '250', district: 'Santo Antônio', city: 'Recife', state: 'PE' },
+    },
+    {
+      email: 'paciente.igor@gmail.com', cpf: '22222222214', name: 'Igor Correia', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '69010-070', street: 'Avenida Eduardo Ribeiro', number: '620', district: 'Centro', city: 'Manaus', state: 'AM' },
+    },
+    {
+      email: 'paciente.natalia@gmail.com', cpf: '22222222215', name: 'Natália Duarte', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '88010-400', street: 'Avenida Beira-Mar Norte', number: '1500', district: 'Centro', city: 'Florianópolis', state: 'SC' },
+    },
+    {
+      email: 'paciente.vitor@gmail.com', cpf: '22222222216', name: 'Vitor Azevedo', gender: 'Masculino', approval: PatientApprovalStatus.PENDING,
+      address: { zipCode: '74015-010', street: 'Avenida Goiás', number: '850', district: 'Setor Central', city: 'Goiânia', state: 'GO' },
+    },
+    {
+      email: 'paciente.camille@gmail.com', cpf: '22222222217', name: 'Camille Teixeira', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '13010-141', street: 'Avenida Andrade Neves', number: '400', district: 'Centro', city: 'Campinas', state: 'SP' },
+    },
+    {
+      email: 'paciente.henrique@gmail.com', cpf: '22222222218', name: 'Henrique Lopes', gender: 'Masculino', approval: PatientApprovalStatus.REJECTED,
+      address: { zipCode: '24020-105', street: 'Rua Marechal Deodoro', number: '235', district: 'Centro', city: 'Niterói', state: 'RJ' },
+    },
   ];
 
   const patients: any[] = [];
@@ -441,6 +489,16 @@ async function main() {
     { pIdx: 6, dIdx: 9, status: AppointmentStatus.NO_SHOW, modality: AppointmentModality.CLINIC, daysDiff: -8 },
     { pIdx: 10, dIdx: 10, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -45 },
     { pIdx: 11, dIdx: 11, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -60 },
+    { pIdx: 12, dIdx: 12, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -18 },
+    { pIdx: 13, dIdx: 13, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -22 },
+    { pIdx: 15, dIdx: 15, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.HOME_VISIT, daysDiff: -33 },
+    { pIdx: 17, dIdx: 17, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.VIRTUAL, daysDiff: -9 },
+    { pIdx: 12, dIdx: 14, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -75 },
+    { pIdx: 13, dIdx: 16, status: AppointmentStatus.NO_SHOW, modality: AppointmentModality.VIRTUAL, daysDiff: -50 },
+    { pIdx: 0, dIdx: 12, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -90 },
+    { pIdx: 1, dIdx: 13, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -100 },
+    { pIdx: 3, dIdx: 15, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -120 },
+    { pIdx: 7, dIdx: 16, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -150 },
 
     // ── Futuras pendentes / confirmadas (agenda real) ──
     { pIdx: 5, dIdx: 5, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 2 },
@@ -453,6 +511,14 @@ async function main() {
     { pIdx: 7, dIdx: 8, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 14 },
     { pIdx: 10, dIdx: 2, status: AppointmentStatus.PENDING, modality: AppointmentModality.CLINIC, daysDiff: 3 },
     { pIdx: 11, dIdx: 6, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.VIRTUAL, daysDiff: 20 },
+    { pIdx: 12, dIdx: 7, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 16 },
+    { pIdx: 13, dIdx: 9, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 18 },
+    { pIdx: 14, dIdx: 14, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 22 },
+    { pIdx: 16, dIdx: 17, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.HOME_VISIT, daysDiff: 25 },
+    { pIdx: 17, dIdx: 3, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 30 },
+    { pIdx: 4, dIdx: 15, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 35 },
+    { pIdx: 8, dIdx: 16, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 40 },
+    { pIdx: 15, dIdx: 8, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 45 },
   ];
 
   let appointmentsCreated = 0;
@@ -596,6 +662,62 @@ async function main() {
     },
   ];
 
+  // ── Prontuários adicionais de pacientes de exemplo (histórico avulso) ──
+  const extraRecordScenarios = [
+    {
+      patient: patients[3], // Amanda
+      doctor: professionals[4],
+      daysDiff: -30,
+      modality: AppointmentModality.CLINIC,
+      record: {
+        chiefComplaint: 'Episódios de ansiedade e insônia há 2 meses.',
+        diagnosis: 'Transtorno de ansiedade generalizada.',
+        treatmentPlan: 'Terapia cognitivo-comportamental semanal e reavaliação medicamentosa em 30 dias.',
+        prescriptions: 'Escitalopram 10mg — 1 comprimido ao dia.',
+        internalNotes: 'Paciente relatou melhora parcial dos sintomas na última semana.',
+      },
+    },
+    {
+      patient: patients[9],
+      doctor: professionals[9],
+      daysDiff: -45,
+      modality: AppointmentModality.VIRTUAL,
+      record: {
+        chiefComplaint: 'Check-up cardiológico de rotina.',
+        diagnosis: 'Sem alterações significativas no ECG.',
+        treatmentPlan: 'Manter hábitos saudáveis, retorno anual.',
+        prescriptions: null,
+        internalNotes: 'Paciente assintomático, histórico familiar de hipertensão.',
+      },
+    },
+    {
+      patient: patients[12],
+      doctor: professionals[12],
+      daysDiff: -18,
+      modality: AppointmentModality.VIRTUAL,
+      record: {
+        chiefComplaint: 'Dor lombar recorrente relacionada ao trabalho.',
+        diagnosis: 'Lombalgia mecânica.',
+        treatmentPlan: 'Fisioterapia 2x por semana e anti-inflamatório por 5 dias.',
+        prescriptions: 'Nimesulida 100mg — 1 comprimido a cada 12h por 5 dias.',
+        internalNotes: 'Orientado sobre ergonomia no ambiente de trabalho.',
+      },
+    },
+    {
+      patient: patients[13],
+      doctor: professionals[13],
+      daysDiff: -22,
+      modality: AppointmentModality.CLINIC,
+      record: {
+        chiefComplaint: 'Consulta oftalmológica de rotina.',
+        diagnosis: 'Miopia leve, sem progressão.',
+        treatmentPlan: 'Atualização do grau dos óculos, retorno em 12 meses.',
+        prescriptions: null,
+        internalNotes: 'Fundo de olho sem alterações.',
+      },
+    },
+  ];
+
   let recordsCreated = 0;
   for (let i = 0; i < recordScenarios.length; i++) {
     const { doctor, daysDiff, modality, record } = recordScenarios[i];
@@ -623,6 +745,39 @@ async function main() {
         id: recordId,
         appointmentId: apptId,
         patientId: sharedPatient.id,
+        authorId: doctor.id,
+        ...record,
+      },
+    });
+    recordsCreated++;
+  }
+
+  for (let i = 0; i < extraRecordScenarios.length; i++) {
+    const { patient, doctor, daysDiff, modality, record } = extraRecordScenarios[i];
+    const apptId = generateUUID('33333333', 10 + i);
+    const recordId = generateUUID('44444444', 20 + i);
+
+    await prisma.appointment.upsert({
+      where: { id: apptId },
+      update: { status: AppointmentStatus.COMPLETED, modality, dateTime: getRelativeDate(daysDiff) },
+      create: {
+        id: apptId,
+        patientId: patient.id,
+        professionalId: doctor.id,
+        status: AppointmentStatus.COMPLETED,
+        modality,
+        dateTime: getRelativeDate(daysDiff),
+        notes: 'Consulta com prontuário registrado.',
+      },
+    });
+
+    await prisma.medicalRecord.upsert({
+      where: { id: recordId },
+      update: { ...record },
+      create: {
+        id: recordId,
+        appointmentId: apptId,
+        patientId: patient.id,
         authorId: doctor.id,
         ...record,
       },
@@ -892,6 +1047,66 @@ async function main() {
       ], // total = 0 → não vulnerável
       isVulnerable: false,
     },
+    {
+      patient: patients[13], // Henrique — vulnerável (score alto)
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUser: patients[13],
+      answers: [
+        { qIdx: 0, optIdx: 0 }, // Até 1 SM — score 3
+        { qIdx: 1, optIdx: 1 }, // 3+ pessoas — score 1
+        { qIdx: 2, optIdx: 0 }, // Desempregado sim — score 2
+        { qIdx: 3, optIdx: 0 }, // CadÚnico sim — score 4
+        { qIdx: 4, optIdx: 1 }, // Moradia não própria — score 1
+        { qIdx: 5, optIdx: 1 }, // Sem água encanada — score 1
+        { qIdx: 6, optIdx: 0 }, // Com saneamento — score 0
+      ], // total = 12 → vulnerável
+      isVulnerable: true,
+    },
+    {
+      patient: patients[14], // Helena — não vulnerável
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUser: patients[14],
+      answers: [
+        { qIdx: 0, optIdx: 3 }, // Acima 3 SM — score 0
+        { qIdx: 1, optIdx: 0 }, // Até 2 pessoas — score 0
+        { qIdx: 2, optIdx: 1 }, // Não desempregado — score 0
+        { qIdx: 3, optIdx: 1 }, // Sem CadÚnico — score 0
+        { qIdx: 4, optIdx: 0 }, // Moradia própria — score 0
+        { qIdx: 5, optIdx: 0 }, // Com água encanada — score 0
+        { qIdx: 6, optIdx: 1 }, // Sem saneamento — score 1
+      ], // total = 1 → não vulnerável
+      isVulnerable: false,
+    },
+    {
+      patient: patients[15], // Igor — vulnerável, respondido pelo gestor (assistido)
+      answeredBy: QuestionnaireAnsweredBy.MANAGER,
+      answeredByUser: coreManager,
+      answers: [
+        { qIdx: 0, optIdx: 0 }, // Até 1 SM — score 3
+        { qIdx: 1, optIdx: 1 }, // 3+ pessoas — score 1
+        { qIdx: 2, optIdx: 0 }, // Desempregado sim — score 2
+        { qIdx: 3, optIdx: 0 }, // CadÚnico sim — score 4
+        { qIdx: 4, optIdx: 1 }, // Moradia não própria — score 1
+        { qIdx: 5, optIdx: 1 }, // Sem água encanada — score 1
+        { qIdx: 6, optIdx: 1 }, // Sem saneamento — score 1
+      ], // total = 13 → vulnerável
+      isVulnerable: true,
+    },
+    {
+      patient: patients[17], // Camille — borderline (score 5)
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUser: patients[17],
+      answers: [
+        { qIdx: 0, optIdx: 1 }, // 1-2 SM — score 2
+        { qIdx: 1, optIdx: 1 }, // 3+ pessoas — score 1
+        { qIdx: 2, optIdx: 1 }, // Não desempregado — score 0
+        { qIdx: 3, optIdx: 0 }, // CadÚnico sim — score 4
+        { qIdx: 4, optIdx: 0 }, // Moradia própria — score 0
+        { qIdx: 5, optIdx: 0 }, // Com água encanada — score 0
+        { qIdx: 6, optIdx: 0 }, // Com saneamento — score 0
+      ], // total = 6 → vulnerável (igual ao threshold)
+      isVulnerable: true,
+    },
   ];
 
   let questionnairesCreated = 0;
@@ -976,7 +1191,7 @@ async function main() {
   console.log('   PROFISSIONAL→ profissional@lifemed.com');
   console.log('   GESTOR      → gestor@lifemed.com');
   console.log('\n📋 Credenciais de exemplo (senha: Senha123!):');
-  console.log('   PROFISSIONAL→ roberto.souza@lifemed.com (e outros 11, em 7 estados diferentes)');
+  console.log('   PROFISSIONAL→ roberto.souza@lifemed.com (e outros 17, em 12 estados diferentes)');
   console.log('   PACIENTE    → paciente.marcos@gmail.com (APPROVED, vulnerável)');
   console.log('   PACIENTE    → paciente.luiza@gmail.com  (APPROVED, não vulnerável)');
   console.log('   PACIENTE    → paciente.amanda@gmail.com (APPROVED, vulnerável — questionário respondido pelo gestor)');
