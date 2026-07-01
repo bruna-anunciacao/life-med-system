@@ -12,17 +12,21 @@ export function useProfessionalSettingsQuery({ enabled = true } = {}) {
   });
 }
 
-export function useProfessionalAppointmentsQuery(params?: {
-  status?: string;
-  startDate?: string;
-  endDate?: string;
-  page?: number;
-  limit?: number;
-}) {
+export function useProfessionalAppointmentsQuery(
+  params?: {
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  },
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: ["professionalAppointments", params],
     queryFn: () => appointmentsService.listProfessionalAppointments(params),
     placeholderData: (previousData) => previousData,
+    enabled: options?.enabled ?? true,
   });
 }
 

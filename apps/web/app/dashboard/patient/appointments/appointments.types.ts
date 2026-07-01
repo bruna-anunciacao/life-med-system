@@ -6,7 +6,7 @@ export type Appointment = {
   photoUrl?: string | null;
   bio?: string | null;
   dateTime: string;
-  status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
   modality: "VIRTUAL" | "CLINIC" | "HOME_VISIT";
   meetLink?: string | null;
   notes?: string;

@@ -3,6 +3,7 @@ import {
   CalendarDays,
   CalendarPlus,
   ClipboardList,
+  ClockAlert,
   FileText,
   Home,
   Search,
@@ -52,6 +53,11 @@ export function getNavItems(role: string): NavItem[] {
           name: "Agenda",
           href: "/dashboard/professional/schedule",
           icon: Calendar,
+        },
+        {
+          name: "Solicitações",
+          href: "/dashboard/professional/requests",
+          icon: ClockAlert,
         },
         {
           name: "Pacientes",

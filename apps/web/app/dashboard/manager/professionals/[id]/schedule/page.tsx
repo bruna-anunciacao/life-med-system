@@ -12,14 +12,9 @@ import { useDailyScheduleQuery } from '@/queries/useDailyScheduleQuery';
 import { ScheduleTimeline } from '@/app/dashboard/professional/schedule/components/ScheduleTimeline';
 import { LoadingPage } from '@/components/shared/LoadingPage';
 import { PageShell, PageHeader } from '../../../../../ui/dashboard/page-shell';
+import type { AppointmentResponse } from '@/services/appointments-service';
 
-type Appointment = {
-  id: string;
-  dateTime: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
-  notes?: string;
-  patient: { name: string };
-};
+type Appointment = AppointmentResponse;
 
 export default function ProfessionalSchedulePage() {
   const params = useParams();
