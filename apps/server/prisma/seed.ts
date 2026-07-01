@@ -16,18 +16,23 @@ function generateUUID(prefix: string, index: number) {
   return `${prefix}-0000-4000-8000-${padIndex}`;
 }
 
-const getRelativeDate = (daysDifference: number) => {
+const getRelativeDate = (daysDifference: number, hour = 14) => {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() + daysDifference);
-  d.setUTCHours(14, 0, 0, 0);
+  d.setUTCHours(hour, 0, 0, 0);
   return d;
 };
 
 async function main() {
   console.log('🌱 Iniciando Seed do Banco de Dados...');
 
-  const passwordText = 'Senha123!';
-  const hashedPassword = bcryptjs.hashSync(passwordText, 10);
+  const defaultPasswordText = 'Senha123!';
+  const hashedDefaultPassword = bcryptjs.hashSync(defaultPasswordText, 10);
+
+  // Senha exigida para os 4 usuários fixos que devem sobreviver a qualquer
+  // reset de produção (login garantido para demonstração/QA).
+  const corePasswordText = 'SenhaSegura123!';
+  const hashedCorePassword = bcryptjs.hashSync(corePasswordText, 10);
 
   // ─────────────────────────────────────────
   // 1. ESPECIALIDADES MÉDICAS
@@ -42,6 +47,8 @@ async function main() {
     'Ginecologia e Obstetrícia',
     'Neurologia',
     'Clínica Médica',
+    'Endocrinologia',
+    'Oftalmologia',
   ];
 
   const specialitiesData: any[] = [];
@@ -56,43 +63,205 @@ async function main() {
   console.log(`  ${specialitiesData.length} Especialidades criadas/atualizadas.`);
 
   // ─────────────────────────────────────────
-  // 2. ADMIN
+  // 2. USUÁRIOS FIXOS OBRIGATÓRIOS
+  // Estes 4 usuários devem sempre existir, mesmo que o banco de produção
+  // seja recriado do zero. Senha: SenhaSegura123!
   // ─────────────────────────────────────────
-  console.log('⏳ Criando Administrador...');
+  console.log('⏳ Criando usuários fixos obrigatórios (admin, paciente, profissional, gestor)...');
+
   await prisma.user.upsert({
     where: { email: 'admin@lifemed.com' },
-    update: { password: hashedPassword },
+    update: { password: hashedCorePassword },
     create: {
       email: 'admin@lifemed.com',
       cpf: null,
-      password: hashedPassword,
+      password: hashedCorePassword,
       name: 'Administrador do Sistema',
       role: UserRole.ADMIN,
       status: UserStatus.VERIFIED,
       emailVerified: true,
     },
   });
-  console.log('  Admin criado/atualizado.');
+
+  const coreManager = await prisma.user.upsert({
+    where: { email: 'gestor@lifemed.com' },
+    update: { password: hashedCorePassword },
+    create: {
+      email: 'gestor@lifemed.com',
+      cpf: '00000000001',
+      password: hashedCorePassword,
+      name: 'Gestor Padrão do Sistema',
+      role: UserRole.MANAGER,
+      status: UserStatus.VERIFIED,
+      emailVerified: true,
+      managerProfile: {
+        create: {
+          phone: '(11) 90000-0001',
+          bio: 'Gestor padrão do sistema, usado para testes e demonstrações.',
+        },
+      },
+    },
+    include: { managerProfile: true },
+  });
+
+  const coreProfessional = await prisma.user.upsert({
+    where: { email: 'profissional@lifemed.com' },
+    update: { password: hashedCorePassword },
+    create: {
+      email: 'profissional@lifemed.com',
+      cpf: '00000000002',
+      password: hashedCorePassword,
+      name: 'Dr. Profissional Padrão',
+      role: UserRole.PROFESSIONAL,
+      status: UserStatus.VERIFIED,
+      emailVerified: true,
+      professionalProfile: {
+        create: {
+          professionalLicense: 'CRM-SP 00000',
+          specialities: { connect: [{ id: specialitiesData[0].id }, { id: specialitiesData[7].id }] },
+          modality: AppointmentModality.VIRTUAL,
+          bio: 'Usuário profissional padrão do sistema, usado para testes e demonstrações.',
+          price: 200.0,
+          payments: { pix: true, cartao: true },
+        },
+      },
+    },
+    include: { professionalProfile: true },
+  });
+
+  const coreProfessionalAddressExisting = await prisma.address.findUnique({
+    where: { userId: coreProfessional.id },
+  });
+  if (!coreProfessionalAddressExisting) {
+    await prisma.address.create({
+      data: {
+        userId: coreProfessional.id,
+        zipCode: '01310-100',
+        street: 'Avenida Paulista',
+        number: '1500',
+        district: 'Bela Vista',
+        city: 'São Paulo',
+        state: 'SP',
+      },
+    });
+  }
+
+  const coreProfessionalAvailDays = [1, 2, 3, 4, 5];
+  for (let d = 0; d < coreProfessionalAvailDays.length; d++) {
+    const availId = generateUUID('20000000', d);
+    await prisma.availability.upsert({
+      where: { id: availId },
+      update: {},
+      create: {
+        id: availId,
+        professionalId: coreProfessional.id,
+        dayOfWeek: coreProfessionalAvailDays[d],
+        startTime: '09:00',
+        endTime: '18:00',
+        validFrom: new Date('2025-01-01'),
+      },
+    });
+  }
+
+  const corePatient = await prisma.user.upsert({
+    where: { email: 'paciente@lifemed.com' },
+    update: { password: hashedCorePassword },
+    create: {
+      email: 'paciente@lifemed.com',
+      cpf: '00000000003',
+      password: hashedCorePassword,
+      name: 'Paciente Padrão do Sistema',
+      role: UserRole.PATIENT,
+      status: UserStatus.VERIFIED,
+      emailVerified: true,
+      patientProfile: {
+        create: {
+          phone: '(11) 90000-0003',
+          dateOfBirth: new Date('1988-03-20'),
+          gender: 'Feminino',
+          approvalStatus: PatientApprovalStatus.APPROVED,
+        },
+      },
+    },
+    include: { patientProfile: true },
+  });
+
+  const corePatientAddressExisting = await prisma.address.findUnique({
+    where: { userId: corePatient.id },
+  });
+  if (!corePatientAddressExisting) {
+    await prisma.address.create({
+      data: {
+        userId: corePatient.id,
+        zipCode: '04538-133',
+        street: 'Avenida Brigadeiro Faria Lima',
+        number: '3400',
+        district: 'Itaim Bibi',
+        city: 'São Paulo',
+        state: 'SP',
+      },
+    });
+  }
+
+  console.log('  Usuários fixos criados/atualizados (senha: SenhaSegura123!).');
 
   // ─────────────────────────────────────────
-  // 3. PROFISSIONAIS
+  // 3. PROFISSIONAIS DE EXEMPLO (com localização real)
   // ─────────────────────────────────────────
-  console.log('⏳ Criando Profissionais e Disponibilidades...');
+  console.log('⏳ Criando Profissionais, Endereços e Disponibilidades...');
   const professionalsInput = [
-    { email: 'roberto.souza@lifemed.com', cpf: '11111111101', name: 'Dr. Roberto Souza', crm: 'CRM-SP 10001', specs: [0, 7] },
-    { email: 'ana.costa@lifemed.com', cpf: '11111111102', name: 'Dra. Ana Costa', crm: 'CRM-SP 10002', specs: [1] },
-    { email: 'carlos.lima@lifemed.com', cpf: '11111111103', name: 'Dr. Carlos Lima', crm: 'CRM-SP 10003', specs: [2, 7] },
-    { email: 'fernanda.alves@lifemed.com', cpf: '11111111104', name: 'Dra. Fernanda Alves', crm: 'CRM-SP 10004', specs: [3] },
-    { email: 'joao.mendes@lifemed.com', cpf: '11111111105', name: 'Dr. João Mendes', crm: 'CRM-SP 10005', specs: [4] },
-    { email: 'camila.rocha@lifemed.com', cpf: '11111111106', name: 'Dra. Camila Rocha', crm: 'CRM-SP 10006', specs: [5] },
-    { email: 'paulo.silva@lifemed.com', cpf: '11111111107', name: 'Dr. Paulo Silva', crm: 'CRM-SP 10007', specs: [6] },
-    { email: 'mariana.santos@lifemed.com', cpf: '11111111108', name: 'Dra. Mariana Santos', crm: 'CRM-SP 10008', specs: [7] },
-    { email: 'tiago.freitas@lifemed.com', cpf: '11111111109', name: 'Dr. Tiago Freitas', crm: 'CRM-SP 10009', specs: [0] },
-    { email: 'beatriz.nogueira@lifemed.com', cpf: '11111111110', name: 'Dra. Beatriz Nogueira', crm: 'CRM-SP 10010', specs: [1, 2] },
+    {
+      email: 'roberto.souza@lifemed.com', cpf: '11111111101', name: 'Dr. Roberto Souza', crm: 'CRM-SP 10001', specs: [0, 7],
+      address: { zipCode: '01310-100', street: 'Avenida Paulista', number: '1000', district: 'Bela Vista', city: 'São Paulo', state: 'SP' },
+    },
+    {
+      email: 'ana.costa@lifemed.com', cpf: '11111111102', name: 'Dra. Ana Costa', crm: 'CRM-SP 10002', specs: [1],
+      address: { zipCode: '01311-000', street: 'Rua Augusta', number: '2000', district: 'Consolação', city: 'São Paulo', state: 'SP' },
+    },
+    {
+      email: 'carlos.lima@lifemed.com', cpf: '11111111103', name: 'Dr. Carlos Lima', crm: 'CRM-RJ 10003', specs: [2, 7],
+      address: { zipCode: '20040-020', street: 'Avenida Rio Branco', number: '156', district: 'Centro', city: 'Rio de Janeiro', state: 'RJ' },
+    },
+    {
+      email: 'fernanda.alves@lifemed.com', cpf: '11111111104', name: 'Dra. Fernanda Alves', crm: 'CRM-RJ 10004', specs: [3],
+      address: { zipCode: '22071-900', street: 'Avenida Atlântica', number: '1702', district: 'Copacabana', city: 'Rio de Janeiro', state: 'RJ' },
+    },
+    {
+      email: 'joao.mendes@lifemed.com', cpf: '11111111105', name: 'Dr. João Mendes', crm: 'CRM-MG 10005', specs: [4],
+      address: { zipCode: '30112-000', street: 'Avenida Afonso Pena', number: '200', district: 'Centro', city: 'Belo Horizonte', state: 'MG' },
+    },
+    {
+      email: 'camila.rocha@lifemed.com', cpf: '11111111106', name: 'Dra. Camila Rocha', crm: 'CRM-BA 10006', specs: [5],
+      address: { zipCode: '40020-000', street: 'Avenida Sete de Setembro', number: '450', district: 'Centro', city: 'Salvador', state: 'BA' },
+    },
+    {
+      email: 'paulo.silva@lifemed.com', cpf: '11111111107', name: 'Dr. Paulo Silva', crm: 'CRM-CE 10007', specs: [6],
+      address: { zipCode: '60060-310', street: 'Rua Barão do Rio Branco', number: '100', district: 'Centro', city: 'Fortaleza', state: 'CE' },
+    },
+    {
+      email: 'mariana.santos@lifemed.com', cpf: '11111111108', name: 'Dra. Mariana Santos', crm: 'CRM-BA 10008', specs: [7],
+      address: { zipCode: '40140-110', street: 'Avenida Tancredo Neves', number: '620', district: 'Caminho das Árvores', city: 'Salvador', state: 'BA' },
+    },
+    {
+      email: 'tiago.freitas@lifemed.com', cpf: '11111111109', name: 'Dr. Tiago Freitas', crm: 'CRM-SP 10009', specs: [0],
+      address: { zipCode: '04543-011', street: 'Avenida Juscelino Kubitschek', number: '500', district: 'Itaim Bibi', city: 'São Paulo', state: 'SP' },
+    },
+    {
+      email: 'beatriz.nogueira@lifemed.com', cpf: '11111111110', name: 'Dra. Beatriz Nogueira', crm: 'CRM-DF 10010', specs: [1, 2],
+      address: { zipCode: '70040-010', street: 'Setor Bancário Sul', number: '10', district: 'Asa Sul', city: 'Brasília', state: 'DF' },
+    },
+    {
+      email: 'gustavo.pereira@lifemed.com', cpf: '11111111111', name: 'Dr. Gustavo Pereira', crm: 'CRM-RS 10011', specs: [8],
+      address: { zipCode: '90010-150', street: 'Rua dos Andradas', number: '1001', district: 'Centro Histórico', city: 'Porto Alegre', state: 'RS' },
+    },
+    {
+      email: 'patricia.gomes@lifemed.com', cpf: '11111111112', name: 'Dra. Patrícia Gomes', crm: 'CRM-PR 10012', specs: [9],
+      address: { zipCode: '80010-000', street: 'Rua XV de Novembro', number: '300', district: 'Centro', city: 'Curitiba', state: 'PR' },
+    },
   ];
 
   const professionals: any[] = [];
-  let availabilityIndex = 0;
+  let availabilityIndex = 100;
 
   for (const p of professionalsInput) {
     const specialtiesToConnect = p.specs.map((index) => ({ id: specialitiesData[index].id }));
@@ -100,7 +269,7 @@ async function main() {
     const profUser = await prisma.user.upsert({
       where: { email: p.email },
       update: {
-        password: hashedPassword,
+        password: hashedDefaultPassword,
         professionalProfile: {
           update: {
             specialities: { set: specialtiesToConnect },
@@ -110,7 +279,7 @@ async function main() {
       create: {
         email: p.email,
         cpf: p.cpf,
-        password: hashedPassword,
+        password: hashedDefaultPassword,
         name: p.name,
         role: UserRole.PROFESSIONAL,
         status: UserStatus.VERIFIED,
@@ -130,6 +299,16 @@ async function main() {
     });
     professionals.push(profUser);
 
+    const existingAddress = await prisma.address.findUnique({ where: { userId: profUser.id } });
+    if (!existingAddress) {
+      await prisma.address.create({
+        data: {
+          userId: profUser.id,
+          ...p.address,
+        },
+      });
+    }
+
     const days = [1, 2, 3, 4, 5];
     for (let d = 0; d < days.length; d++) {
       const availId = generateUUID('22222222', availabilityIndex++);
@@ -147,7 +326,7 @@ async function main() {
       });
     }
   }
-  console.log(`  ${professionals.length} Profissionais e Disponibilidades criados.`);
+  console.log(`  ${professionals.length} Profissionais, Endereços e Disponibilidades criados.`);
 
   // ─────────────────────────────────────────
   // 4. PACIENTES
@@ -155,27 +334,65 @@ async function main() {
   // ─────────────────────────────────────────
   console.log('⏳ Criando Pacientes...');
   const patientsInput = [
-    { email: 'paciente.marcos@gmail.com', cpf: '22222222201', name: 'Marcos de Almeida', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED },
-    { email: 'paciente.luiza@gmail.com', cpf: '22222222202', name: 'Luiza Pereira', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED },
-    { email: 'paciente.fernando@gmail.com', cpf: '22222222203', name: 'Fernando Gomes', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED },
-    { email: 'paciente.amanda@gmail.com', cpf: '22222222204', name: 'Amanda Ribeiro', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED },
-    { email: 'paciente.diego@gmail.com', cpf: '22222222205', name: 'Diego Batista', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED },
-    { email: 'paciente.juliana@gmail.com', cpf: '22222222206', name: 'Juliana Vieira', gender: 'Feminino', approval: PatientApprovalStatus.PENDING },
-    { email: 'paciente.rafael@gmail.com', cpf: '22222222207', name: 'Rafael Barros', gender: 'Masculino', approval: PatientApprovalStatus.PENDING },
-    { email: 'paciente.claudia@gmail.com', cpf: '22222222208', name: 'Cláudia Castro', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED },
-    { email: 'paciente.ricardo@gmail.com', cpf: '22222222209', name: 'Ricardo Dias', gender: 'Masculino', approval: PatientApprovalStatus.REJECTED },
-    { email: 'paciente.vanessa@gmail.com', cpf: '22222222210', name: 'Vanessa Moraes', gender: 'Feminino', approval: PatientApprovalStatus.PENDING },
+    {
+      email: 'paciente.marcos@gmail.com', cpf: '22222222201', name: 'Marcos de Almeida', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '01310-100', street: 'Avenida Paulista', number: '1000', district: 'Bela Vista', city: 'São Paulo', state: 'SP' },
+    },
+    {
+      email: 'paciente.luiza@gmail.com', cpf: '22222222202', name: 'Luiza Pereira', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '20040-020', street: 'Avenida Rio Branco', number: '156', district: 'Centro', city: 'Rio de Janeiro', state: 'RJ' },
+    },
+    {
+      email: 'paciente.fernando@gmail.com', cpf: '22222222203', name: 'Fernando Gomes', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '30112-000', street: 'Avenida Afonso Pena', number: '200', district: 'Centro', city: 'Belo Horizonte', state: 'MG' },
+    },
+    {
+      email: 'paciente.amanda@gmail.com', cpf: '22222222204', name: 'Amanda Ribeiro', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '40020-000', street: 'Avenida Sete de Setembro', number: '450', district: 'Centro', city: 'Salvador', state: 'BA' },
+    },
+    {
+      email: 'paciente.diego@gmail.com', cpf: '22222222205', name: 'Diego Batista', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '60060-310', street: 'Rua Barão do Rio Branco', number: '100', district: 'Centro', city: 'Fortaleza', state: 'CE' },
+    },
+    {
+      email: 'paciente.juliana@gmail.com', cpf: '22222222206', name: 'Juliana Vieira', gender: 'Feminino', approval: PatientApprovalStatus.PENDING,
+      address: { zipCode: '70040-010', street: 'Setor Bancário Sul', number: '10', district: 'Asa Sul', city: 'Brasília', state: 'DF' },
+    },
+    {
+      email: 'paciente.rafael@gmail.com', cpf: '22222222207', name: 'Rafael Barros', gender: 'Masculino', approval: PatientApprovalStatus.PENDING,
+      address: { zipCode: '90010-150', street: 'Rua dos Andradas', number: '1001', district: 'Centro Histórico', city: 'Porto Alegre', state: 'RS' },
+    },
+    {
+      email: 'paciente.claudia@gmail.com', cpf: '22222222208', name: 'Cláudia Castro', gender: 'Feminino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '80010-000', street: 'Rua XV de Novembro', number: '300', district: 'Centro', city: 'Curitiba', state: 'PR' },
+    },
+    {
+      email: 'paciente.ricardo@gmail.com', cpf: '22222222209', name: 'Ricardo Dias', gender: 'Masculino', approval: PatientApprovalStatus.REJECTED,
+      address: { zipCode: '01311-000', street: 'Rua Augusta', number: '2000', district: 'Consolação', city: 'São Paulo', state: 'SP' },
+    },
+    {
+      email: 'paciente.vanessa@gmail.com', cpf: '22222222210', name: 'Vanessa Moraes', gender: 'Feminino', approval: PatientApprovalStatus.PENDING,
+      address: { zipCode: '22071-900', street: 'Avenida Atlântica', number: '1702', district: 'Copacabana', city: 'Rio de Janeiro', state: 'RJ' },
+    },
+    {
+      email: 'paciente.eduardo@gmail.com', cpf: '22222222211', name: 'Eduardo Nascimento', gender: 'Masculino', approval: PatientApprovalStatus.APPROVED,
+      address: { zipCode: '04543-011', street: 'Avenida Juscelino Kubitschek', number: '500', district: 'Itaim Bibi', city: 'São Paulo', state: 'SP' },
+    },
+    {
+      email: 'paciente.sabrina@gmail.com', cpf: '22222222212', name: 'Sabrina Cardoso', gender: 'Feminino', approval: PatientApprovalStatus.REJECTED,
+      address: { zipCode: '40140-110', street: 'Avenida Tancredo Neves', number: '620', district: 'Caminho das Árvores', city: 'Salvador', state: 'BA' },
+    },
   ];
 
   const patients: any[] = [];
   for (const p of patientsInput) {
     const patientUser = await prisma.user.upsert({
       where: { email: p.email },
-      update: { password: hashedPassword },
+      update: { password: hashedDefaultPassword },
       create: {
         email: p.email,
         cpf: p.cpf,
-        password: hashedPassword,
+        password: hashedDefaultPassword,
         name: p.name,
         role: UserRole.PATIENT,
         status: UserStatus.VERIFIED,
@@ -192,86 +409,50 @@ async function main() {
       include: { patientProfile: true },
     });
     patients.push(patientUser);
-  }
-  console.log(`  ${patients.length} Pacientes criados.`);
 
-  // ─────────────────────────────────────────
-  // 4.1. ENDEREÇOS DOS PACIENTES
-  // ─────────────────────────────────────────
-  console.log('⏳ Criando Endereços...');
-  const addressData = [
-    { zipCode: '01310-100', street: 'Avenida Paulista', number: '1000', district: 'Bela Vista', city: 'São Paulo', state: 'SP' },
-    { zipCode: '20040-020', street: 'Avenida Rio Branco', number: '156', district: 'Centro', city: 'Rio de Janeiro', state: 'RJ' },
-    { zipCode: '30112-000', street: 'Avenida Afonso Pena', number: '200', district: 'Centro', city: 'Belo Horizonte', state: 'MG' },
-    { zipCode: '40020-000', street: 'Avenida Sete de Setembro', number: '450', district: 'Centro', city: 'Salvador', state: 'BA' },
-    { zipCode: '60060-310', street: 'Rua Barão do Rio Branco', number: '100', district: 'Centro', city: 'Fortaleza', state: 'CE' },
-  ];
-
-  let addressesCreated = 0;
-  for (let i = 0; i < Math.min(patients.length, addressData.length); i++) {
-    const existing = await prisma.address.findUnique({ where: { userId: patients[i].id } });
-    if (!existing) {
+    const existingAddress = await prisma.address.findUnique({ where: { userId: patientUser.id } });
+    if (!existingAddress) {
       await prisma.address.create({
         data: {
-          userId: patients[i].id,
-          ...addressData[i],
+          userId: patientUser.id,
+          ...p.address,
         },
       });
-      addressesCreated++;
     }
   }
-  console.log(`  ${addressesCreated} Endereços criados.`);
+  console.log(`  ${patients.length} Pacientes e Endereços criados.`);
 
   // ─────────────────────────────────────────
-  // 5. GESTOR
+  // 5. CONSULTAS — histórico passado e agenda futura
   // ─────────────────────────────────────────
-  console.log('⏳ Criando Gestor...');
-  const gestorUser = await prisma.user.upsert({
-    where: { email: 'gestor@lifemed.com' },
-    update: { password: hashedPassword },
-    create: {
-      email: 'gestor@lifemed.com',
-      cpf: '33333333301',
-      password: hashedPassword,
-      name: 'Gestor do Sistema',
-      role: UserRole.MANAGER,
-      status: UserStatus.VERIFIED,
-      emailVerified: true,
-      managerProfile: {
-        create: {
-          phone: '(11) 99999-1111',
-          bio: 'Gestor responsável pela administração do sistema.',
-        },
-      },
-    },
-    include: { managerProfile: true },
-  });
-  console.log('  Gestor criado/atualizado.');
-
-  // ─────────────────────────────────────────
-  // 6. CONSULTAS
-  // ─────────────────────────────────────────
-  console.log('⏳ Criando Consultas (Appointments)...');
+  console.log('⏳ Criando Consultas (Appointments) passadas e futuras...');
 
   const appointmentsInput = [
+    // ── Passadas concluídas / canceladas / faltas ──
     { pIdx: 0, dIdx: 0, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -10 },
     { pIdx: 1, dIdx: 1, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -5 },
     { pIdx: 2, dIdx: 2, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.HOME_VISIT, daysDiff: -2 },
     { pIdx: 3, dIdx: 3, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.VIRTUAL, daysDiff: -1 },
     { pIdx: 4, dIdx: 4, status: AppointmentStatus.NO_SHOW, modality: AppointmentModality.CLINIC, daysDiff: -4 },
+    { pIdx: 9, dIdx: 9, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -12 },
+    { pIdx: 2, dIdx: 3, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -20 },
+    { pIdx: 3, dIdx: 2, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.HOME_VISIT, daysDiff: -15 },
+    { pIdx: 4, dIdx: 1, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -30 },
+    { pIdx: 6, dIdx: 9, status: AppointmentStatus.NO_SHOW, modality: AppointmentModality.CLINIC, daysDiff: -8 },
+    { pIdx: 10, dIdx: 10, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -45 },
+    { pIdx: 11, dIdx: 11, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -60 },
+
+    // ── Futuras pendentes / confirmadas (agenda real) ──
     { pIdx: 5, dIdx: 5, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 2 },
     { pIdx: 6, dIdx: 6, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 5 },
     { pIdx: 7, dIdx: 7, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.HOME_VISIT, daysDiff: 7 },
     { pIdx: 8, dIdx: 8, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 10 },
-    { pIdx: 9, dIdx: 9, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -12 },
     { pIdx: 0, dIdx: 5, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.VIRTUAL, daysDiff: 6 },
     { pIdx: 1, dIdx: 4, status: AppointmentStatus.PENDING, modality: AppointmentModality.CLINIC, daysDiff: 8 },
-    { pIdx: 2, dIdx: 3, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -20 },
-    { pIdx: 3, dIdx: 2, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.HOME_VISIT, daysDiff: -15 },
-    { pIdx: 4, dIdx: 1, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -30 },
     { pIdx: 5, dIdx: 0, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.VIRTUAL, daysDiff: 12 },
-    { pIdx: 6, dIdx: 9, status: AppointmentStatus.NO_SHOW, modality: AppointmentModality.CLINIC, daysDiff: -8 },
     { pIdx: 7, dIdx: 8, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 14 },
+    { pIdx: 10, dIdx: 2, status: AppointmentStatus.PENDING, modality: AppointmentModality.CLINIC, daysDiff: 3 },
+    { pIdx: 11, dIdx: 6, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.VIRTUAL, daysDiff: 20 },
   ];
 
   let appointmentsCreated = 0;
@@ -299,10 +480,87 @@ async function main() {
     });
     appointmentsCreated++;
   }
-  console.log(`  ${appointmentsCreated} Consultas criadas.`);
+  console.log(`  ${appointmentsCreated} Consultas criadas (passadas e futuras).`);
 
   // ─────────────────────────────────────────
-  // 6.1. CENÁRIO DE TESTE — PRONTUÁRIOS
+  // 5.1. AGENDA DO PROFISSIONAL PADRÃO (profissional@lifemed.com)
+  // ─────────────────────────────────────────
+  console.log('⏳ Criando agenda do profissional padrão...');
+
+  const coreProfessionalAppointments = [
+    { pIdx: 0, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -14 },
+    { pIdx: 1, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -7 },
+    { pIdx: 2, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.VIRTUAL, daysDiff: -3 },
+    { pIdx: 3, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 1 },
+    { pIdx: 4, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 4 },
+    { pIdx: 0, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.VIRTUAL, daysDiff: 9 },
+  ];
+
+  for (let i = 0; i < coreProfessionalAppointments.length; i++) {
+    const { pIdx, status, modality, daysDiff } = coreProfessionalAppointments[i];
+    const appointmentId = generateUUID('66666666', i);
+    await prisma.appointment.upsert({
+      where: { id: appointmentId },
+      update: { status, modality, dateTime: getRelativeDate(daysDiff) },
+      create: {
+        id: appointmentId,
+        patientId: patients[pIdx].id,
+        professionalId: coreProfessional.id,
+        status,
+        modality,
+        dateTime: getRelativeDate(daysDiff),
+        notes: status === AppointmentStatus.COMPLETED ? 'Consulta realizada com o profissional padrão.' : null,
+      },
+    });
+  }
+  console.log(`  ${coreProfessionalAppointments.length} Consultas do profissional padrão criadas.`);
+
+  // ─────────────────────────────────────────
+  // 5.2. PACIENTE PADRÃO — histórico com MÚLTIPLOS MÉDICOS
+  // Cobre o cenário de relatório: um paciente atendido por 3+ profissionais
+  // diferentes, em diferentes especialidades, status e datas (passado/futuro).
+  // ─────────────────────────────────────────
+  console.log('⏳ Criando histórico multi-médico do paciente padrão...');
+
+  const corePatientAppointments = [
+    { profIdx: 0, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.CLINIC, daysDiff: -40 }, // Cardiologia
+    { profIdx: 1, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -25 }, // Pediatria
+    { profIdx: 2, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.HOME_VISIT, daysDiff: -15 }, // Dermatologia
+    { profIdx: 3, status: AppointmentStatus.CANCELLED, modality: AppointmentModality.VIRTUAL, daysDiff: -10 }, // Ortopedia
+    { profIdx: 4, status: AppointmentStatus.NO_SHOW, modality: AppointmentModality.CLINIC, daysDiff: -6 }, // Psiquiatria
+    { profIdx: -1, status: AppointmentStatus.COMPLETED, modality: AppointmentModality.VIRTUAL, daysDiff: -3 }, // Profissional padrão
+    { profIdx: 5, status: AppointmentStatus.PENDING, modality: AppointmentModality.VIRTUAL, daysDiff: 4 }, // Ginecologia
+    { profIdx: 6, status: AppointmentStatus.CONFIRMED, modality: AppointmentModality.CLINIC, daysDiff: 11 }, // Neurologia
+  ];
+
+  let corePatientApptsCreated = 0;
+  for (let i = 0; i < corePatientAppointments.length; i++) {
+    const { profIdx, status, modality, daysDiff } = corePatientAppointments[i];
+    const professionalId = profIdx === -1 ? coreProfessional.id : professionals[profIdx].id;
+    const appointmentId = generateUUID('77777777', i);
+
+    await prisma.appointment.upsert({
+      where: { id: appointmentId },
+      update: { status, modality, dateTime: getRelativeDate(daysDiff) },
+      create: {
+        id: appointmentId,
+        patientId: corePatient.id,
+        professionalId,
+        status,
+        modality,
+        dateTime: getRelativeDate(daysDiff),
+        notes:
+          status === AppointmentStatus.COMPLETED
+            ? 'Consulta concluída — parte do histórico multi-especialidade do paciente padrão.'
+            : null,
+      },
+    });
+    corePatientApptsCreated++;
+  }
+  console.log(`  ${corePatientApptsCreated} consultas do paciente padrão com múltiplos médicos criadas.`);
+
+  // ─────────────────────────────────────────
+  // 6. CENÁRIO DE TESTE — PRONTUÁRIOS
   // ─────────────────────────────────────────
   console.log('⏳ Criando cenário de prontuários (controle de acesso entre médicos)...');
 
@@ -372,6 +630,72 @@ async function main() {
     recordsCreated++;
   }
 
+  // ── Prontuários do paciente padrão (multi-médico) ──
+  const corePatientRecordScenarios = [
+    {
+      apptId: generateUUID('77777777', 0),
+      doctor: professionals[0],
+      record: {
+        chiefComplaint: 'Avaliação cardiológica de rotina.',
+        diagnosis: 'Hipertensão arterial controlada.',
+        treatmentPlan: 'Manter medicação e reavaliar em 6 meses.',
+        prescriptions: 'Losartana 50mg — 1 comprimido ao dia.',
+        internalNotes: 'Paciente colaborativo, sem intercorrências.',
+      },
+    },
+    {
+      apptId: generateUUID('77777777', 1),
+      doctor: professionals[1],
+      record: {
+        chiefComplaint: 'Consulta pediátrica de acompanhamento familiar.',
+        diagnosis: 'Sem alterações relevantes.',
+        treatmentPlan: 'Orientações gerais de saúde preventiva.',
+        prescriptions: null,
+        internalNotes: 'Consulta de rotina, sem achados.',
+      },
+    },
+    {
+      apptId: generateUUID('77777777', 2),
+      doctor: professionals[2],
+      record: {
+        chiefComplaint: 'Lesão de pele em região dorsal.',
+        diagnosis: 'Dermatite de contato.',
+        treatmentPlan: 'Corticoide tópico por 7 dias e reavaliação.',
+        prescriptions: 'Betametasona creme — aplicar 2x ao dia.',
+        internalNotes: 'Orientado sobre possíveis irritantes de contato.',
+      },
+    },
+    {
+      apptId: generateUUID('77777777', 5),
+      doctor: coreProfessional,
+      record: {
+        chiefComplaint: 'Consulta de acompanhamento geral com o profissional padrão.',
+        diagnosis: 'Paciente estável, sem queixas relevantes.',
+        treatmentPlan: 'Retorno em 90 dias.',
+        prescriptions: null,
+        internalNotes: 'Registro criado para validar fluxo do usuário profissional padrão.',
+      },
+    },
+  ];
+
+  for (let i = 0; i < corePatientRecordScenarios.length; i++) {
+    const { apptId, doctor, record } = corePatientRecordScenarios[i];
+    const recordId = generateUUID('44444444', 10 + i);
+
+    await prisma.medicalRecord.upsert({
+      where: { id: recordId },
+      update: { ...record },
+      create: {
+        id: recordId,
+        appointmentId: apptId,
+        patientId: corePatient.id,
+        authorId: doctor.id,
+        ...record,
+      },
+    });
+    recordsCreated++;
+  }
+
   const noLinkCount = await prisma.appointment.count({
     where: {
       professionalId: doctorNoLink.id,
@@ -386,6 +710,7 @@ async function main() {
   console.log(`     ✅ ${doctorA.name} — COM vínculo → vê o prontuário de ${doctorB.name}`);
   console.log(`     ✅ ${doctorB.name} — COM vínculo → vê o prontuário de ${doctorA.name}`);
   console.log(`     ❌ ${doctorNoLink.name} — SEM vínculo (${noLinkCount} consultas) → deve receber 403`);
+  console.log(`     Paciente padrão: ${corePatient.name} (${corePatient.email}) — histórico com múltiplos médicos (relatório multi-médico).`);
 
   // ─────────────────────────────────────────
   // 7. QUESTIONÁRIO DE VULNERABILIDADE
@@ -485,14 +810,17 @@ async function main() {
 
   // ─────────────────────────────────────────
   // 7.1. RESPOSTAS DE QUESTIONÁRIO
-  // Popula 3 pacientes com questionários respondidos (1 vulnerável, 2 não-vulneráveis)
-  // para que os filtros do gestor tenham dados reais.
+  // Popula pacientes com questionários respondidos (vulneráveis e não-vulneráveis,
+  // respondidos pelo próprio paciente e por gestor) para que os filtros e
+  // relatórios do gestor tenham dados reais.
   // ─────────────────────────────────────────
   console.log('⏳ Criando respostas de questionário...');
 
   const questionnaireScenarios = [
     {
       patient: patients[0], // Marcos — vulnerável (score alto)
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUser: patients[0],
       answers: [
         { qIdx: 0, optIdx: 0 }, // Até 1 SM — score 3
         { qIdx: 1, optIdx: 1 }, // 3+ pessoas — score 1
@@ -506,6 +834,8 @@ async function main() {
     },
     {
       patient: patients[1], // Luiza — não vulnerável
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUser: patients[1],
       answers: [
         { qIdx: 0, optIdx: 3 }, // Acima 3 SM — score 0
         { qIdx: 1, optIdx: 0 }, // Até 2 pessoas — score 0
@@ -519,6 +849,8 @@ async function main() {
     },
     {
       patient: patients[2], // Fernando — borderline (score 4)
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUser: patients[2],
       answers: [
         { qIdx: 0, optIdx: 2 }, // 2-3 SM — score 1
         { qIdx: 1, optIdx: 1 }, // 3+ pessoas — score 1
@@ -530,11 +862,41 @@ async function main() {
       ], // total = 4 → não vulnerável (abaixo de 6)
       isVulnerable: false,
     },
+    {
+      patient: patients[3], // Amanda — vulnerável, respondido pelo gestor (assistido)
+      answeredBy: QuestionnaireAnsweredBy.MANAGER,
+      answeredByUser: coreManager,
+      answers: [
+        { qIdx: 0, optIdx: 0 }, // Até 1 SM — score 3
+        { qIdx: 1, optIdx: 1 }, // 3+ pessoas — score 1
+        { qIdx: 2, optIdx: 0 }, // Desempregado sim — score 2
+        { qIdx: 3, optIdx: 0 }, // CadÚnico sim — score 4
+        { qIdx: 4, optIdx: 1 }, // Moradia não própria — score 1
+        { qIdx: 5, optIdx: 0 }, // Com água encanada — score 0
+        { qIdx: 6, optIdx: 0 }, // Com saneamento — score 0
+      ], // total = 11 → vulnerável
+      isVulnerable: true,
+    },
+    {
+      patient: corePatient, // Paciente padrão — não vulnerável
+      answeredBy: QuestionnaireAnsweredBy.PATIENT,
+      answeredByUser: corePatient,
+      answers: [
+        { qIdx: 0, optIdx: 3 }, // Acima 3 SM — score 0
+        { qIdx: 1, optIdx: 0 }, // Até 2 pessoas — score 0
+        { qIdx: 2, optIdx: 1 }, // Não desempregado — score 0
+        { qIdx: 3, optIdx: 1 }, // Sem CadÚnico — score 0
+        { qIdx: 4, optIdx: 0 }, // Moradia própria — score 0
+        { qIdx: 5, optIdx: 0 }, // Com água encanada — score 0
+        { qIdx: 6, optIdx: 0 }, // Com saneamento — score 0
+      ], // total = 0 → não vulnerável
+      isVulnerable: false,
+    },
   ];
 
   let questionnairesCreated = 0;
   for (let s = 0; s < questionnaireScenarios.length; s++) {
-    const { patient, answers, isVulnerable } = questionnaireScenarios[s];
+    const { patient, answers, isVulnerable, answeredBy, answeredByUser } = questionnaireScenarios[s];
 
     if (!patient.patientProfile) continue;
 
@@ -553,8 +915,8 @@ async function main() {
         id: vulnQId,
         patientProfileId: patient.patientProfile.id,
         questionnaireId: QUESTIONNAIRE_ID,
-        answeredBy: QuestionnaireAnsweredBy.PATIENT,
-        answeredByUserId: patient.id,
+        answeredBy,
+        answeredByUserId: answeredByUser.id,
         totalScore,
         isVulnerable,
         answers: {
@@ -608,12 +970,16 @@ async function main() {
   console.log(`  ${blocksCreated} bloqueios de agenda criados.`);
 
   console.log('\n🎉 Seed finalizado com sucesso!');
-  console.log('\n📋 Credenciais de acesso (senha: Senha123!):');
+  console.log('\n📋 Credenciais fixas obrigatórias (senha: SenhaSegura123!):');
   console.log('   ADMIN       → admin@lifemed.com');
+  console.log('   PACIENTE    → paciente@lifemed.com');
+  console.log('   PROFISSIONAL→ profissional@lifemed.com');
   console.log('   GESTOR      → gestor@lifemed.com');
-  console.log('   PROFISSIONAL→ roberto.souza@lifemed.com (e outros 9)');
+  console.log('\n📋 Credenciais de exemplo (senha: Senha123!):');
+  console.log('   PROFISSIONAL→ roberto.souza@lifemed.com (e outros 11, em 7 estados diferentes)');
   console.log('   PACIENTE    → paciente.marcos@gmail.com (APPROVED, vulnerável)');
   console.log('   PACIENTE    → paciente.luiza@gmail.com  (APPROVED, não vulnerável)');
+  console.log('   PACIENTE    → paciente.amanda@gmail.com (APPROVED, vulnerável — questionário respondido pelo gestor)');
   console.log('   PACIENTE    → paciente.juliana@gmail.com (PENDING)');
   console.log('   PACIENTE    → paciente.ricardo@gmail.com (REJECTED)');
 }
