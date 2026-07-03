@@ -12,6 +12,7 @@ import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
 import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
 import {
   CreateAppointmentPatientDto,
+  CreateAppointmentPatientForManagerDto,
   ListAppointmentsQueryDto,
   CancelAppointmentDto,
   AppointmentResponseDto,
@@ -22,6 +23,9 @@ import { AppointmentStatus } from '@prisma/client';
 
 const APPOINTMENT_DURATION_MINUTES = 30;
 const MIN_CANCEL_ADVANCE_HOURS = 6;
+type AppointmentForResponse = Awaited<
+  ReturnType<AppointmentsRepository['createPatientAppointment']>
+>;
 
 @Injectable()
 export class AppointmentsService {
@@ -39,7 +43,7 @@ export class AppointmentsService {
   ): Promise<AppointmentResponseDto> {
     const appointmentDate = new Date(dto.dateTime);
 
-    let appointment = await this.repository.createPatientAppointment(
+    const appointment = await this.repository.createPatientAppointment(
       patientId,
       dto,
       appointmentDate,
@@ -47,73 +51,7 @@ export class AppointmentsService {
 
     this.logger.log(`Agendamento criado com sucesso: ${appointment.id}`);
 
-    let meetLink: string | null = null;
-    if (appointment.modality === 'VIRTUAL') {
-      try {
-        const endDate = new Date(
-          appointment.dateTime.getTime() + APPOINTMENT_DURATION_MINUTES * 60000,
-        );
-        const meet = await this.meetService.createMeetEvent({
-          requestId: appointment.id,
-          summary: `Consulta - ${appointment.professional.name}`,
-          description: appointment.notes ?? undefined,
-          startISO: appointment.dateTime.toISOString(),
-          endISO: endDate.toISOString(),
-          attendees: [
-            {
-              email: appointment.patient.email,
-              displayName: appointment.patient.name,
-            },
-            {
-              email: appointment.professional.email,
-              displayName: appointment.professional.name,
-            },
-          ],
-        });
-
-        appointment = await this.repository.updateMeetData(
-          appointment.id,
-          meet.meetLink,
-          meet.eventId,
-        );
-        meetLink = meet.meetLink;
-      } catch (err) {
-        this.logger.error(
-          `Falha ao criar evento no Google Calendar: ${(err as Error).message}`,
-        );
-      }
-    }
-
-    await Promise.all([
-      this.mailService.sendAppointmentCreatedPatientEmail(
-        { name: appointment.patient.name, email: appointment.patient.email },
-        {
-          professionalName: appointment.professional.name,
-          dateTime: appointment.dateTime,
-          modality: appointment.modality,
-          meetLink,
-        },
-      ),
-      this.mailService.sendAppointmentCreatedProfessionalEmail(
-        {
-          name: appointment.professional.name,
-          email: appointment.professional.email,
-        },
-        {
-          patientName: appointment.patient.name,
-          dateTime: appointment.dateTime,
-          modality: appointment.modality,
-          notes: appointment.notes,
-          meetLink,
-        },
-      ),
-    ]).catch((err) =>
-      this.logger.error(
-        `Falha ao enviar emails de agendamento: ${err.message}`,
-      ),
-    );
-
-    return this.mapToResponseDto(appointment);
+    return this.finalizeCreatedAppointment(appointment);
   }
 
   async listPatientAppointments(
@@ -344,7 +282,7 @@ export class AppointmentsService {
 
   async createAppointmentByManager(
     managerUserId: string,
-    dto: CreateAppointmentPatientDto & { patientId: string },
+    dto: CreateAppointmentPatientForManagerDto,
   ): Promise<AppointmentResponseDto> {
     const appointmentDate = new Date(dto.dateTime);
 
@@ -358,6 +296,51 @@ export class AppointmentsService {
       `Agendamento criado pelo gestor ${managerUserId}: ${appointment.id}`,
     );
 
+    return this.finalizeCreatedAppointment(appointment);
+  }
+
+  private async finalizeCreatedAppointment(
+    createdAppointment: AppointmentForResponse,
+  ): Promise<AppointmentResponseDto> {
+    let appointment = createdAppointment;
+    let meetLink: string | null = appointment.meetLink ?? null;
+
+    if (appointment.modality === 'VIRTUAL') {
+      try {
+        const endDate = new Date(
+          appointment.dateTime.getTime() + APPOINTMENT_DURATION_MINUTES * 60000,
+        );
+        const meet = await this.meetService.createMeetEvent({
+          requestId: appointment.id,
+          summary: `Consulta - ${appointment.professional.name}`,
+          description: appointment.notes ?? undefined,
+          startISO: appointment.dateTime.toISOString(),
+          endISO: endDate.toISOString(),
+          attendees: [
+            {
+              email: appointment.patient.email,
+              displayName: appointment.patient.name,
+            },
+            {
+              email: appointment.professional.email,
+              displayName: appointment.professional.name,
+            },
+          ],
+        });
+
+        appointment = await this.repository.updateMeetData(
+          appointment.id,
+          meet.meetLink,
+          meet.eventId,
+        );
+        meetLink = meet.meetLink;
+      } catch (err) {
+        this.logger.error(
+          `Falha ao criar evento no Google Calendar: ${(err as Error).message}`,
+        );
+      }
+    }
+
     await Promise.all([
       this.mailService.sendAppointmentCreatedPatientEmail(
         { name: appointment.patient.name, email: appointment.patient.email },
@@ -365,6 +348,7 @@ export class AppointmentsService {
           professionalName: appointment.professional.name,
           dateTime: appointment.dateTime,
           modality: appointment.modality,
+          meetLink,
         },
       ),
       this.mailService.sendAppointmentCreatedProfessionalEmail(
@@ -377,6 +361,7 @@ export class AppointmentsService {
           dateTime: appointment.dateTime,
           modality: appointment.modality,
           notes: appointment.notes,
+          meetLink,
         },
       ),
     ]).catch((err) =>

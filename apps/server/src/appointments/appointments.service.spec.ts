@@ -9,25 +9,36 @@ import { AppointmentsService } from './appointments.service';
 
 describe('AppointmentsService', () => {
   const repository = {
+    createAppointmentByManager: jest.fn(),
     findAppointmentById: jest.fn(),
     cancelAppointment: jest.fn(),
     updateAppointmentStatus: jest.fn(),
+    updateMeetData: jest.fn(),
     findProfessionalById: jest.fn(),
     findAvailabilityForSlots: jest.fn(),
     findBookedTimes: jest.fn(),
     findScheduleBlocksForDate: jest.fn(),
   };
   const mailService = {
-    sendAppointmentCancelledEmail: jest.fn().mockResolvedValue(undefined),
+    sendAppointmentCancelledEmail: jest.fn(),
+    sendAppointmentCreatedPatientEmail: jest.fn(),
+    sendAppointmentCreatedProfessionalEmail: jest.fn(),
   };
   const meetService = {
-    cancelMeetEvent: jest.fn().mockResolvedValue(undefined),
+    createMeetEvent: jest.fn(),
+    cancelMeetEvent: jest.fn(),
   };
 
   let service: AppointmentsService;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
+    mailService.sendAppointmentCancelledEmail.mockResolvedValue(undefined);
+    mailService.sendAppointmentCreatedPatientEmail.mockResolvedValue(undefined);
+    mailService.sendAppointmentCreatedProfessionalEmail.mockResolvedValue(
+      undefined,
+    );
+    meetService.cancelMeetEvent.mockResolvedValue(undefined);
     service = new AppointmentsService(
       repository as unknown as AppointmentsRepository,
       mailService as any,
@@ -54,6 +65,141 @@ describe('AppointmentsService', () => {
     },
     patient: { id: 'pat-1', name: 'João', email: 'joao@lifemed.com' },
     ...overrides,
+  });
+
+  describe('createAppointmentByManager', () => {
+    const dto = {
+      patientId: 'pat-1',
+      professionalId: 'prof-1',
+      dateTime: '2026-06-15T09:00:00',
+      notes: 'Consulta assistida',
+    };
+
+    it('creates Meet data and sends it in emails for virtual appointments', async () => {
+      const appointment = makeAppointment({
+        modality: 'VIRTUAL',
+        meetLink: null,
+        googleEventId: null,
+      });
+      const updatedAppointment = {
+        ...appointment,
+        meetLink: 'https://meet.google.com/abc-defg-hij',
+        googleEventId: 'event-1',
+      };
+      repository.createAppointmentByManager.mockResolvedValue(appointment);
+      repository.updateMeetData.mockResolvedValue(updatedAppointment);
+      meetService.createMeetEvent.mockResolvedValue({
+        eventId: 'event-1',
+        meetLink: 'https://meet.google.com/abc-defg-hij',
+        htmlLink: 'https://calendar.google.com/event',
+      });
+
+      const result = await service.createAppointmentByManager(
+        'manager-user-1',
+        dto,
+      );
+
+      expect(meetService.createMeetEvent).toHaveBeenCalledWith({
+        requestId: appointment.id,
+        summary: `Consulta - ${appointment.professional.name}`,
+        description: appointment.notes ?? undefined,
+        startISO: appointment.dateTime.toISOString(),
+        endISO: new Date(
+          appointment.dateTime.getTime() + 30 * 60000,
+        ).toISOString(),
+        attendees: [
+          {
+            email: appointment.patient.email,
+            displayName: appointment.patient.name,
+          },
+          {
+            email: appointment.professional.email,
+            displayName: appointment.professional.name,
+          },
+        ],
+      });
+      expect(repository.updateMeetData).toHaveBeenCalledWith(
+        appointment.id,
+        'https://meet.google.com/abc-defg-hij',
+        'event-1',
+      );
+      expect(mailService.sendAppointmentCreatedPatientEmail).toHaveBeenCalledWith(
+        { name: appointment.patient.name, email: appointment.patient.email },
+        expect.objectContaining({
+          modality: 'VIRTUAL',
+          meetLink: 'https://meet.google.com/abc-defg-hij',
+        }),
+      );
+      expect(
+        mailService.sendAppointmentCreatedProfessionalEmail,
+      ).toHaveBeenCalledWith(
+        {
+          name: appointment.professional.name,
+          email: appointment.professional.email,
+        },
+        expect.objectContaining({
+          modality: 'VIRTUAL',
+          notes: appointment.notes,
+          meetLink: 'https://meet.google.com/abc-defg-hij',
+        }),
+      );
+      expect(result.meetLink).toBe('https://meet.google.com/abc-defg-hij');
+    });
+
+    it('does not create Meet data for non-virtual appointments', async () => {
+      const appointment = makeAppointment({
+        modality: 'CLINIC',
+        meetLink: null,
+        googleEventId: null,
+      });
+      repository.createAppointmentByManager.mockResolvedValue(appointment);
+
+      const result = await service.createAppointmentByManager(
+        'manager-user-1',
+        dto,
+      );
+
+      expect(meetService.createMeetEvent).not.toHaveBeenCalled();
+      expect(repository.updateMeetData).not.toHaveBeenCalled();
+      expect(mailService.sendAppointmentCreatedPatientEmail).toHaveBeenCalledWith(
+        { name: appointment.patient.name, email: appointment.patient.email },
+        expect.objectContaining({
+          modality: 'CLINIC',
+          meetLink: null,
+        }),
+      );
+      expect(result.modality).toBe('CLINIC');
+      expect(result.meetLink).toBeNull();
+    });
+
+    it('keeps the appointment when Meet creation fails and sends emails without a link', async () => {
+      const appointment = makeAppointment({
+        modality: 'VIRTUAL',
+        meetLink: null,
+        googleEventId: null,
+      });
+      repository.createAppointmentByManager.mockResolvedValue(appointment);
+      meetService.createMeetEvent.mockRejectedValue(
+        new Error('calendar unavailable'),
+      );
+
+      await expect(
+        service.createAppointmentByManager('manager-user-1', dto),
+      ).resolves.toMatchObject({
+        id: appointment.id,
+        modality: 'VIRTUAL',
+        meetLink: null,
+      });
+
+      expect(repository.updateMeetData).not.toHaveBeenCalled();
+      expect(mailService.sendAppointmentCreatedPatientEmail).toHaveBeenCalledWith(
+        { name: appointment.patient.name, email: appointment.patient.email },
+        expect.objectContaining({
+          modality: 'VIRTUAL',
+          meetLink: null,
+        }),
+      );
+    });
   });
 
   describe('cancelAppointment', () => {
