@@ -22,6 +22,7 @@ type ScheduleTimelineProps = {
   getAppointmentForSlot: (slot: string) => Appointment | undefined;
   onStatusChange: (id: string, newStatus: string, notes?: string) => void;
   isReadOnly?: boolean;
+  slotDurationMinutes?: number;
 };
 
 export function ScheduleTimeline({
@@ -33,6 +34,7 @@ export function ScheduleTimeline({
   getAppointmentForSlot,
   onStatusChange,
   isReadOnly = false,
+  slotDurationMinutes = 30,
 }: ScheduleTimelineProps) {
   const [now, setNow] = useState(new Date());
 
@@ -61,7 +63,10 @@ export function ScheduleTimeline({
     if (!selectedDate || !isSameDay(now, selectedDate)) return null;
 
     const nowMins = now.getHours() * 60 + now.getMinutes();
-    if (nowMins >= startMins && nowMins < startMins + span * 30) {
+    if (
+      nowMins >= startMins &&
+      nowMins < startMins + span * slotDurationMinutes
+    ) {
       const topOffset = 26 + (nowMins - startMins) * 3;
 
       return (

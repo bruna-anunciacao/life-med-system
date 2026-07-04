@@ -20,6 +20,7 @@ export interface AppointmentSlot {
 export interface AvailableSlotsResponse {
   professionalId: string;
   date: string;
+  appointmentDurationMinutes: number;
   slots: AppointmentSlot[];
 }
 

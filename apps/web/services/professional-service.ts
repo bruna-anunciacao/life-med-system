@@ -37,6 +37,36 @@ export interface PatientDetail {
   }[];
 }
 
+export interface ScheduleBlock {
+  id: string;
+  date: string;
+  startTime: string | null;
+  endTime: string | null;
+}
+
+export interface DailyScheduleAppointment {
+  id: string;
+  dateTime: string;
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW";
+  modality?: "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+  notes?: string | null;
+  meetLink?: string | null;
+  patient: {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string | null;
+  };
+}
+
+export interface DailyScheduleResponse {
+  availability: { startTime: string; endTime: string } | null;
+  scheduleBlocks: ScheduleBlock[];
+  attendedPatientsCount: number;
+  appointmentDurationMinutes: number;
+  appointments: DailyScheduleAppointment[];
+}
+
 export const professionalService = {
   async getSettings() {
     try {
@@ -52,7 +82,10 @@ export const professionalService = {
     }
   },
 
-  async getDailySchedule(date: string, professionalId?: string) {
+  async getDailySchedule(
+    date: string,
+    professionalId?: string,
+  ): Promise<DailyScheduleResponse> {
     try {
       const endpoint = professionalId
         ? `/professional/${professionalId}/schedule?date=${date}`

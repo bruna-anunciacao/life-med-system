@@ -54,17 +54,23 @@ export default function ProfessionalSchedulePage() {
         scheduleBlocks: blocks,
       };
 
-    const startHour = parseInt(
-      scheduleData.availability.startTime.split(':')[0],
-      10,
-    );
-    const endHour = parseInt(scheduleData.availability.endTime.split(':')[0], 10);
+    const toMinutes = (time: string) => {
+      const [h, m] = time.split(':');
+      return parseInt(h || '0', 10) * 60 + parseInt(m || '0', 10);
+    };
+
+    const startMinutes = toMinutes(scheduleData.availability.startTime);
+    const endMinutes = toMinutes(scheduleData.availability.endTime);
+    const appointmentDurationMinutes = scheduleData.appointmentDurationMinutes;
 
     const slots: string[] = [];
-    for (let i = startHour; i < endHour; i++) {
-      const hourStr = i.toString().padStart(2, '0');
-      slots.push(`${hourStr}:00`);
-      slots.push(`${hourStr}:30`);
+    const firstSlot =
+      Math.floor(startMinutes / appointmentDurationMinutes) *
+      appointmentDurationMinutes;
+    for (let m = firstSlot; m < endMinutes; m += appointmentDurationMinutes) {
+      const hourStr = Math.floor(m / 60).toString().padStart(2, '0');
+      const minStr = (m % 60).toString().padStart(2, '0');
+      slots.push(`${hourStr}:${minStr}`);
     }
 
     return {
@@ -88,9 +94,12 @@ export default function ProfessionalSchedulePage() {
       if (!isSameDay(aptDate, selectedDate)) return false;
 
       const aptTotalMinutes = aptDate.getHours() * 60 + aptDate.getMinutes();
-      const aptEndMinutes = aptTotalMinutes + 60;
 
-      return slotTotalMinutes >= aptTotalMinutes && slotTotalMinutes < aptEndMinutes;
+      return (
+        aptTotalMinutes >= slotTotalMinutes &&
+        aptTotalMinutes <
+          slotTotalMinutes + (scheduleData?.appointmentDurationMinutes ?? 30)
+      );
     });
 
     if (overlappingApts.length === 0) return undefined;
@@ -147,6 +156,7 @@ export default function ProfessionalSchedulePage() {
               onStatusChange={() => {}}
               selectedDate={selectedDate}
               isReadOnly={true}
+              slotDurationMinutes={scheduleData?.appointmentDurationMinutes ?? 30}
             />
           </div>
         </main>

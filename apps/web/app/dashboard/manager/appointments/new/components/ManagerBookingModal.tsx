@@ -12,10 +12,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  appointmentsService,
-  AppointmentSlot,
-} from "@/services/appointments-service";
+import { appointmentsService } from "@/services/appointments-service";
+import { useAvailableSlotsQuery } from "@/queries/useAvailableSlotsQuery";
 import {
   CalendarDots,
   Clock,
@@ -62,13 +60,25 @@ export function ManagerBookingModal({
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [notes, setNotes] = useState("");
-  const [slots, setSlots] = useState<AppointmentSlot[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [patientSearchTerm, setPatientSearchTerm] = useState("");
   const [showPatientDropdown, setShowPatientDropdown] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
+  const {
+    data: availability,
+    isLoading: isLoadingSlots,
+    isError: isSlotsError,
+    error: slotsError,
+  } = useAvailableSlotsQuery(professional?.id, selectedDate);
+
+  const slots = availability?.slots ?? [];
+  const appointmentDurationMinutes =
+    availability?.appointmentDurationMinutes ?? 30;
+  const slotsErrorMessage =
+    slotsError instanceof Error
+      ? slotsError.message
+      : "Erro ao buscar horários.";
 
   const filteredPatients = patients.filter((p) =>
     (p.name || p.email).toLowerCase().includes(patientSearchTerm.toLowerCase())
@@ -76,32 +86,9 @@ export function ManagerBookingModal({
 
   const selectedPatientData = patients.find((p) => p.id === selectedPatient);
 
-  const handleDateChange = async (date: string) => {
+  const handleDateChange = (date: string) => {
     setSelectedDate(date);
     setSelectedSlot("");
-    setSlots([]);
-
-    if (!date || !professional) return;
-
-    setIsLoadingSlots(true);
-    try {
-      const result = await appointmentsService.getAvailableSlots(
-        professional.id,
-        date
-      );
-      if (result) {
-        setSlots(result.slots);
-        if (result.slots.length === 0) {
-          toast.error("Nenhum horário disponível nesta data.");
-        }
-      }
-    } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : "Erro ao buscar horários.";
-      toast.error(msg);
-    } finally {
-      setIsLoadingSlots(false);
-    }
   };
 
   const handleSubmit = async () => {
@@ -123,6 +110,7 @@ export function ManagerBookingModal({
 
       void queryClient.invalidateQueries({ queryKey: ["appointments"] });
       void queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+      void queryClient.invalidateQueries({ queryKey: ["available-slots"] });
 
       toast.success("Consulta agendada com sucesso!");
 
@@ -145,15 +133,12 @@ export function ManagerBookingModal({
     setSelectedDate("");
     setSelectedSlot("");
     setNotes("");
-    setSlots([]);
     setPatientSearchTerm("");
     setShowPatientDropdown(false);
     onOpenChange(false);
   };
 
   if (!professional) return null;
-
-  const APPOINTMENT_DURATION = 60;
 
   const bookedMins = slots
     .filter((s) => !s.available)
@@ -165,8 +150,8 @@ export function ManagerBookingModal({
     const slotMins = timeToMins(slot.time);
     for (const bookedMin of bookedMins) {
       if (
-        slotMins < bookedMin + APPOINTMENT_DURATION &&
-        slotMins + APPOINTMENT_DURATION > bookedMin
+        slotMins < bookedMin + appointmentDurationMinutes &&
+        slotMins + appointmentDurationMinutes > bookedMin
       ) {
         return false;
       }
@@ -377,7 +362,9 @@ export function ManagerBookingModal({
                       <Clock size={16} className="text-blue-600" weight="duotone" />
                       Selecione o Horário
                     </Label>
-                    {availableSlots.length > 0 && !isLoadingSlots && (
+                    {availableSlots.length > 0 &&
+                      !isLoadingSlots &&
+                      !isSlotsError && (
                       <span className="text-xs text-gray-500">
                         {availableSlots.length}{" "}
                         {availableSlots.length === 1 ? "disponível" : "disponíveis"}
@@ -390,6 +377,12 @@ export function ManagerBookingModal({
                       <Spinner size="lg" />
                       <p className="text-xs text-gray-500 mt-3">
                         Buscando horários disponíveis...
+                      </p>
+                    </div>
+                  ) : isSlotsError ? (
+                    <div className="text-center py-10 bg-red-50 rounded-lg border border-dashed border-red-100">
+                      <p className="text-sm text-red-500">
+                        {slotsErrorMessage}
                       </p>
                     </div>
                   ) : availableSlots.length > 0 ? (
