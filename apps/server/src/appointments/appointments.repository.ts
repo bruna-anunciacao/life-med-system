@@ -12,8 +12,8 @@ import {
   UpdateAppointmentStatusDto,
 } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { APPOINTMENT_DURATION_MINUTES } from './appointment.constants';
 
-const APPOINTMENT_DURATION_MINUTES = 30;
 const appointmentResponseInclude = {
   patient: true,
   professional: {
@@ -367,7 +367,7 @@ export class AppointmentsRepository {
       where: {
         [field]: userId,
         dateTime: {
-          gte: startBuffer,
+          gt: startBuffer,
           lt: endTime,
         },
         status: { not: AppointmentStatus.CANCELLED },

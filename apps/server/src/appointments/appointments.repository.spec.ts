@@ -1,4 +1,5 @@
 import { AppointmentStatus } from '@prisma/client';
+import { BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppointmentsRepository } from './appointments.repository';
 
@@ -11,7 +12,12 @@ describe('AppointmentsRepository', () => {
     notes: 'Consulta assistida',
   };
 
-  function setupTransaction(professionalProfile: { modality: string } | null) {
+  function setupTransaction(
+    professionalProfile: { modality: string } | null,
+    options: {
+      findFirst?: jest.Mock;
+    } = {},
+  ) {
     const tx = {
       user: {
         findUnique: jest.fn(({ where }: { where: { id: string } }) => {
@@ -41,7 +47,7 @@ describe('AppointmentsRepository', () => {
         findMany: jest.fn().mockResolvedValue([]),
       },
       appointment: {
-        findFirst: jest.fn().mockResolvedValue(null),
+        findFirst: options.findFirst ?? jest.fn().mockResolvedValue(null),
         create: jest.fn(({ data }) =>
           Promise.resolve({
             id: 'appt-1',
@@ -104,5 +110,42 @@ describe('AppointmentsRepository', () => {
         }),
       }),
     );
+  });
+
+  it('uses an open lower bound so a previous adjacent appointment does not conflict', async () => {
+    const { repository, tx } = setupTransaction(null);
+
+    await repository.createAppointmentByManager(
+      'manager-user-1',
+      dto,
+      appointmentDate,
+    );
+
+    expect(tx.appointment.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          professionalId: 'prof-1',
+          dateTime: expect.objectContaining({
+            gt: new Date('2026-06-15T08:30:00'),
+            lt: new Date('2026-06-15T09:30:00'),
+          }),
+        }),
+      }),
+    );
+  });
+
+  it('blocks appointments that overlap the same start time', async () => {
+    const findFirst = jest
+      .fn()
+      .mockResolvedValueOnce({ id: 'existing-appointment' });
+    const { repository } = setupTransaction(null, { findFirst });
+
+    await expect(
+      repository.createAppointmentByManager(
+        'manager-user-1',
+        dto,
+        appointmentDate,
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
   });
 });

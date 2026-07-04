@@ -1,0 +1,1 @@
+export const APPOINTMENT_DURATION_MINUTES = 30;

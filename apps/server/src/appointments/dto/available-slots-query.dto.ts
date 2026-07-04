@@ -25,6 +25,12 @@ export class AvailableSlotsResponseDto {
   @ApiProperty({ example: '2026-04-10' })
   date!: string;
 
+  @ApiProperty({
+    example: 30,
+    description: 'Duração canônica de cada consulta em minutos',
+  })
+  appointmentDurationMinutes!: number;
+
   @ApiProperty({ type: [AvailableSlotDto] })
   slots!: AvailableSlotDto[];
 }

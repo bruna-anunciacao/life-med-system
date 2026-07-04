@@ -368,6 +368,7 @@ describe('AppointmentsService', () => {
         date: '2026-06-15',
       } as any);
 
+      expect(result.appointmentDurationMinutes).toBe(30);
       expect(result.slots).toEqual([]);
     });
 
@@ -387,8 +388,14 @@ describe('AppointmentsService', () => {
         date: '2026-06-15',
       } as any);
 
+      expect(result.appointmentDurationMinutes).toBe(30);
       // 09:00-11:00 em passos de 30min => 4 slots
-      expect(result.slots).toHaveLength(4);
+      expect(result.slots.map((s) => s.time)).toEqual([
+        '09:00',
+        '09:30',
+        '10:00',
+        '10:30',
+      ]);
       const byTime = Object.fromEntries(
         result.slots.map((s) => [s.time, s.available]),
       );
@@ -396,6 +403,94 @@ describe('AppointmentsService', () => {
       expect(byTime['09:30']).toBe(false); // booked
       expect(byTime['10:00']).toBe(false); // blocked
       expect(byTime['10:30']).toBe(true);
+    });
+
+    it('starts slot generation at the configured availability start time', async () => {
+      repository.findAvailabilityForSlots.mockResolvedValue({
+        startTime: '09:30',
+        endTime: '11:00',
+      });
+      repository.findBookedTimes.mockResolvedValue([]);
+      repository.findScheduleBlocksForDate.mockResolvedValue([]);
+
+      const result = await service.getAvailableSlots('prof-1', {
+        date: '2026-06-15',
+      } as any);
+
+      expect(result.slots.map((s) => s.time)).toEqual([
+        '09:30',
+        '10:00',
+        '10:30',
+      ]);
+    });
+
+    it('does not generate a slot that would end after availability ends', async () => {
+      repository.findAvailabilityForSlots.mockResolvedValue({
+        startTime: '09:45',
+        endTime: '10:00',
+      });
+      repository.findBookedTimes.mockResolvedValue([]);
+      repository.findScheduleBlocksForDate.mockResolvedValue([]);
+
+      const result = await service.getAvailableSlots('prof-1', {
+        date: '2026-06-15',
+      } as any);
+
+      expect(result.slots).toEqual([]);
+    });
+
+    it('marks a slot unavailable when it overlaps an existing appointment with a different start time', async () => {
+      repository.findAvailabilityForSlots.mockResolvedValue({
+        startTime: '09:45',
+        endTime: '10:30',
+      });
+      repository.findBookedTimes.mockResolvedValue([
+        { dateTime: new Date('2026-06-15T09:30:00') },
+      ]);
+      repository.findScheduleBlocksForDate.mockResolvedValue([]);
+
+      const result = await service.getAvailableSlots('prof-1', {
+        date: '2026-06-15',
+      } as any);
+
+      expect(result.slots).toEqual([{ time: '09:45', available: false }]);
+    });
+
+    it('keeps an adjacent slot available when an existing appointment ends at the slot start', async () => {
+      repository.findAvailabilityForSlots.mockResolvedValue({
+        startTime: '10:00',
+        endTime: '10:30',
+      });
+      repository.findBookedTimes.mockResolvedValue([
+        { dateTime: new Date('2026-06-15T09:30:00') },
+      ]);
+      repository.findScheduleBlocksForDate.mockResolvedValue([]);
+
+      const result = await service.getAvailableSlots('prof-1', {
+        date: '2026-06-15',
+      } as any);
+
+      expect(result.slots).toEqual([{ time: '10:00', available: true }]);
+    });
+
+    it('marks slots unavailable when they overlap a partial schedule block', async () => {
+      repository.findAvailabilityForSlots.mockResolvedValue({
+        startTime: '10:00',
+        endTime: '11:00',
+      });
+      repository.findBookedTimes.mockResolvedValue([]);
+      repository.findScheduleBlocksForDate.mockResolvedValue([
+        { startTime: '10:15', endTime: '10:45' },
+      ]);
+
+      const result = await service.getAvailableSlots('prof-1', {
+        date: '2026-06-15',
+      } as any);
+
+      expect(result.slots).toEqual([
+        { time: '10:00', available: false },
+        { time: '10:30', available: false },
+      ]);
     });
 
     it('blocks the whole day when a block has no start/end time', async () => {

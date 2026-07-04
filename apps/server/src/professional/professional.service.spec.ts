@@ -8,6 +8,10 @@ describe('ProfessionalService', () => {
   const repository = {
     findSettingsProfile: jest.fn(),
     findActiveAvailability: jest.fn(),
+    findAvailabilityForDate: jest.fn(),
+    findDailyAppointments: jest.fn(),
+    findScheduleBlocksByDate: jest.fn(),
+    countDistinctAttendedPatients: jest.fn(),
     findAppointmentsWithPatients: jest.fn(),
     updateSettings: jest.fn(),
     findScheduleBlockById: jest.fn(),
@@ -151,6 +155,22 @@ describe('ProfessionalService', () => {
       const result = await service.getPatients('u-1');
 
       expect(result[0].phone).toBe('Não informado');
+    });
+  });
+
+  describe('getDailySchedule', () => {
+    it('returns the canonical appointment duration', async () => {
+      repository.findAvailabilityForDate.mockResolvedValue({
+        startTime: '09:00',
+        endTime: '10:00',
+      });
+      repository.findDailyAppointments.mockResolvedValue([]);
+      repository.findScheduleBlocksByDate.mockResolvedValue([]);
+      repository.countDistinctAttendedPatients.mockResolvedValue(0);
+
+      const result = await service.getDailySchedule('prof-1', '2026-06-15');
+
+      expect(result.appointmentDurationMinutes).toBe(30);
     });
   });
 
