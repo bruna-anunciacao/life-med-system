@@ -11,6 +11,7 @@ import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
 import { MailService } from '../mail/mail.service';
 import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
 import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
+import { APPOINTMENT_DURATION_MINUTES } from '../appointments/appointment.constants';
 
 @Injectable()
 export class ProfessionalService {
@@ -74,6 +75,7 @@ export class ProfessionalService {
       availability,
       scheduleBlocks,
       attendedPatientsCount,
+      appointmentDurationMinutes: APPOINTMENT_DURATION_MINUTES,
       appointments: appointments.map((apt) => ({
         id: apt.id,
         dateTime: apt.dateTime,

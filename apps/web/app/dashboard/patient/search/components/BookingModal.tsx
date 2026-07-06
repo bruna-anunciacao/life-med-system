@@ -12,10 +12,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  appointmentsService,
-  AppointmentSlot,
-} from "@/services/appointments-service";
+import { appointmentsService } from "@/services/appointments-service";
+import { useAvailableSlotsQuery } from "@/queries/useAvailableSlotsQuery";
 import {
   CalendarDots,
   Clock,
@@ -69,39 +67,28 @@ export function BookingModal({
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [notes, setNotes] = useState("");
-  const [slots, setSlots] = useState<AppointmentSlot[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
+  const {
+    data: availability,
+    isLoading: isLoadingSlots,
+    isError: isSlotsError,
+    error: slotsError,
+  } = useAvailableSlotsQuery(professional?.id, selectedDate);
 
-  const handleDateChange = async (date: string) => {
+  const slots = availability?.slots ?? [];
+  const appointmentDurationMinutes =
+    availability?.appointmentDurationMinutes ?? 30;
+  const slotsErrorMessage =
+    slotsError instanceof Error
+      ? slotsError.message
+      : "Erro ao buscar horários.";
+
+  const handleDateChange = (date: string) => {
     setSelectedDate(date);
     setSelectedSlot("");
-    setSlots([]);
-
-    if (!date || !professional) return;
-
-    setIsLoadingSlots(true);
-    try {
-      const result = await appointmentsService.getAvailableSlots(
-        professional.id,
-        date,
-      );
-      if (result) {
-        setSlots(result.slots);
-        if (result.slots.length === 0) {
-          toast.error("Nenhum horário disponível nesta data.");
-        }
-      }
-    } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : "Erro ao buscar horários.";
-      toast.error(msg);
-    } finally {
-      setIsLoadingSlots(false);
-    }
   };
 
   const handleSubmit = async () => {
@@ -126,6 +113,7 @@ export function BookingModal({
 
       void queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
       void queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      void queryClient.invalidateQueries({ queryKey: ["available-slots"] });
 
       if (created?.modality === "VIRTUAL") {
         toast.success(
@@ -153,14 +141,11 @@ export function BookingModal({
     setSelectedDate("");
     setSelectedSlot("");
     setNotes("");
-    setSlots([]);
     setIsProfileOpen(false);
     onOpenChange(false);
   };
 
   if (!professional) return null;
-
-  const APPOINTMENT_DURATION = 60;
 
   const bookedMins = slots
     .filter((s) => !s.available)
@@ -170,10 +155,10 @@ export function BookingModal({
     if (!slot.available) return false;
 
     const slotStart = timeToMins(slot.time);
-    const slotEnd = slotStart + APPOINTMENT_DURATION;
+    const slotEnd = slotStart + appointmentDurationMinutes;
 
     const hasOverlap = bookedMins.some((bookedStart) => {
-      const bookedEnd = bookedStart + APPOINTMENT_DURATION;
+      const bookedEnd = bookedStart + appointmentDurationMinutes;
       return slotStart < bookedEnd && slotEnd > bookedStart;
     });
 
@@ -241,7 +226,22 @@ export function BookingModal({
                 </div>
               )}
 
-              {selectedDate && !isLoadingSlots && slots.length > 0 && (
+              {selectedDate && !isLoadingSlots && isSlotsError && (
+                <p className="text-sm text-red-500 italic py-2">
+                  {slotsErrorMessage}
+                </p>
+              )}
+
+              {selectedDate &&
+                !isLoadingSlots &&
+                !isSlotsError &&
+                slots.length === 0 && (
+                  <p className="text-sm text-gray-500 italic py-2">
+                    Nenhum horário disponível nesta data.
+                  </p>
+                )}
+
+              {selectedDate && !isLoadingSlots && !isSlotsError && slots.length > 0 && (
                 <div>
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
                     <Clock size={18} />

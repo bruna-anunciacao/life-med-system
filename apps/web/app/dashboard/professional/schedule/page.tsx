@@ -114,12 +114,15 @@ const SchedulePage = () => {
 
     const startMinutes = toMinutes(scheduleData.availability.startTime);
     const endMinutes = toMinutes(scheduleData.availability.endTime);
+    const appointmentDurationMinutes = scheduleData.appointmentDurationMinutes;
 
-    // Gera slots de 30 em 30 min, alinhados na hora/meia-hora, cobrindo
+    // Gera slots alinhados na duracao canonica, cobrindo
     // qualquer horário com início dentro da janela de disponibilidade.
     const slots: string[] = [];
-    const firstSlot = Math.floor(startMinutes / 30) * 30;
-    for (let m = firstSlot; m < endMinutes; m += 30) {
+    const firstSlot =
+      Math.floor(startMinutes / appointmentDurationMinutes) *
+      appointmentDurationMinutes;
+    for (let m = firstSlot; m < endMinutes; m += appointmentDurationMinutes) {
       const hourStr = Math.floor(m / 60)
         .toString()
         .padStart(2, "0");
@@ -150,7 +153,7 @@ const SchedulePage = () => {
 
       return (
         aptStartMinutes >= slotTotalMinutes &&
-        aptStartMinutes < slotTotalMinutes + 30
+        aptStartMinutes < slotTotalMinutes + (scheduleData?.appointmentDurationMinutes ?? 30)
       );
     });
 
@@ -282,6 +285,9 @@ const SchedulePage = () => {
                 getAppointmentForSlot={getAppointmentForSlot}
                 onStatusChange={handleStatusChange}
                 selectedDate={selectedDate}
+                slotDurationMinutes={
+                  scheduleData?.appointmentDurationMinutes ?? 30
+                }
               />
             ) : (
               <ScheduleWeekView

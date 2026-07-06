@@ -7,12 +7,23 @@ import {
 import { AppointmentStatus, Prisma } from '@prisma/client';
 import {
   CreateAppointmentPatientDto,
+  CreateAppointmentPatientForManagerDto,
   ListAppointmentsQueryDto,
   UpdateAppointmentStatusDto,
 } from './dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { APPOINTMENT_DURATION_MINUTES } from './appointment.constants';
 
-const APPOINTMENT_DURATION_MINUTES = 30;
+const appointmentResponseInclude = {
+  patient: true,
+  professional: {
+    include: {
+      professionalProfile: {
+        include: { specialities: true },
+      },
+    },
+  },
+} satisfies Prisma.AppointmentInclude;
 
 @Injectable()
 export class AppointmentsRepository {
@@ -60,10 +71,7 @@ export class AppointmentsRepository {
           status: AppointmentStatus.PENDING,
           modality: professional.professionalProfile?.modality ?? 'VIRTUAL',
         },
-        include: {
-          patient: true,
-          professional: true,
-        },
+        include: appointmentResponseInclude,
       });
     });
   }
@@ -75,7 +83,7 @@ export class AppointmentsRepository {
         meetLink,
         googleEventId,
       },
-      include: { patient: true, professional: true },
+      include: appointmentResponseInclude,
     });
   }
 
@@ -170,7 +178,7 @@ export class AppointmentsRepository {
 
   createAppointmentByManager(
     managerUserId: string,
-    dto: CreateAppointmentPatientDto & { patientId: string },
+    dto: CreateAppointmentPatientForManagerDto,
     appointmentDate: Date,
   ) {
     return this.prisma.$transaction(async (tx) => {
@@ -184,6 +192,7 @@ export class AppointmentsRepository {
 
       const professional = await tx.user.findUnique({
         where: { id: dto.professionalId },
+        include: { professionalProfile: true },
       });
 
       if (!professional) {
@@ -223,11 +232,11 @@ export class AppointmentsRepository {
           dateTime: appointmentDate,
           notes: dto.notes,
           status: AppointmentStatus.PENDING,
+          modality: professional.professionalProfile?.modality ?? 'VIRTUAL',
           scheduledByManagerId: manager.id,
         },
         include: {
-          patient: true,
-          professional: true,
+          ...appointmentResponseInclude,
           scheduledByManager: { include: { user: true } },
         },
       });
@@ -358,7 +367,7 @@ export class AppointmentsRepository {
       where: {
         [field]: userId,
         dateTime: {
-          gte: startBuffer,
+          gt: startBuffer,
           lt: endTime,
         },
         status: { not: AppointmentStatus.CANCELLED },

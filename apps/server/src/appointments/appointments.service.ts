@@ -12,6 +12,7 @@ import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
 import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
 import {
   CreateAppointmentPatientDto,
+  CreateAppointmentPatientForManagerDto,
   ListAppointmentsQueryDto,
   CancelAppointmentDto,
   AppointmentResponseDto,
@@ -19,9 +20,34 @@ import {
   UpdateAppointmentStatusDto,
 } from './dto';
 import { AppointmentStatus } from '@prisma/client';
+import { APPOINTMENT_DURATION_MINUTES } from './appointment.constants';
 
-const APPOINTMENT_DURATION_MINUTES = 30;
 const MIN_CANCEL_ADVANCE_HOURS = 6;
+type AppointmentForResponse = Awaited<
+  ReturnType<AppointmentsRepository['createPatientAppointment']>
+>;
+
+const timeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return (hours ?? 0) * 60 + (minutes ?? 0);
+};
+
+const formatMinutesAsTime = (totalMinutes: number) => {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${hours.toString().padStart(2, '0')}:${minutes
+    .toString()
+    .padStart(2, '0')}`;
+};
+
+const dateToMinutes = (date: Date) => date.getHours() * 60 + date.getMinutes();
+
+const intervalsOverlap = (
+  firstStart: number,
+  firstEnd: number,
+  secondStart: number,
+  secondEnd: number,
+) => firstStart < secondEnd && firstEnd > secondStart;
 
 @Injectable()
 export class AppointmentsService {
@@ -39,7 +65,7 @@ export class AppointmentsService {
   ): Promise<AppointmentResponseDto> {
     const appointmentDate = new Date(dto.dateTime);
 
-    let appointment = await this.repository.createPatientAppointment(
+    const appointment = await this.repository.createPatientAppointment(
       patientId,
       dto,
       appointmentDate,
@@ -47,73 +73,7 @@ export class AppointmentsService {
 
     this.logger.log(`Agendamento criado com sucesso: ${appointment.id}`);
 
-    let meetLink: string | null = null;
-    if (appointment.modality === 'VIRTUAL') {
-      try {
-        const endDate = new Date(
-          appointment.dateTime.getTime() + APPOINTMENT_DURATION_MINUTES * 60000,
-        );
-        const meet = await this.meetService.createMeetEvent({
-          requestId: appointment.id,
-          summary: `Consulta - ${appointment.professional.name}`,
-          description: appointment.notes ?? undefined,
-          startISO: appointment.dateTime.toISOString(),
-          endISO: endDate.toISOString(),
-          attendees: [
-            {
-              email: appointment.patient.email,
-              displayName: appointment.patient.name,
-            },
-            {
-              email: appointment.professional.email,
-              displayName: appointment.professional.name,
-            },
-          ],
-        });
-
-        appointment = await this.repository.updateMeetData(
-          appointment.id,
-          meet.meetLink,
-          meet.eventId,
-        );
-        meetLink = meet.meetLink;
-      } catch (err) {
-        this.logger.error(
-          `Falha ao criar evento no Google Calendar: ${(err as Error).message}`,
-        );
-      }
-    }
-
-    await Promise.all([
-      this.mailService.sendAppointmentCreatedPatientEmail(
-        { name: appointment.patient.name, email: appointment.patient.email },
-        {
-          professionalName: appointment.professional.name,
-          dateTime: appointment.dateTime,
-          modality: appointment.modality,
-          meetLink,
-        },
-      ),
-      this.mailService.sendAppointmentCreatedProfessionalEmail(
-        {
-          name: appointment.professional.name,
-          email: appointment.professional.email,
-        },
-        {
-          patientName: appointment.patient.name,
-          dateTime: appointment.dateTime,
-          modality: appointment.modality,
-          notes: appointment.notes,
-          meetLink,
-        },
-      ),
-    ]).catch((err) =>
-      this.logger.error(
-        `Falha ao enviar emails de agendamento: ${err.message}`,
-      ),
-    );
-
-    return this.mapToResponseDto(appointment);
+    return this.finalizeCreatedAppointment(appointment);
   }
 
   async listPatientAppointments(
@@ -290,11 +250,16 @@ export class AppointmentsService {
     );
 
     if (!availability) {
-      return { professionalId, date: query.date, slots: [] };
+      return {
+        professionalId,
+        date: query.date,
+        appointmentDurationMinutes: APPOINTMENT_DURATION_MINUTES,
+        slots: [],
+      };
     }
 
-    const [startHour] = availability.startTime.split(':').map(Number);
-    const [endHour] = availability.endTime.split(':').map(Number);
+    const startMinutes = timeToMinutes(availability.startTime);
+    const endMinutes = timeToMinutes(availability.endTime);
 
     const dayStart = new Date(query.date + 'T00:00:00');
     const dayEnd = new Date(query.date + 'T23:59:59');
@@ -305,13 +270,10 @@ export class AppointmentsService {
       dayEnd,
     );
 
-    const bookedTimes = new Set(
-      existingAppointments.map((a) => {
-        const h = a.dateTime.getHours().toString().padStart(2, '0');
-        const m = a.dateTime.getMinutes().toString().padStart(2, '0');
-        return `${h}:${m}`;
-      }),
-    );
+    const bookedIntervals = existingAppointments.map((a) => {
+      const start = dateToMinutes(a.dateTime);
+      return { start, end: start + APPOINTMENT_DURATION_MINUTES };
+    });
 
     const blocks = await this.repository.findScheduleBlocksForDate(
       professionalId,
@@ -319,32 +281,47 @@ export class AppointmentsService {
     );
 
     const slots: { time: string; available: boolean }[] = [];
-    for (let hour = startHour; hour < endHour; hour++) {
-      for (const minutes of [0, 30]) {
-        const time = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    for (
+      let slotStart = startMinutes;
+      slotStart + APPOINTMENT_DURATION_MINUTES <= endMinutes;
+      slotStart += APPOINTMENT_DURATION_MINUTES
+    ) {
+      const time = formatMinutesAsTime(slotStart);
+      const slotEnd = slotStart + APPOINTMENT_DURATION_MINUTES;
 
-        let isBlocked = false;
-        for (const b of blocks) {
-          if (!b.startTime || !b.endTime) {
-            isBlocked = true;
-            break;
-          }
-          if (time >= b.startTime && time < b.endTime) {
-            isBlocked = true;
-            break;
-          }
+      const isBooked = bookedIntervals.some((booked) =>
+        intervalsOverlap(slotStart, slotEnd, booked.start, booked.end),
+      );
+
+      let isBlocked = false;
+      for (const b of blocks) {
+        if (!b.startTime || !b.endTime) {
+          isBlocked = true;
+          break;
         }
 
-        slots.push({ time, available: !bookedTimes.has(time) && !isBlocked });
+        const blockStart = timeToMinutes(b.startTime);
+        const blockEnd = timeToMinutes(b.endTime);
+        if (intervalsOverlap(slotStart, slotEnd, blockStart, blockEnd)) {
+          isBlocked = true;
+          break;
+        }
       }
+
+      slots.push({ time, available: !isBooked && !isBlocked });
     }
 
-    return { professionalId, date: query.date, slots };
+    return {
+      professionalId,
+      date: query.date,
+      appointmentDurationMinutes: APPOINTMENT_DURATION_MINUTES,
+      slots,
+    };
   }
 
   async createAppointmentByManager(
     managerUserId: string,
-    dto: CreateAppointmentPatientDto & { patientId: string },
+    dto: CreateAppointmentPatientForManagerDto,
   ): Promise<AppointmentResponseDto> {
     const appointmentDate = new Date(dto.dateTime);
 
@@ -358,6 +335,51 @@ export class AppointmentsService {
       `Agendamento criado pelo gestor ${managerUserId}: ${appointment.id}`,
     );
 
+    return this.finalizeCreatedAppointment(appointment);
+  }
+
+  private async finalizeCreatedAppointment(
+    createdAppointment: AppointmentForResponse,
+  ): Promise<AppointmentResponseDto> {
+    let appointment = createdAppointment;
+    let meetLink: string | null = appointment.meetLink ?? null;
+
+    if (appointment.modality === 'VIRTUAL') {
+      try {
+        const endDate = new Date(
+          appointment.dateTime.getTime() + APPOINTMENT_DURATION_MINUTES * 60000,
+        );
+        const meet = await this.meetService.createMeetEvent({
+          requestId: appointment.id,
+          summary: `Consulta - ${appointment.professional.name}`,
+          description: appointment.notes ?? undefined,
+          startISO: appointment.dateTime.toISOString(),
+          endISO: endDate.toISOString(),
+          attendees: [
+            {
+              email: appointment.patient.email,
+              displayName: appointment.patient.name,
+            },
+            {
+              email: appointment.professional.email,
+              displayName: appointment.professional.name,
+            },
+          ],
+        });
+
+        appointment = await this.repository.updateMeetData(
+          appointment.id,
+          meet.meetLink,
+          meet.eventId,
+        );
+        meetLink = meet.meetLink;
+      } catch (err) {
+        this.logger.error(
+          `Falha ao criar evento no Google Calendar: ${(err as Error).message}`,
+        );
+      }
+    }
+
     await Promise.all([
       this.mailService.sendAppointmentCreatedPatientEmail(
         { name: appointment.patient.name, email: appointment.patient.email },
@@ -365,6 +387,7 @@ export class AppointmentsService {
           professionalName: appointment.professional.name,
           dateTime: appointment.dateTime,
           modality: appointment.modality,
+          meetLink,
         },
       ),
       this.mailService.sendAppointmentCreatedProfessionalEmail(
@@ -377,6 +400,7 @@ export class AppointmentsService {
           dateTime: appointment.dateTime,
           modality: appointment.modality,
           notes: appointment.notes,
+          meetLink,
         },
       ),
     ]).catch((err) =>
