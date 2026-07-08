@@ -1,5 +1,6 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
+import { MAX_PAGE_SIZE, type Paginated } from "../lib/pagination";
 
 export interface UpdateSettingsPayload {
   modality: string;
@@ -104,8 +105,13 @@ export const professionalService = {
 
   async getPatients(): Promise<PatientProfile[]> {
     try {
-      const response = await api.get("/professional/patients");
-      return response.data;
+      const response = await api.get("/professional/patients", {
+        params: { limit: MAX_PAGE_SIZE },
+      });
+      // A tela filtra a lista inteira no cliente (busca por nome/CPF/telefone),
+      // então desembrulhamos o envelope e devolvemos o array. Cap de 100 na API.
+      const payload = response.data as Paginated<PatientProfile>;
+      return payload.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
         throw new Error(
@@ -118,8 +124,19 @@ export const professionalService = {
 
   async getPatientDetail(patientId: string): Promise<PatientDetail> {
     try {
-      const response = await api.get(`/professional/patients/${patientId}`);
-      return response.data;
+      const response = await api.get(`/professional/patients/${patientId}`, {
+        params: { limit: MAX_PAGE_SIZE },
+      });
+      // O `history` virou envelope { data, meta }. A tela de detalhe separa
+      // histórico em "próxima consulta" x "passadas" e conta o total no cliente,
+      // então normalizamos `history` de volta para um array simples aqui.
+      const raw = response.data as Omit<PatientDetail, "history"> & {
+        history: PatientDetail["history"] | Paginated<PatientDetail["history"][number]>;
+      };
+      const history = Array.isArray(raw.history)
+        ? raw.history
+        : raw.history.data;
+      return { ...raw, history };
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
         throw new Error(

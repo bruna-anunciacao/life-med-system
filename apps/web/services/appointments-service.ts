@@ -1,5 +1,6 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
+import type { Paginated } from "../lib/pagination";
 
 export interface CreateAppointmentPatientDto {
   professionalId: string;
@@ -57,12 +58,7 @@ export interface AppointmentResponse {
   };
 }
 
-export interface AppointmentListResponse {
-  data: AppointmentResponse[];
-  page: number;
-  limit: number;
-  total: number;
-}
+export type AppointmentListResponse = Paginated<AppointmentResponse>;
 
 function extractErrorMessage(error: unknown, fallback: string): never {
   if (error instanceof AxiosError && error.response) {
@@ -96,15 +92,23 @@ export const appointmentsService = {
   },
 
   async listMyAppointments(params?: {
-    status?: string;
+    status?: string | string[];
     startDate?: string;
     endDate?: string;
     page?: number;
     limit?: number;
   }) {
     try {
+      // O backend aceita `status` único ou múltiplos separados por vírgula
+      // (?status=PENDING,CONFIRMED). Serializamos array nesse formato.
+      const { status, ...rest } = params ?? {};
       const response = await api.get("/appointments/my-appointments", {
-        params,
+        params: {
+          ...rest,
+          ...(status && {
+            status: Array.isArray(status) ? status.join(",") : status,
+          }),
+        },
       });
       return response.data as AppointmentListResponse;
     } catch (error) {

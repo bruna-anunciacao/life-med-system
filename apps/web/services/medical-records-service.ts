@@ -1,5 +1,6 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
+import { MAX_PAGE_SIZE, type Paginated } from "../lib/pagination";
 
 export interface MedicalRecordAuthor {
   id: string;
@@ -48,12 +49,8 @@ export interface MedicalRecordPatientResponse {
   updatedAt: string;
 }
 
-export interface PaginatedMedicalRecords<T> {
-  data: T[];
-  page: number;
-  limit: number;
-  total: number;
-}
+/** @deprecated Use `Paginated<T>` de `@/lib/pagination`. Mantido como alias. */
+export type PaginatedMedicalRecords<T> = Paginated<T>;
 
 export interface CreateMedicalRecordDto {
   appointmentId: string;
@@ -162,8 +159,13 @@ export const medicalRecordsService = {
 
   async findByPatient(patientId: string): Promise<MedicalRecordResponse[]> {
     try {
-      const response = await api.get(`/medical-records/patient/${patientId}`);
-      return response.data as MedicalRecordResponse[];
+      const response = await api.get(`/medical-records/patient/${patientId}`, {
+        params: { limit: MAX_PAGE_SIZE },
+      });
+      // A API agora responde com envelope { data, meta }. Esta chamada não expõe
+      // paginação na UI, então desembrulhamos e mantemos o array.
+      const payload = response.data as Paginated<MedicalRecordResponse>;
+      return payload.data;
     } catch (error) {
       extractErrorMessage(error, "Erro ao buscar prontuários do paciente.");
     }

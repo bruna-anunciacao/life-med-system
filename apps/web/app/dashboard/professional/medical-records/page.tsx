@@ -5,19 +5,22 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DataTablePageSizeSelector,
+  DataTablePagination,
+} from "@/components/ui/data-table";
 import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { Badge } from "@/components/ui/badge";
 import {
   useMedicalRecordsListQuery,
   useSharedMedicalRecordsQuery,
 } from "@/queries/useMedicalRecords";
+import { useServerPagination } from "@/hooks/useServerPagination";
 import { SearchInput } from "@/components/ui/search-input";
 import { CalendarIcon, EyeIcon, UsersIcon } from "../../../utils/icons";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 import { TourButton } from "@/components/tour/TourButton";
 import type { MedicalRecordResponse } from "@/services/medical-records-service";
-
-const PAGE_SIZE = 10;
 
 type ViewMode = "mine" | "shared";
 
@@ -46,29 +49,27 @@ function MyRecordsView() {
   const [searchInput, setSearchInput] = useState(initialSearch);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [page, setPage] = useState(1);
+  const { queryParams, resetToFirstPage, getPaginationProps } =
+    useServerPagination({ syncUrl: true, paramPrefix: "mine_" });
 
   const params = useMemo(
     () => ({
-      page,
-      limit: PAGE_SIZE,
+      ...queryParams,
       ...(search && { search }),
       ...(startDate && { startDate }),
       ...(endDate && { endDate }),
     }),
-    [page, search, startDate, endDate],
+    [queryParams, search, startDate, endDate],
   );
 
   const { data, isLoading, isFetching } = useMedicalRecordsListQuery(params);
 
   const records = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput.trim());
-    setPage(1);
+    resetToFirstPage();
   };
 
   const handleClearFilters = () => {
@@ -76,7 +77,7 @@ function MyRecordsView() {
     setSearch("");
     setStartDate("");
     setEndDate("");
-    setPage(1);
+    resetToFirstPage();
   };
 
   const hasFilters = Boolean(search || startDate || endDate);
@@ -101,7 +102,7 @@ function MyRecordsView() {
               <Input
                 type="date"
                 value={startDate}
-                onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                onChange={(e) => { setStartDate(e.target.value); resetToFirstPage(); }}
                 className="w-full sm:w-44"
               />
             </div>
@@ -110,7 +111,7 @@ function MyRecordsView() {
               <Input
                 type="date"
                 value={endDate}
-                onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                onChange={(e) => { setEndDate(e.target.value); resetToFirstPage(); }}
                 className="w-full sm:w-44"
               />
             </div>
@@ -125,6 +126,12 @@ function MyRecordsView() {
           </form>
         </CardContent>
       </Card>
+
+      {!isLoading && records.length > 0 && (
+        <div className="mb-4 flex justify-end">
+          <DataTablePageSizeSelector {...getPaginationProps(data?.meta)} />
+        </div>
+      )}
 
       {isLoading ? (
         <CardGridSkeleton count={4} minWidth={400} />
@@ -142,15 +149,13 @@ function MyRecordsView() {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-500">Página {page} de {totalPages}</p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1 || isFetching}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}>Anterior</Button>
-            <Button variant="outline" size="sm" disabled={page >= totalPages || isFetching}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Próxima</Button>
-          </div>
+      {records.length > 0 && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
+          <DataTablePagination
+            {...getPaginationProps(data?.meta)}
+            itemLabel="prontuários"
+            busy={isFetching}
+          />
         </div>
       )}
     </>
@@ -161,22 +166,21 @@ function MyRecordsView() {
 function SharedRecordsView() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const { queryParams, resetToFirstPage, getPaginationProps } =
+    useServerPagination({ syncUrl: true, paramPrefix: "shared_" });
 
   const params = useMemo(
-    () => ({ page, limit: PAGE_SIZE, ...(search && { search }) }),
-    [page, search],
+    () => ({ ...queryParams, ...(search && { search }) }),
+    [queryParams, search],
   );
 
   const { data, isLoading, isFetching } = useSharedMedicalRecordsQuery(params);
 
   const records = (data?.data ?? []) as MedicalRecordResponse[];
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(1);
+    resetToFirstPage();
   };
 
   return (
@@ -186,13 +190,19 @@ function SharedRecordsView() {
           <form onSubmit={handleSearch} className="flex gap-3">
             <SearchInput
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => { setSearch(e.target.value); resetToFirstPage(); }}
               placeholder="Buscar por paciente, profissional, queixa ou diagnóstico…"
               className="flex-1"
             />
           </form>
         </CardContent>
       </Card>
+
+      {!isLoading && records.length > 0 && (
+        <div className="mb-4 flex justify-end">
+          <DataTablePageSizeSelector {...getPaginationProps(data?.meta)} />
+        </div>
+      )}
 
       {isLoading ? (
         <CardGridSkeleton count={4} minWidth={400} />
@@ -213,15 +223,13 @@ function SharedRecordsView() {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-500">Página {page} de {totalPages}</p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1 || isFetching}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}>Anterior</Button>
-            <Button variant="outline" size="sm" disabled={page >= totalPages || isFetching}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>Próxima</Button>
-          </div>
+      {records.length > 0 && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
+          <DataTablePagination
+            {...getPaginationProps(data?.meta)}
+            itemLabel="prontuários"
+            busy={isFetching}
+          />
         </div>
       )}
     </>

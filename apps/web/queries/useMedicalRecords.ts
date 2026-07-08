@@ -11,6 +11,7 @@ export function useSharedMedicalRecordsQuery(params: ListMedicalRecordsParams) {
   return useQuery({
     queryKey: KEYS.shared(params),
     queryFn: () => medicalRecordsService.listShared(params),
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -32,6 +33,7 @@ export function useMedicalRecordsListQuery(params: ListMedicalRecordsParams) {
   return useQuery({
     queryKey: KEYS.list(params),
     queryFn: () => medicalRecordsService.list(params),
+    placeholderData: (previousData) => previousData,
   });
 }
 
@@ -41,6 +43,7 @@ export function useMedicalRecordsListForPatientQuery(
   return useQuery({
     queryKey: KEYS.listForPatient(params),
     queryFn: () => medicalRecordsService.listForPatient(params),
+    placeholderData: (previousData) => previousData,
   });
 }
 

@@ -15,6 +15,8 @@ import {
   UsersIcon,
   XIcon,
   VideoIcon,
+  HouseIcon,
+  BuildingsIcon,
   UserCheckIcon,
   XCircleIcon,
 } from "../../utils/icons";
@@ -28,14 +30,70 @@ import {
 import { ConfirmModal } from "./schedule/components/ConfirmModal";
 import { PageShell, PageHeader } from "../../ui/dashboard/page-shell";
 import { TourButton } from "@/components/tour/TourButton";
-import { ModalityBadge } from "./components/ModalityBadge";
-import { STATUS_META } from "./components/appointment-meta";
-import type {
-  AppointmentResponse,
-  AppointmentStatus,
-} from "@/services/appointments-service";
 
-type Appointment = AppointmentResponse;
+type AppointmentStatus =
+  | "PENDING"
+  | "CONFIRMED"
+  | "CANCELLED"
+  | "COMPLETED"
+  | "NO_SHOW";
+
+type Modality = "VIRTUAL" | "HOME_VISIT" | "CLINIC";
+
+type Appointment = {
+  id: string;
+  dateTime: string;
+  status: AppointmentStatus;
+  modality?: Modality;
+  notes?: string;
+  meetLink?: string | null;
+  patient: { id: string; name: string; email?: string; phone?: string | null };
+};
+
+const STATUS_META: Record<
+  AppointmentStatus,
+  { label: string; className: string }
+> = {
+  PENDING: {
+    label: "Pendente",
+    className: "bg-amber-50 text-amber-700 border border-amber-200",
+  },
+  CONFIRMED: {
+    label: "Confirmado",
+    className: "bg-blue-50 text-blue-700 border border-blue-200",
+  },
+  COMPLETED: {
+    label: "Atendido",
+    className: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  },
+  NO_SHOW: {
+    label: "Faltou",
+    className: "bg-orange-50 text-orange-700 border border-orange-200",
+  },
+  CANCELLED: {
+    label: "Cancelado",
+    className: "bg-red-50 text-red-600 border border-red-200",
+  },
+};
+
+const MODALITY_META: Record<
+  Modality,
+  { label: string; icon: React.ReactNode }
+> = {
+  VIRTUAL: { label: "Online", icon: <VideoIcon size={14} /> },
+  HOME_VISIT: { label: "Domiciliar", icon: <HouseIcon size={14} /> },
+  CLINIC: { label: "Presencial", icon: <BuildingsIcon size={14} /> },
+};
+
+function ModalityBadge({ modality }: { modality?: Modality }) {
+  const meta = modality ? MODALITY_META[modality] : MODALITY_META.VIRTUAL;
+  return (
+    <Badge className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+      {meta.icon}
+      {meta.label}
+    </Badge>
+  );
+}
 
 const ProfessionalDashboard = () => {
   const router = useRouter();
@@ -93,7 +151,7 @@ const ProfessionalDashboard = () => {
     }, [scheduleData]);
 
   const pendingRequests = (pendingData?.data || []) as Appointment[];
-  const pendingTotal = pendingData?.total ?? 0;
+  const pendingTotal = pendingData?.meta.total ?? 0;
 
   const formatTime = (isoString: string) =>
     new Date(isoString).toLocaleTimeString("pt-BR", {
@@ -318,7 +376,7 @@ const ProfessionalDashboard = () => {
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <Badge
-                            className={`px-2 py-1 rounded-3xl text-xs font-semibold ${meta.badgeClassName}`}
+                            className={`px-2 py-1 rounded-3xl text-xs font-semibold ${meta.className}`}
                           >
                             {meta.label}
                           </Badge>
@@ -366,23 +424,14 @@ const ProfessionalDashboard = () => {
 
         {/* Solicitações */}
         <div id="tour-prof-requests" className="flex flex-col gap-4">
-          <div className="mb-2 flex justify-between items-center gap-2">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700 min-w-0">
-              <span className="truncate">Solicitações</span>
-              {pendingTotal > 0 && (
-                <Badge className="px-2 py-1 rounded-3xl text-xs font-semibold bg-yellow-100 text-yellow-700 shrink-0">
-                  {pendingTotal} Novas
-                </Badge>
-              )}
+          <div className="mb-2 flex justify-between items-center">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-700">
+              Solicitações
             </h2>
-            {pendingTotal > pendingRequests.length && (
-              <Link
-                href="/dashboard/professional/requests"
-                title="Ver todas as solicitações pendentes"
-                className="text-xs font-medium text-[#006fee] hover:text-[#0058c2] shrink-0 whitespace-nowrap"
-              >
-                Ver todas
-              </Link>
+            {pendingTotal > 0 && (
+              <Badge className="px-2 py-1 rounded-3xl text-xs font-semibold bg-yellow-100 text-yellow-700">
+                {pendingTotal} Novas
+              </Badge>
             )}
           </div>
           <div className="flex flex-col gap-3">
@@ -440,6 +489,15 @@ const ProfessionalDashboard = () => {
               ))
             )}
           </div>
+          {pendingTotal > pendingRequests.length && (
+            <Link
+              href="/dashboard/professional/requests"
+              title="Ver todas as solicitações pendentes"
+              className="text-sm font-medium text-[#006fee] hover:underline self-end"
+            >
+              Ver todas
+            </Link>
+          )}
           <Card className="mt-4 border border-[#cce7ff] rounded-lg bg-[#f0f9ff]">
             <CardContent>
               <h4 className="text-lg font-semibold text-gray-700">

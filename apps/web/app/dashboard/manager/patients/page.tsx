@@ -25,6 +25,7 @@ import {
   DataTableHeadCell,
   DataTableMobileItem,
   DataTableMobileList,
+  DataTablePageSizeSelector,
   DataTablePagination,
   DataTableRow,
   SortableHeader,
@@ -242,6 +243,12 @@ export default function PatientsPage() {
             </span>
           </p>
         )}
+        <div className="mt-3 flex justify-end">
+          <DataTablePageSizeSelector
+            pageSize={pagination.pageSize}
+            onPageSizeChange={pagination.setPageSize}
+          />
+        </div>
       </div>
 
       <div id="tour-mgr-patients-table">
@@ -331,8 +338,6 @@ export default function PatientsPage() {
               hasPrev={pagination.hasPrev}
               hasNext={pagination.hasNext}
               onPageChange={pagination.setPage}
-              pageSize={pagination.pageSize}
-              onPageSizeChange={pagination.setPageSize}
               itemLabel="pacientes"
             />
           </DataTableCard>
@@ -463,8 +468,6 @@ export default function PatientsPage() {
               hasPrev={pagination.hasPrev}
               hasNext={pagination.hasNext}
               onPageChange={pagination.setPage}
-              pageSize={pagination.pageSize}
-              onPageSizeChange={pagination.setPageSize}
               itemLabel="pacientes"
             />
           </DataTableCard>
