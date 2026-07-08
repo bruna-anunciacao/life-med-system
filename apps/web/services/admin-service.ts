@@ -1,6 +1,7 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
 import { API_ROUTES } from "../constants/api-routes";
+import { MAX_PAGE_SIZE, type Paginated } from "../lib/pagination";
 
 export type PatientApprovalStatus = "APPROVED" | "PENDING" | "REJECTED";
 
@@ -49,8 +50,13 @@ const handleError = (error: unknown, fallback: string): never => {
 export const adminService = {
   async listUsers(params?: AdminUsersParams): Promise<AdminUser[]> {
     try {
-      const response = await api.get(API_ROUTES.ADMIN.USERS, { params });
-      return response.data;
+      const response = await api.get(API_ROUTES.ADMIN.USERS, {
+        params: { limit: MAX_PAGE_SIZE, ...params },
+      });
+      // A tabela de usuários filtra/ordena tudo no cliente (busca fuzzy, abas
+      // por role). Desembrulhamos o envelope { data, meta } e devolvemos o array.
+      const payload = response.data as Paginated<AdminUser>;
+      return payload.data;
     } catch (error) {
       return handleError(error, "Erro ao listar usuários.");
     }
@@ -59,9 +65,10 @@ export const adminService = {
   async listProfessionals(): Promise<AdminUser[]> {
     try {
       const response = await api.get(API_ROUTES.ADMIN.USERS, {
-        params: { role: "PROFESSIONAL" },
+        params: { role: "PROFESSIONAL", limit: MAX_PAGE_SIZE },
       });
-      return response.data;
+      const payload = response.data as Paginated<AdminUser>;
+      return payload.data;
     } catch (error) {
       return handleError(error, "Erro ao listar profissionais.");
     }

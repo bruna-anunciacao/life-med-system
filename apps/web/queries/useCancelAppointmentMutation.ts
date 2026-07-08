@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   appointmentsService,
-  AppointmentListResponse,
-  AppointmentResponse,
   CancelAppointmentDto,
 } from "../services/appointments-service";
 
@@ -16,16 +14,11 @@ export function useCancelAppointmentMutation() {
     onSuccess: (updated) => {
       if (!updated) return;
 
-      queryClient.setQueryData<AppointmentListResponse>(["my-appointments"], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          data: old.data.map((a: AppointmentResponse) =>
-            a.id === updated.id ? updated : a,
-          ),
-        };
-      });
-
+      // A lista "Minhas consultas" agora é paginada e filtrada por aba/status
+      // (cache com chave variável), então invalidamos o prefixo em vez de
+      // remendar uma entrada específica. Cancelar move o item entre abas, o que
+      // muda os totais — reconsultar é o caminho correto.
+      void queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
       void queryClient.invalidateQueries({ queryKey: ["appointments"] });
     },
   });

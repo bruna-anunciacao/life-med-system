@@ -4,14 +4,12 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CardGridSkeleton } from "@/components/ui/skeletons";
+import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMedicalRecordsListForPatientQuery } from "@/queries/useMedicalRecords";
 import { CalendarIcon, EyeIcon } from "../../../utils/icons";
-import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 import { SearchInput } from "@/components/ui/search-input";
-import { TourButton } from "@/components/tour/TourButton";
-import { useIsMobile } from "@/hooks/useIsMobile";
 
 const PAGE_SIZE = 10;
 
@@ -50,7 +48,7 @@ const PatientMedicalRecordsPage = () => {
     useMedicalRecordsListForPatientQuery(params);
 
   const records = data?.data ?? [];
-  const total = data?.total ?? 0;
+  const total = data?.meta.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const handleSearch = (e: React.FormEvent) => {
@@ -62,17 +60,24 @@ const PatientMedicalRecordsPage = () => {
   const hasFilters = Boolean(search);
 
   return (
-    <PageShell>
-      <PageHeader
-        title="Meus Prontuários"
-        description={`Histórico dos prontuários das suas consultas.${total > 0 ? ` ${total} no total.` : ""}`}
-        help={<TourButton tour="patient-records" iconOnly={isMobile} />}
-      />
+    <section
+      className={`w-full min-h-screen mx-auto bg-[#f8fafc] ${isMobile ? "px-4 py-5" : "px-16 py-8"}`}
+    >
+      <div className="mb-8">
+        <h1
+          className={`font-bold text-gray-900 tracking-tight ${isMobile ? "text-2xl" : "text-4xl"}`}
+        >
+          Meus Prontuários
+        </h1>
+        <p
+          className={`mt-1 text-gray-500 ${isMobile ? "text-sm" : "text-base"}`}
+        >
+          Histórico dos prontuários das suas consultas.
+          {total > 0 && ` ${total} no total.`}
+        </p>
+      </div>
 
-      <Card
-        id="tour-records-search"
-        className="mb-6 border border-gray-200 rounded-xl bg-white"
-      >
+      <Card className="mb-6 border border-gray-200 rounded-xl bg-white">
         <CardContent className="p-4 sm:p-5">
           <form
             onSubmit={handleSearch}
@@ -109,9 +114,10 @@ const PatientMedicalRecordsPage = () => {
         </CardContent>
       </Card>
 
-      <div id="tour-records-list">
       {isLoading ? (
-        <CardGridSkeleton count={4} minWidth={400} />
+        <div className="py-16 flex justify-center">
+          <Spinner size="lg" />
+        </div>
       ) : records.length === 0 ? (
         <Card className="border border-dashed border-gray-300 rounded-xl bg-white">
           <CardContent className="py-16 text-center flex flex-col items-center gap-3">
@@ -184,7 +190,6 @@ const PatientMedicalRecordsPage = () => {
           ))}
         </div>
       )}
-      </div>
 
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between gap-3">
@@ -211,7 +216,7 @@ const PatientMedicalRecordsPage = () => {
           </div>
         </div>
       )}
-    </PageShell>
+    </section>
   );
 };
 

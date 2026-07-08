@@ -1,5 +1,6 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
+import { MAX_PAGE_SIZE, type Paginated } from "../lib/pagination";
 
 export type PatientApprovalStatus = "APPROVED" | "PENDING" | "REJECTED";
 
@@ -68,6 +69,31 @@ export interface ManagerPatientResponse {
     questionnaire?: QuestionnaireSummary | null;
   };
   questionnaire?: QuestionnaireSummary | null;
+}
+
+export interface ManagerProfessionalResponse {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  professionalProfile?: {
+    id?: string;
+    specialty?: string;
+    professionalLicense?: string;
+    modality?: string;
+    bio?: string;
+    photoUrl?: string;
+    specialities?: { id: string; name: string }[];
+  } | null;
+  address?: {
+    zipCode?: string | null;
+    street?: string | null;
+    number?: string | null;
+    complement?: string | null;
+    district?: string | null;
+    city?: string | null;
+    state?: string | null;
+  } | null;
 }
 
 export interface CreateAppointmentDto {
@@ -172,9 +198,13 @@ export const managerService = {
 
   async listPatients(): Promise<ManagerPatientResponse[]> {
     try {
-      const response =
-        await api.get<ManagerPatientResponse[]>("/manager/patients");
-      return response.data;
+      const response = await api.get<Paginated<ManagerPatientResponse>>(
+        "/manager/patients",
+        { params: { limit: MAX_PAGE_SIZE } },
+      );
+      // A tela de pacientes (e a home do gestor) filtra/agrega a lista inteira
+      // no cliente, então desembrulhamos o envelope e devolvemos o array.
+      return response.data.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
         const message = error.response.data.message;
@@ -213,11 +243,15 @@ export const managerService = {
     params?: ListAppointmentsParams,
   ): Promise<ManagementAppointment[]> {
     try {
-      const response = await api.get<ManagementAppointment[]>(
+      const response = await api.get<Paginated<ManagementAppointment>>(
         "/manager/appointments",
-        { params },
+        // A view (ManagementAppointmentsView) filtra/ordena/agrega a lista
+        // inteira no cliente (busca, filtro por status, stat cards). O sort por
+        // vulnerabilidade é resolvido no servidor via `sortBy`/`order`. Pedimos
+        // o cap de 100 e desembrulhamos o envelope { data, meta }.
+        { params: { limit: MAX_PAGE_SIZE, ...params } },
       );
-      return response.data;
+      return response.data.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
         const message = error.response.data.message;
@@ -255,10 +289,17 @@ export const managerService = {
     }
   },
 
-  async listProfessionals() {
+  async listProfessionals(): Promise<ManagerProfessionalResponse[]> {
     try {
-      const response = await api.get("/professional");
-      return response.data;
+      // `/professional` agora é paginado ({ data, meta }). Esta tela filtra por
+      // busca/especialidade/localização no cliente (as opções de localização
+      // derivam do conjunto inteiro), então pedimos o cap de 100 e
+      // desembrulhamos, mantendo a paginação da grade no cliente.
+      const response = await api.get<Paginated<ManagerProfessionalResponse>>(
+        "/professional",
+        { params: { limit: MAX_PAGE_SIZE } },
+      );
+      return response.data.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
         const message = error.response.data.message;
