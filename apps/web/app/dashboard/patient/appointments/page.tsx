@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DataTablePageSizeSelector,
+  DataTablePagination,
+} from "@/components/ui/data-table";
 import { CardGridSkeleton } from "@/components/ui/skeletons";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useServerPagination } from "@/hooks/useServerPagination";
 import { SearchIcon } from "../../../utils/icons";
 import { Appointment, TabKey } from "./appointments.types";
 import { AppointmentTabs } from "./components/AppointmentTabs";
@@ -14,10 +19,12 @@ import { EmptyAppointments } from "./components/EmptyAppointments";
 import { AppointmentDetailsModal } from "./components/AppointmentDetailsModal";
 import { patientsService } from "@/services/patients-service";
 import { CancelConfirmDialog } from "./components/CancelConfirmDialog";
+import { AppointmentResponse } from "@/services/appointments-service";
 import {
-  appointmentsService,
-  AppointmentResponse,
-} from "@/services/appointments-service";
+  useMyAppointmentsQuery,
+  useMyAppointmentsCounts,
+} from "@/queries/useMyAppointmentsQuery";
+import { useCancelAppointmentMutation } from "@/queries/useCancelAppointmentMutation";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 import { TourButton } from "@/components/tour/TourButton";
 
@@ -37,57 +44,46 @@ function mapApiToAppointment(appt: AppointmentResponse): Appointment {
   };
 }
 
-const getFilteredAppointments = (appointments: Appointment[], tab: TabKey) => {
-  switch (tab) {
-    case "upcoming":
-      return appointments.filter(
-        (a) => a.status === "CONFIRMED" || a.status === "PENDING",
-      );
-    case "past":
-      return appointments.filter((a) => a.status === "COMPLETED");
-    case "cancelled":
-      return appointments.filter((a) => a.status === "CANCELLED");
-  }
+// Cada aba mapeia para os status que a compõem no servidor. "Próximas" combina
+// PENDING + CONFIRMED, por isso o backend aceita múltiplos status por vírgula.
+const TAB_STATUSES: Record<TabKey, string[]> = {
+  upcoming: ["PENDING", "CONFIRMED"],
+  past: ["COMPLETED"],
+  cancelled: ["CANCELLED"],
 };
 
 const AppointmentsPage = () => {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [activeTab, setActiveTab] = useState<TabKey>("upcoming");
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isDownloadingReport, setIsDownloadingReport] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [appointmentToCancel, setAppointmentToCancel] = useState<string | null>(
     null,
   );
-  const [isCancelling, setIsCancelling] = useState(false);
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setIsLoading(true);
-        const result = await appointmentsService.listMyAppointments({
-          limit: 100,
-        });
-        if (result) {
-          setAppointments(result.data.map(mapApiToAppointment));
-        }
-      } catch (error) {
-        const msg =
-          error instanceof Error
-            ? error.message
-            : "Erro ao carregar consultas.";
-        toast.error(msg);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const { page, pageSize, resetToFirstPage, getPaginationProps } =
+    useServerPagination();
+
+  const { data, isLoading, isFetching } = useMyAppointmentsQuery({
+    status: TAB_STATUSES[activeTab],
+    page,
+    limit: pageSize,
+  });
+
+  const tabCounts = useMyAppointmentsCounts(TAB_STATUSES);
+
+  const cancelMutation = useCancelAppointmentMutation();
+  const isCancelling = cancelMutation.isPending;
+
+  function handleTabChange(tab: TabKey) {
+    setActiveTab(tab);
+    // A paginação é por aba (server-side), então voltamos à página 1 ao trocar.
+    resetToFirstPage();
+  }
 
   const handleCancelClick = (id: string) => {
     setAppointmentToCancel(id);
@@ -99,40 +95,32 @@ const AppointmentsPage = () => {
     setIsDetailsModalOpen(true);
   };
 
-  const confirmCancel = async (reason?: string) => {
+  const confirmCancel = (reason?: string) => {
     if (!appointmentToCancel) return;
 
-    try {
-      setIsCancelling(true);
-      await appointmentsService.cancel(appointmentToCancel, { reason });
-      setAppointments((prev) =>
-        prev.map((a) =>
-          a.id === appointmentToCancel
-            ? { ...a, status: "CANCELLED" as const }
-            : a,
-        ),
-      );
-      toast.success("Consulta cancelada com sucesso.");
-      setIsCancelModalOpen(false);
-    } catch (error) {
-      const msg =
-        error instanceof Error ? error.message : "Erro ao cancelar consulta.";
-      toast.error(msg);
-    } finally {
-      setIsCancelling(false);
-      setAppointmentToCancel(null);
-    }
+    cancelMutation.mutate(
+      { id: appointmentToCancel, data: { reason } },
+      {
+        onSuccess: () => {
+          toast.success("Consulta cancelada com sucesso.");
+          setIsCancelModalOpen(false);
+        },
+        onError: (error) => {
+          const msg =
+            error instanceof Error
+              ? error.message
+              : "Erro ao cancelar consulta.";
+          toast.error(msg);
+        },
+        onSettled: () => setAppointmentToCancel(null),
+      },
+    );
   };
 
-  const filtered = getFilteredAppointments(appointments, activeTab).sort(
-    (a, b) => {
-      const dateA = new Date(a.dateTime).getTime();
-      const dateB = new Date(b.dateTime).getTime();
-      return activeTab === "past" ? dateB - dateA : dateA - dateB;
-    },
-  );
+  const filtered = (data?.data ?? []).map(mapApiToAppointment);
+  const totalForTab = data?.meta.total ?? 0;
 
-  const hasReportData = filtered.length > 0;
+  const hasReportData = totalForTab > 0;
 
   const handleDownloadReport = async () => {
     try {
@@ -198,8 +186,8 @@ const AppointmentsPage = () => {
       <div id="tour-appt-tabs">
         <AppointmentTabs
           activeTab={activeTab}
-          appointments={appointments}
-          onTabChange={setActiveTab}
+          counts={tabCounts}
+          onTabChange={handleTabChange}
         />
       </div>
 
@@ -214,6 +202,12 @@ const AppointmentsPage = () => {
           >
             {isDownloadingReport ? "Gerando relatório..." : reportButtonLabel}
           </Button>
+        </div>
+      )}
+
+      {!isLoading && totalForTab > 0 && (
+        <div className="mb-4 flex justify-end">
+          <DataTablePageSizeSelector {...getPaginationProps(data?.meta)} />
         </div>
       )}
 
@@ -240,6 +234,16 @@ const AppointmentsPage = () => {
           </div>
         )}
       </div>
+
+      {!isLoading && totalForTab > 0 && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
+          <DataTablePagination
+            {...getPaginationProps(data?.meta)}
+            itemLabel="consultas"
+            busy={isFetching}
+          />
+        </div>
+      )}
 
       {isMobile && (
         <div className="mt-6">

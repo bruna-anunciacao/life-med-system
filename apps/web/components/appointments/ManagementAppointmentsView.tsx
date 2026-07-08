@@ -29,6 +29,7 @@ import {
   DataTableHeadCell,
   DataTableMobileItem,
   DataTableMobileList,
+  DataTablePageSizeSelector,
   DataTablePagination,
   DataTableRow,
   SortableHeader,
@@ -155,8 +156,6 @@ export function ManagementAppointmentsView({
       hasPrev={pagination.hasPrev}
       hasNext={pagination.hasNext}
       onPageChange={pagination.setPage}
-      pageSize={pagination.pageSize}
-      onPageSizeChange={pagination.setPageSize}
       itemLabel="consultas"
     />
   );
@@ -327,6 +326,11 @@ export function ManagementAppointmentsView({
                   {scoreSortIcon}
                 </button>
               )}
+              <DataTablePageSizeSelector
+                pageSize={pagination.pageSize}
+                onPageSizeChange={pagination.setPageSize}
+                className="h-10 sm:ml-1"
+              />
             </div>
           </div>
 

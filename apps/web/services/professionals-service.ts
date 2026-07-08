@@ -1,6 +1,7 @@
 import { api } from "../lib/api";
 import { AxiosError } from "axios";
 import { API_ROUTES } from "../constants/api-routes";
+import { MAX_PAGE_SIZE, type Paginated } from "../lib/pagination";
 
 export interface ProfessionalUser {
   id: string;
@@ -29,8 +30,14 @@ export interface ProfessionalUser {
 export const professionalsService = {
   async listAll(): Promise<ProfessionalUser[]> {
     try {
-      const response = await api.get(API_ROUTES.PROFESSIONALS.LIST);
-      return response.data;
+      // `/professional` agora é paginado ({ data, meta }). A busca de médicos do
+      // paciente filtra por busca/especialidade/localização no cliente, então
+      // pedimos o cap de 100 e desembrulhamos o envelope.
+      const response = await api.get<Paginated<ProfessionalUser>>(
+        API_ROUTES.PROFESSIONALS.LIST,
+        { params: { limit: MAX_PAGE_SIZE } },
+      );
+      return response.data.data;
     } catch (error) {
       if (error instanceof AxiosError && error.response) {
         const message = error.response.data.message;

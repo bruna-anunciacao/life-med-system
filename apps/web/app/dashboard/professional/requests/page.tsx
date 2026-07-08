@@ -3,6 +3,10 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DataTablePageSizeSelector,
+  DataTablePagination,
+} from "@/components/ui/data-table";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -11,6 +15,7 @@ import {
   useProfessionalAppointmentsQuery,
   useUpdateAppointmentStatusMutation,
 } from "@/queries/useProfessionalAppointments";
+import { useServerPagination } from "@/hooks/useServerPagination";
 import { ConfirmModal } from "../schedule/components/ConfirmModal";
 import { PageShell, PageHeader } from "../../../ui/dashboard/page-shell";
 import { ModalityBadge } from "../components/ModalityBadge";
@@ -21,21 +26,22 @@ import type {
 
 type PendingAppointment = AppointmentResponse & { status: "PENDING" };
 
-const PAGE_SIZE = 20;
-
 const PendingRequestsPage = () => {
-  const [page, setPage] = useState(1);
+  const { queryParams, getPaginationProps } = useServerPagination({
+    initialPageSize: 20,
+    syncUrl: true,
+  });
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<{
     id: string;
     status: AppointmentStatus;
   } | null>(null);
 
-  const { data, isLoading, isError } = useProfessionalAppointmentsQuery({
-    status: "PENDING",
-    page,
-    limit: PAGE_SIZE,
-  });
+  const { data, isLoading, isError, isFetching } =
+    useProfessionalAppointmentsQuery({
+      status: "PENDING",
+      ...queryParams,
+    });
 
   const { mutate: updateStatus, isPending: isUpdating } =
     useUpdateAppointmentStatusMutation();
@@ -45,8 +51,6 @@ const PendingRequestsPage = () => {
   }, [isError]);
 
   const requests = (data?.data || []) as PendingAppointment[];
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const formatFullDateTime = (isoString: string) =>
     format(new Date(isoString), "dd/MM 'às' HH:mm");
@@ -75,6 +79,12 @@ const PendingRequestsPage = () => {
         title="Solicitações Pendentes"
         description="Todas as consultas aguardando sua confirmação, ordenadas por data."
       />
+
+      {!isLoading && requests.length > 0 && (
+        <div className="mb-4 flex justify-end">
+          <DataTablePageSizeSelector {...getPaginationProps(data?.meta)} />
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-16">
@@ -135,29 +145,13 @@ const PendingRequestsPage = () => {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-between gap-3">
-          <p className="text-xs text-slate-500">
-            Página {page} de {totalPages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              Próxima
-            </Button>
-          </div>
+      {requests.length > 0 && (
+        <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
+          <DataTablePagination
+            {...getPaginationProps(data?.meta)}
+            itemLabel="solicitações"
+            busy={isFetching}
+          />
         </div>
       )}
 

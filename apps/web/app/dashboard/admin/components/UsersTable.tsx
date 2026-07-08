@@ -15,12 +15,15 @@ import {
   DataTableHeader,
   DataTableMobileItem,
   DataTableMobileList,
+  DataTablePageSizeSelector,
+  DataTablePagination,
   DataTableRow,
   DataTableToolbar,
   SortableHeader,
 } from "@/components/ui/data-table";
 import { AdminUser } from "../../../../services/admin-service";
 import { useAdminUsersTable, TypeFilter } from "@/queries/useAdminUsersTable";
+import { usePagination } from "@/hooks/usePagination";
 import { useIsMobile, useMounted } from "@/hooks/useIsMobile";
 import { TableSkeleton } from "@/components/ui/skeletons";
 import { Eye, Check, Ban, Pencil, Users } from "lucide-react";
@@ -149,6 +152,11 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
     });
   }, [users, sortField, sortDir]);
 
+  const pagination = usePagination(sortedUsers, {
+    initialPageSize: 10,
+    resetKeys: [search, typeFilter, sortField, sortDir],
+  });
+
   const stopClick = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
@@ -186,6 +194,13 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
             className="h-9 text-sm"
           />
         </div>
+        {sortedUsers.length > 0 && (
+          <DataTablePageSizeSelector
+            pageSize={pagination.pageSize}
+            onPageSizeChange={pagination.setPageSize}
+            className="ml-auto"
+          />
+        )}
       </DataTableToolbar>
       </div>
 
@@ -203,7 +218,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
         />
       ) : isMobile ? (
         <DataTableMobileList>
-          {sortedUsers.map((user) => {
+          {pagination.pageItems.map((user) => {
             const badge = TYPE_BADGE[user.role];
             const speciality = getSpeciality(user);
             return (
@@ -404,8 +419,7 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
             <DataTableHeadCell align="center">Ações</DataTableHeadCell>
           </DataTableHead>
           <DataTableBody>
-            {sortedUsers.map((user) => {
-              const badge = TYPE_BADGE[user.role];
+            {pagination.pageItems.map((user) => {
               const speciality = getSpeciality(user);
               return (
                 <DataTableRow
@@ -531,6 +545,20 @@ function UsersTableInner({ onStatusChange, actions }: Props) {
             })}
           </DataTableBody>
         </DataTable>
+      )}
+
+      {mounted && !isLoading && sortedUsers.length > 0 && (
+        <DataTablePagination
+          page={pagination.page}
+          totalPages={pagination.totalPages}
+          from={pagination.from}
+          to={pagination.to}
+          totalItems={pagination.totalItems}
+          hasPrev={pagination.hasPrev}
+          hasNext={pagination.hasNext}
+          onPageChange={pagination.setPage}
+          itemLabel="usuários"
+        />
       )}
       </div>
     </DataTableCard>

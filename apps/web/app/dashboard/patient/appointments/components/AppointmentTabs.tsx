@@ -1,27 +1,15 @@
-import { TABS, TabKey, Appointment } from "../appointments.types";
+import { TABS, TabKey } from "../appointments.types";
 
 type AppointmentTabsProps = {
   activeTab: TabKey;
-  appointments: Appointment[];
+  /** Total de consultas por aba (vindo do `meta.total` do servidor). */
+  counts: Record<TabKey, number>;
   onTabChange: (tab: TabKey) => void;
-};
-
-const getTabCount = (appointments: Appointment[], tab: TabKey) => {
-  switch (tab) {
-    case "upcoming":
-      return appointments.filter(
-        (a) => a.status === "CONFIRMED" || a.status === "PENDING",
-      ).length;
-    case "past":
-      return appointments.filter((a) => a.status === "COMPLETED").length;
-    case "cancelled":
-      return appointments.filter((a) => a.status === "CANCELLED").length;
-  }
 };
 
 export function AppointmentTabs({
   activeTab,
-  appointments,
+  counts,
   onTabChange,
 }: AppointmentTabsProps) {
   return (
@@ -45,7 +33,7 @@ export function AppointmentTabs({
                 : "ml-1.5 px-2 py-0.5 rounded-full bg-gray-100 text-xs font-semibold"
             }
           >
-            {getTabCount(appointments, tab.key)}
+            {counts[tab.key]}
           </span>
         </button>
       ))}
