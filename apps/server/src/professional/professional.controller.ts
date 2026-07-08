@@ -26,6 +26,7 @@ import { ProfessionalRoleGuard } from './guards/professional-role.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { ListProfessionalsQueryDto } from './dto/list-professionals-query.dto';
 
 @ApiTags('Professional')
 @ApiBearerAuth('access-token')
@@ -39,8 +40,20 @@ export class ProfessionalController {
   @ApiOperation({ summary: 'Listar todos os profissionais (paginado)' })
   @ApiResponse({ status: 200, description: 'Lista de profissionais.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  listAll(@Query() query: PaginationQueryDto) {
+  listAll(@Query() query: ListProfessionalsQueryDto) {
     return this.professionalService.listAll(query);
+  }
+
+  @Get('locations')
+  @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
+  @ApiOperation({
+    summary: 'Listar cidades/estados distintos entre os profissionais visíveis',
+    description:
+      'Usado para popular o filtro de localização na busca de profissionais.',
+  })
+  @ApiResponse({ status: 200, description: 'Lista de cidade/estado.' })
+  listLocations() {
+    return this.professionalService.listLocations();
   }
 
   @Get('settings')

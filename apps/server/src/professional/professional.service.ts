@@ -13,6 +13,7 @@ import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
 import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
 import { APPOINTMENT_DURATION_MINUTES } from '../appointments/appointment.constants';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { ListProfessionalsQueryDto } from './dto/list-professionals-query.dto';
 import { buildMeta } from '../common/dto/paginated-response.dto';
 
 @Injectable()
@@ -206,13 +207,13 @@ export class ProfessionalService {
     };
   }
 
-  async listAll(query: PaginationQueryDto) {
-    const { page, limit } = query;
-    const { data, total } = await this.repository.listAllProfessionals(
-      page,
-      limit,
-    );
-    return { data, meta: buildMeta(total, page, limit) };
+  listAll(query: ListProfessionalsQueryDto) {
+    return this.repository.listAllProfessionals(query);
+  }
+
+  async listLocations() {
+    const rows = await this.repository.listDistinctProfessionalLocations();
+    return rows.map((row) => ({ city: row.city, state: row.state }));
   }
 
   async updateSettings(userId: string, dto: UpdateProfessionalSettingsDto) {
