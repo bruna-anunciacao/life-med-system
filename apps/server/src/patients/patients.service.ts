@@ -17,6 +17,7 @@ import { AppointmentReportItemDto } from '../reports/dto/appointment-made.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { ListPatientsQueryDto } from './dto/list-patients-query.dto';
 import PDFKit from 'pdfkit';
 
 type PDFDocumentType = PDFKit.PDFDocument;
@@ -210,8 +211,8 @@ export class PatientsService {
     };
   }
 
-  async listPatients(search?: string) {
-    return this.repository.listPatients(search);
+  async listPatients(query: ListPatientsQueryDto) {
+    return this.repository.listPatients(query);
   }
 
   async getPatient(patientId: string) {

@@ -98,24 +98,53 @@ export class ProfessionalRepository {
     });
   }
 
-  findAppointmentsWithPatients(userId: string) {
+  /**
+   * Página de pacientes distintos que já tiveram consulta com este profissional,
+   * ordenados por nome. A paginação é feita sobre a lista de pacientes (não de
+   * consultas), garantindo `total`/`totalPages` corretos por paciente.
+   */
+  async findAttendedPatientsPage(
+    professionalId: string,
+    page: number,
+    limit: number,
+  ) {
+    const where: Prisma.UserWhereInput = {
+      role: 'PATIENT',
+      appointmentsAsPatient: { some: { professionalId } },
+    };
+
+    const [patients, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          cpf: true,
+          patientProfile: { select: { phone: true } },
+        },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { patients, total };
+  }
+
+  /**
+   * Consultas (dateTime/status) de um conjunto de pacientes com este profissional,
+   * usadas para calcular última/próxima visita da página atual.
+   */
+  findAppointmentsForPatients(professionalId: string, patientIds: string[]) {
     return this.prisma.appointment.findMany({
-      where: { professionalId: userId },
+      where: { professionalId, patientId: { in: patientIds } },
       orderBy: { dateTime: 'desc' },
       select: {
         dateTime: true,
         status: true,
-        patient: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            cpf: true,
-            patientProfile: {
-              select: { phone: true },
-            },
-          },
-        },
+        patientId: true,
       },
     });
   }
@@ -135,27 +164,52 @@ export class ProfessionalRepository {
     });
   }
 
-  findPatientAppointments(professionalId: string, patientId: string) {
-    return this.prisma.appointment.findMany({
-      where: { professionalId, patientId },
-      orderBy: { dateTime: 'desc' },
-    });
+  async findPatientAppointments(
+    professionalId: string,
+    patientId: string,
+    page: number,
+    limit: number,
+  ) {
+    const where: Prisma.AppointmentWhereInput = { professionalId, patientId };
+
+    const [appointments, total] = await Promise.all([
+      this.prisma.appointment.findMany({
+        where,
+        orderBy: { dateTime: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.appointment.count({ where }),
+    ]);
+
+    return { appointments, total };
   }
 
-  listAllProfessionals() {
-    return this.prisma.user.findMany({
-      where: { role: 'PROFESSIONAL' },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        status: true,
-        professionalProfile: {
-          include: { specialities: true },
-        },
-        address: true,
+  async listAllProfessionals(page: number, limit: number) {
+    const where = { role: 'PROFESSIONAL' as const };
+    const select = {
+      id: true,
+      name: true,
+      email: true,
+      status: true,
+      professionalProfile: {
+        include: { specialities: true },
       },
-    });
+      address: true,
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        select,
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { data, total };
   }
 
   updateSettings(userId: string, dto: UpdateProfessionalSettingsDto) {

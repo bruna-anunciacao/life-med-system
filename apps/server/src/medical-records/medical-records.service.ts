@@ -19,6 +19,7 @@ import {
   MedicalRecordPdfService,
   PatientMedicalRecordPdfInput,
 } from './medical-record-pdf.service';
+import { buildMeta } from '../common/dto/paginated-response.dto';
 
 type MedicalRecordWithRelations = Prisma.MedicalRecordGetPayload<{
   include: {
@@ -148,17 +149,13 @@ export class MedicalRecordsService {
     if (requesterRole === UserRole.PATIENT) {
       return {
         data: records.map((r) => this.toPatientResponseDto(r)),
-        page,
-        limit,
-        total,
+        meta: buildMeta(total, page, limit),
       };
     }
 
     return {
       data: records.map((r) => this.toResponseDto(r)),
-      page,
-      limit,
-      total,
+      meta: buildMeta(total, page, limit),
     };
   }
 
@@ -171,16 +168,15 @@ export class MedicalRecordsService {
 
     return {
       data: records.map((r) => this.toResponseDto(r)),
-      page,
-      limit,
-      total,
+      meta: buildMeta(total, page, limit),
     };
   }
 
   async findByPatient(
     patientId: string,
     requesterId: string,
-  ): Promise<MedicalRecordResponseDto[]> {
+    query: ListMedicalRecordsQueryDto,
+  ): Promise<MedicalRecordListResponseDto> {
     const hasLink = await this.hasPriorAppointment(requesterId, patientId);
 
     if (!hasLink) {
@@ -189,9 +185,13 @@ export class MedicalRecordsService {
       );
     }
 
-    const records = await this.repository.findByPatient(patientId);
+    const { records, total, page, limit } =
+      await this.repository.findByPatient(patientId, query.page, query.limit);
 
-    return records.map((r) => this.toResponseDto(r));
+    return {
+      data: records.map((r) => this.toResponseDto(r)),
+      meta: buildMeta(total, page, limit),
+    };
   }
 
   async update(

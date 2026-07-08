@@ -8,8 +8,10 @@ import {
 } from '@prisma/client';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { ExportAppointmentsQueryDto } from './dto/export-appointments-query.dto';
+import { ListPatientsQueryDto } from './dto/list-patients-query.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { paginate } from '../common/dto/paginated-response.dto';
 
 @Injectable()
 export class PatientsRepository {
@@ -156,30 +158,39 @@ export class PatientsRepository {
     });
   }
 
-  listPatients(search?: string) {
-    return this.prisma.user.findMany({
-      where: {
-        role: UserRole.PATIENT,
-        ...(search && {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' } },
-            { cpf: { contains: search } },
-          ],
-        }),
-      },
-      include: {
-        patientProfile: {
-          include: {
-            questionnaire: {
-              include: {
-                answers: { include: { question: true, option: true } },
+  listPatients(query: ListPatientsQueryDto) {
+    const { search, page, limit } = query;
+
+    const where: Prisma.UserWhereInput = {
+      role: UserRole.PATIENT,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { cpf: { contains: search } },
+        ],
+      }),
+    };
+
+    return paginate(
+      this.prisma.user,
+      {
+        where,
+        include: {
+          patientProfile: {
+            include: {
+              questionnaire: {
+                include: {
+                  answers: { include: { question: true, option: true } },
+                },
               },
             },
           },
         },
+        orderBy: { createdAt: 'desc' },
       },
-      orderBy: { createdAt: 'desc' },
-    });
+      page,
+      limit,
+    );
   }
 
   findPatientWithQuestionnaire(patientId: string) {

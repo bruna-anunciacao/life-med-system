@@ -255,7 +255,7 @@ export class AppointmentsRepository {
 
     const where = {
       ...ownerFilter,
-      ...(query.status && { status: query.status }),
+      ...(query.status?.length && { status: { in: query.status } }),
       ...(query.startDate || query.endDate
         ? {
             dateTime: {

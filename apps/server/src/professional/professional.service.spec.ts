@@ -12,7 +12,8 @@ describe('ProfessionalService', () => {
     findDailyAppointments: jest.fn(),
     findScheduleBlocksByDate: jest.fn(),
     countDistinctAttendedPatients: jest.fn(),
-    findAppointmentsWithPatients: jest.fn(),
+    findAttendedPatientsPage: jest.fn(),
+    findAppointmentsForPatients: jest.fn(),
     updateSettings: jest.fn(),
     findScheduleBlockById: jest.fn(),
     deleteScheduleBlock: jest.fn(),
@@ -99,62 +100,92 @@ describe('ProfessionalService', () => {
   });
 
   describe('getPatients aggregation', () => {
-    it('dedups patients and computes last/next visit correctly', async () => {
+    const pageQuery = { page: 1, limit: 10 } as any;
+
+    it('computes last/next visit per patient and returns { data, meta }', async () => {
       const now = Date.now();
       const past = new Date(now - 86400000); // ontem
       const future = new Date(now + 86400000); // amanhã
 
-      repository.findAppointmentsWithPatients.mockResolvedValue([
-        {
-          dateTime: past,
-          status: AppointmentStatus.COMPLETED,
-          patient: {
+      repository.findAttendedPatientsPage.mockResolvedValue({
+        patients: [
+          {
             id: 'pat-1',
             name: 'João',
             email: 'joao@x.com',
             cpf: null,
             patientProfile: { phone: '111' },
           },
-        },
+        ],
+        total: 1,
+      });
+      repository.findAppointmentsForPatients.mockResolvedValue([
         {
           dateTime: future,
           status: AppointmentStatus.CONFIRMED,
-          patient: {
-            id: 'pat-1',
-            name: 'João',
-            email: 'joao@x.com',
-            cpf: null,
-            patientProfile: { phone: '111' },
-          },
+          patientId: 'pat-1',
+        },
+        {
+          dateTime: past,
+          status: AppointmentStatus.COMPLETED,
+          patientId: 'pat-1',
         },
       ]);
 
-      const result = await service.getPatients('u-1');
+      const result = await service.getPatients('u-1', pageQuery);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].lastVisit).toBe(past.toISOString());
-      expect(result[0].nextVisit).toBe(future.toISOString());
-      expect(result[0].phone).toBe('111');
+      expect(result.data).toHaveLength(1);
+      expect(result.data[0].lastVisit).toBe(past.toISOString());
+      expect(result.data[0].nextVisit).toBe(future.toISOString());
+      expect(result.data[0].phone).toBe('111');
+      expect(result.meta).toEqual({
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1,
+      });
+      expect(repository.findAppointmentsForPatients).toHaveBeenCalledWith('u-1', [
+        'pat-1',
+      ]);
     });
 
     it('falls back to "Não informado" when phone is missing', async () => {
-      repository.findAppointmentsWithPatients.mockResolvedValue([
-        {
-          dateTime: new Date(Date.now() - 1000),
-          status: AppointmentStatus.COMPLETED,
-          patient: {
+      repository.findAttendedPatientsPage.mockResolvedValue({
+        patients: [
+          {
             id: 'pat-2',
             name: 'Maria',
             email: 'maria@x.com',
             cpf: null,
             patientProfile: null,
           },
+        ],
+        total: 1,
+      });
+      repository.findAppointmentsForPatients.mockResolvedValue([
+        {
+          dateTime: new Date(Date.now() - 1000),
+          status: AppointmentStatus.COMPLETED,
+          patientId: 'pat-2',
         },
       ]);
 
-      const result = await service.getPatients('u-1');
+      const result = await service.getPatients('u-1', pageQuery);
 
-      expect(result[0].phone).toBe('Não informado');
+      expect(result.data[0].phone).toBe('Não informado');
+    });
+
+    it('returns an empty page without querying appointments', async () => {
+      repository.findAttendedPatientsPage.mockResolvedValue({
+        patients: [],
+        total: 0,
+      });
+
+      const result = await service.getPatients('u-1', pageQuery);
+
+      expect(result.data).toEqual([]);
+      expect(result.meta.total).toBe(0);
+      expect(repository.findAppointmentsForPatients).not.toHaveBeenCalled();
     });
   });
 

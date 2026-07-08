@@ -3,6 +3,7 @@ import { Prisma, UserRole } from '@prisma/client';
 import { ListAdminUsersQueryDto } from 'src/admin/dto/list-admin-users-query-dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { paginate } from '../common/dto/paginated-response.dto';
 
 @Injectable()
 export class UsersRepository {
@@ -137,23 +138,31 @@ export class UsersRepository {
   }
 
   findAllUsers(query: ListAdminUsersQueryDto) {
-    return this.prisma.user.findMany({
-      where: {
-        role: query.role ?? { in: ['PATIENT', 'PROFESSIONAL', 'MANAGER'] },
-        ...(query.status && { status: query.status }),
-        ...(query.search && {
-          OR: [
-            { name: { contains: query.search, mode: 'insensitive' } },
-            { email: { contains: query.search, mode: 'insensitive' } },
-          ],
-        }),
+    const where: Prisma.UserWhereInput = {
+      role: query.role ?? { in: ['PATIENT', 'PROFESSIONAL', 'MANAGER'] },
+      ...(query.status && { status: query.status }),
+      ...(query.search && {
+        OR: [
+          { name: { contains: query.search, mode: 'insensitive' } },
+          { email: { contains: query.search, mode: 'insensitive' } },
+        ],
+      }),
+    };
+
+    return paginate(
+      this.prisma.user,
+      {
+        where,
+        omit: { password: true },
+        include: {
+          patientProfile: true,
+          professionalProfile: { include: { specialities: true } },
+        },
+        orderBy: { [query.sortBy ?? 'name']: query.sortOrder ?? 'asc' },
       },
-      include: {
-        patientProfile: true,
-        professionalProfile: { include: { specialities: true } },
-      },
-      orderBy: { [query.sortBy ?? 'name']: query.sortOrder ?? 'asc' },
-    });
+      query.page,
+      query.limit,
+    );
   }
 
   findAllProfessionals() {

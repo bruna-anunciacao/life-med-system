@@ -28,6 +28,7 @@ import { UpdatePatientDto } from '../patients/dto/update-patient.dto';
 import { UpdatePatientApprovalStatusDto } from '../patients/dto/update-patient-approval-status.dto';
 import { CancelAppointmentDto } from '../appointments/dto/cancel-appointment-patient.dto';
 import { ListManagerAppointmentsQueryDto } from './dtos/list-manager-appointments-query.dto';
+import { ListPatientsQueryDto } from '../patients/dto/list-patients-query.dto';
 
 @ApiTags('Manager')
 @ApiBearerAuth('access-token')
@@ -106,8 +107,8 @@ export class ManagerController {
   @ApiResponse({ status: 200, description: 'Lista de pacientes.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado — somente MANAGER.' })
-  async listPatients(@Query('search') search?: string) {
-    return this.patientsService.listPatients(search);
+  async listPatients(@Query() query: ListPatientsQueryDto) {
+    return this.patientsService.listPatients(query);
   }
 
   @Get('patients/:patientId')

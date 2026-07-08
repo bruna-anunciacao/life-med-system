@@ -7,6 +7,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { AppointmentsRepository } from './appointments.repository';
+import { buildMeta } from '../common/dto/paginated-response.dto';
 import { MailService } from '../mail/mail.service';
 import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
 import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
@@ -85,9 +86,7 @@ export class AppointmentsService {
 
     return {
       data: appointments.map((a) => this.mapToResponseDto(a)),
-      page,
-      limit,
-      total,
+      meta: buildMeta(total, page, limit),
     };
   }
 
@@ -100,9 +99,7 @@ export class AppointmentsService {
 
     return {
       data: appointments.map((a) => this.mapToResponseDto(a)),
-      page,
-      limit,
-      total,
+      meta: buildMeta(total, page, limit),
     };
   }
 
