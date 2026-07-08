@@ -77,12 +77,21 @@ export class MedicalRecordsRepository {
     return { records, total, page, limit };
   }
 
-  findByPatient(patientId: string) {
-    return this.prisma.medicalRecord.findMany({
-      where: { patientId },
-      include: RECORD_INCLUDE,
-      orderBy: { createdAt: 'desc' },
-    });
+  async findByPatient(patientId: string, page: number, limit: number) {
+    const where: Prisma.MedicalRecordWhereInput = { patientId };
+
+    const [records, total] = await Promise.all([
+      this.prisma.medicalRecord.findMany({
+        where,
+        include: RECORD_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.medicalRecord.count({ where }),
+    ]);
+
+    return { records, total, page, limit };
   }
 
   async listSharedForProfessional(

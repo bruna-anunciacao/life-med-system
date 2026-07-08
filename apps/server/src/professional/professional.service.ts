@@ -12,6 +12,8 @@ import { MailService } from '../mail/mail.service';
 import { MEET_SERVICE } from '../common/interfaces/MeetEventInterfaces';
 import type { MeetService } from '../common/interfaces/MeetEventInterfaces';
 import { APPOINTMENT_DURATION_MINUTES } from '../appointments/appointment.constants';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+import { buildMeta } from '../common/dto/paginated-response.dto';
 
 @Injectable()
 export class ProfessionalService {
@@ -93,31 +95,30 @@ export class ProfessionalService {
     };
   }
 
-  async getPatients(userId: string) {
-    const appointments =
-      await this.repository.findAppointmentsWithPatients(userId);
+  async getPatients(userId: string, query: PaginationQueryDto) {
+    const { page, limit } = query;
+
+    const { patients, total } =
+      await this.repository.findAttendedPatientsPage(userId, page, limit);
+
+    if (patients.length === 0) {
+      return { data: [], meta: buildMeta(total, page, limit) };
+    }
+
+    const patientIds = patients.map((p) => p.id);
+    const appointments = await this.repository.findAppointmentsForPatients(
+      userId,
+      patientIds,
+    );
 
     const now = new Date();
-    const uniquePatients = new Map<
+    const visits = new Map<
       string,
-      {
-        id: string;
-        name: string;
-        email: string;
-        cpf: string | null;
-        phone: string;
-        lastVisit: string | null;
-        nextVisit: string | null;
-      }
+      { lastVisit: string | null; nextVisit: string | null }
     >();
 
     for (const appt of appointments) {
-      const existing = uniquePatients.get(appt.patient.id) ?? {
-        id: appt.patient.id,
-        name: appt.patient.name,
-        email: appt.patient.email,
-        cpf: appt.patient.cpf ?? null,
-        phone: appt.patient.patientProfile?.phone || 'Não informado',
+      const existing = visits.get(appt.patientId) ?? {
         lastVisit: null as string | null,
         nextVisit: null as string | null,
       };
@@ -143,23 +144,48 @@ export class ProfessionalService {
         }
       }
 
-      uniquePatients.set(appt.patient.id, existing);
+      visits.set(appt.patientId, existing);
     }
 
-    return Array.from(uniquePatients.values());
+    const data = patients.map((patient) => {
+      const patientVisits = visits.get(patient.id) ?? {
+        lastVisit: null,
+        nextVisit: null,
+      };
+
+      return {
+        id: patient.id,
+        name: patient.name,
+        email: patient.email,
+        cpf: patient.cpf ?? null,
+        phone: patient.patientProfile?.phone || 'Não informado',
+        lastVisit: patientVisits.lastVisit,
+        nextVisit: patientVisits.nextVisit,
+      };
+    });
+
+    return { data, meta: buildMeta(total, page, limit) };
   }
 
-  async getPatientDetail(professionalId: string, patientId: string) {
+  async getPatientDetail(
+    professionalId: string,
+    patientId: string,
+    query: PaginationQueryDto,
+  ) {
     const patient = await this.repository.findPatientSummary(patientId);
 
     if (!patient) {
       throw new NotFoundException('Paciente não encontrado');
     }
 
-    const appointments = await this.repository.findPatientAppointments(
-      professionalId,
-      patientId,
-    );
+    const { page, limit } = query;
+    const { appointments, total } =
+      await this.repository.findPatientAppointments(
+        professionalId,
+        patientId,
+        page,
+        limit,
+      );
 
     return {
       id: patient.id,
@@ -167,18 +193,26 @@ export class ProfessionalService {
       email: patient.email,
       cpf: patient.cpf ?? null,
       phone: patient.patientProfile?.phone || 'Não informado',
-      history: appointments.map((apt) => ({
-        id: apt.id,
-        dateTime: apt.dateTime,
-        status: apt.status,
-        modality: apt.modality,
-        notes: apt.notes,
-      })),
+      history: {
+        data: appointments.map((apt) => ({
+          id: apt.id,
+          dateTime: apt.dateTime,
+          status: apt.status,
+          modality: apt.modality,
+          notes: apt.notes,
+        })),
+        meta: buildMeta(total, page, limit),
+      },
     };
   }
 
-  async listAll() {
-    return this.repository.listAllProfessionals();
+  async listAll(query: PaginationQueryDto) {
+    const { page, limit } = query;
+    const { data, total } = await this.repository.listAllProfessionals(
+      page,
+      limit,
+    );
+    return { data, meta: buildMeta(total, page, limit) };
   }
 
   async updateSettings(userId: string, dto: UpdateProfessionalSettingsDto) {

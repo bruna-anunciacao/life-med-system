@@ -207,7 +207,10 @@ describe('MedicalRecordsService', () => {
       repository.hasValidPriorAppointment.mockResolvedValue(false);
 
       await expect(
-        service.findByPatient('patient-1', 'prof-1'),
+        service.findByPatient('patient-1', 'prof-1', {
+          page: 1,
+          limit: 10,
+        } as any),
       ).rejects.toBeInstanceOf(ForbiddenException);
 
       expect(repository.hasValidPriorAppointment).toHaveBeenCalledWith(

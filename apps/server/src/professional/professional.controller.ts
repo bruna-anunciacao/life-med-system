@@ -25,6 +25,7 @@ import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
 import { ProfessionalRoleGuard } from './guards/professional-role.guard';
 import { EmailVerifiedGuard } from '../auth/guards/email-verified.guard';
 import { QuestionnaireCompletionGuard } from '../questionnaire/questionnaire-completion.guard';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 @ApiTags('Professional')
 @ApiBearerAuth('access-token')
@@ -35,11 +36,11 @@ export class ProfessionalController {
 
   @Get()
   @UseGuards(AuthGuard('jwt'), EmailVerifiedGuard)
-  @ApiOperation({ summary: 'Listar todos os profissionais' })
+  @ApiOperation({ summary: 'Listar todos os profissionais (paginado)' })
   @ApiResponse({ status: 200, description: 'Lista de profissionais.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
-  listAll() {
-    return this.professionalService.listAll();
+  listAll(@Query() query: PaginationQueryDto) {
+    return this.professionalService.listAll(query);
   }
 
   @Get('settings')
@@ -124,8 +125,8 @@ export class ProfessionalController {
     status: 403,
     description: 'Acesso negado — somente PROFESSIONAL.',
   })
-  getPatients(@Req() req) {
-    return this.professionalService.getPatients(req.user.id as string);
+  getPatients(@Req() req, @Query() query: PaginationQueryDto) {
+    return this.professionalService.getPatients(req.user.id as string, query);
   }
 
   @Get('patients/:id')
@@ -137,10 +138,15 @@ export class ProfessionalController {
   })
   @ApiResponse({ status: 200, description: 'Detalhes e histórico.' })
   @ApiResponse({ status: 404, description: 'Paciente não encontrado.' })
-  getPatientDetail(@Req() req, @Param('id') patientId: string) {
+  getPatientDetail(
+    @Req() req,
+    @Param('id') patientId: string,
+    @Query() query: PaginationQueryDto,
+  ) {
     return this.professionalService.getPatientDetail(
       req.user.id as string,
       patientId,
+      query,
     );
   }
 

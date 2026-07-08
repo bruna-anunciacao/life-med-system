@@ -51,7 +51,7 @@ describe('AppointmentsService', () => {
   const makeAppointment = (overrides: Record<string, unknown> = {}) => ({
     id: 'appt-1',
     dateTime: hoursFromNow(48),
-    status: AppointmentStatus.SCHEDULED,
+    status: AppointmentStatus.CONFIRMED,
     notes: null,
     modality: 'IN_PERSON',
     googleEventId: null,
@@ -123,7 +123,9 @@ describe('AppointmentsService', () => {
         'https://meet.google.com/abc-defg-hij',
         'event-1',
       );
-      expect(mailService.sendAppointmentCreatedPatientEmail).toHaveBeenCalledWith(
+      expect(
+        mailService.sendAppointmentCreatedPatientEmail,
+      ).toHaveBeenCalledWith(
         { name: appointment.patient.name, email: appointment.patient.email },
         expect.objectContaining({
           modality: 'VIRTUAL',
@@ -161,7 +163,9 @@ describe('AppointmentsService', () => {
 
       expect(meetService.createMeetEvent).not.toHaveBeenCalled();
       expect(repository.updateMeetData).not.toHaveBeenCalled();
-      expect(mailService.sendAppointmentCreatedPatientEmail).toHaveBeenCalledWith(
+      expect(
+        mailService.sendAppointmentCreatedPatientEmail,
+      ).toHaveBeenCalledWith(
         { name: appointment.patient.name, email: appointment.patient.email },
         expect.objectContaining({
           modality: 'CLINIC',
@@ -192,7 +196,9 @@ describe('AppointmentsService', () => {
       });
 
       expect(repository.updateMeetData).not.toHaveBeenCalled();
-      expect(mailService.sendAppointmentCreatedPatientEmail).toHaveBeenCalledWith(
+      expect(
+        mailService.sendAppointmentCreatedPatientEmail,
+      ).toHaveBeenCalledWith(
         { name: appointment.patient.name, email: appointment.patient.email },
         expect.objectContaining({
           modality: 'VIRTUAL',
@@ -247,7 +253,9 @@ describe('AppointmentsService', () => {
         'appt-1',
         'Imprevisto',
       );
-      expect(mailService.sendAppointmentCancelledEmail).toHaveBeenCalledTimes(2);
+      expect(mailService.sendAppointmentCancelledEmail).toHaveBeenCalledTimes(
+        2,
+      );
       expect(result.status).toBe(AppointmentStatus.CANCELLED);
     });
 

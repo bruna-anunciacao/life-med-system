@@ -1,25 +1,33 @@
-import {
-  IsOptional,
-  IsEnum,
-  IsDateString,
-  IsNumber,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsOptional, IsEnum, IsDateString, IsArray } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { AppointmentStatus } from '@prisma/client';
-import { Type } from 'class-transformer';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
-export class ListAppointmentsQueryDto {
+export class ListAppointmentsQueryDto extends PaginationQueryDto {
   @ApiProperty({
     enum: AppointmentStatus,
+    isArray: true,
     example: 'CONFIRMED',
-    description: 'Filtrar por status do agendamento',
+    description:
+      'Filtrar por status do agendamento. Aceita um único valor ' +
+      '(?status=CONFIRMED) ou vários separados por vírgula ' +
+      '(?status=PENDING,CONFIRMED).',
     required: false,
   })
-  @IsEnum(AppointmentStatus, { message: 'Status inválido' })
+  // Normaliza "PENDING,CONFIRMED" (ou repetição do param) em array; um único
+  // valor vira array de um elemento. Assim `status: { in: [...] }` no
+  // repositório cobre tanto filtro simples quanto por múltiplos status (aba
+  // "Próximas" do paciente = PENDING + CONFIRMED).
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === '') return undefined;
+    const list = Array.isArray(value) ? value : String(value).split(',');
+    return list.map((item) => String(item).trim()).filter(Boolean);
+  })
+  @IsArray()
+  @IsEnum(AppointmentStatus, { each: true, message: 'Status inválido' })
   @IsOptional()
-  status?: AppointmentStatus;
+  status?: AppointmentStatus[];
 
   @ApiProperty({
     example: '2024-06-01',
@@ -38,28 +46,4 @@ export class ListAppointmentsQueryDto {
   @IsDateString({}, { message: 'Data final inválida' })
   @IsOptional()
   endDate?: string;
-
-  @ApiProperty({
-    example: 1,
-    description: 'Página da paginação (começa em 1, máximo 1000)',
-    required: false,
-  })
-  @Type(() => Number)
-  @IsNumber({}, { message: 'Página deve ser um número' })
-  @Min(1, { message: 'Página deve ser no mínimo 1' })
-  @Max(1000, { message: 'Página máxima é 1000' })
-  @IsOptional()
-  page?: number = 1;
-
-  @ApiProperty({
-    example: 10,
-    description: 'Quantidade de registros por página (1-100, padrão 10)',
-    required: false,
-  })
-  @Type(() => Number)
-  @IsNumber({}, { message: 'Limit deve ser um número' })
-  @Min(1, { message: 'Limit deve ser no mínimo 1' })
-  @Max(100, { message: 'Limit máximo é 100 registros' })
-  @IsOptional()
-  limit?: number = 10;
 }

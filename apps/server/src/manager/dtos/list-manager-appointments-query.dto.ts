@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsOptional } from 'class-validator';
+import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 
-export class ListManagerAppointmentsQueryDto {
+export class ListManagerAppointmentsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     enum: ['vulnerabilityScore'],
     description: 'Campo usado para ordenar os agendamentos',

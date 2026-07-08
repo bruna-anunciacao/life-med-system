@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AppointmentModality } from '@prisma/client';
+import { PaginationMetaDto } from '../../common/dto/paginated-response.dto';
 
 export class ProfessionalResponseDto {
   @ApiProperty({
@@ -120,12 +121,6 @@ export class AppointmentListResponseDto {
   })
   data!: AppointmentResponseDto[];
 
-  @ApiProperty({ example: 1, description: 'Página atual' })
-  page!: number;
-
-  @ApiProperty({ example: 10, description: 'Registros por página' })
-  limit!: number;
-
-  @ApiProperty({ example: 5, description: 'Total de registros' })
-  total!: number;
+  @ApiProperty({ type: PaginationMetaDto, description: 'Metadados de paginação' })
+  meta!: PaginationMetaDto;
 }

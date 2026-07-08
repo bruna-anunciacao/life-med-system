@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PaginationMetaDto } from '../../common/dto/paginated-response.dto';
 
 export class MedicalRecordAuthorDto {
   @ApiProperty() id!: string;
@@ -55,15 +56,13 @@ export class MedicalRecordPatientResponseDto {
 export class MedicalRecordListResponseDto {
   @ApiProperty({ type: [MedicalRecordResponseDto] })
   data!: MedicalRecordResponseDto[];
-  @ApiProperty({ example: 1 }) page!: number;
-  @ApiProperty({ example: 10 }) limit!: number;
-  @ApiProperty({ example: 0 }) total!: number;
+  @ApiProperty({ type: PaginationMetaDto })
+  meta!: PaginationMetaDto;
 }
 
 export class MedicalRecordPatientListResponseDto {
   @ApiProperty({ type: [MedicalRecordPatientResponseDto] })
   data!: MedicalRecordPatientResponseDto[];
-  @ApiProperty({ example: 1 }) page!: number;
-  @ApiProperty({ example: 10 }) limit!: number;
-  @ApiProperty({ example: 0 }) total!: number;
+  @ApiProperty({ type: PaginationMetaDto })
+  meta!: PaginationMetaDto;
 }

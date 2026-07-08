@@ -134,13 +134,14 @@ export class MedicalRecordsController {
     description: 'Requer vínculo de consulta com o paciente.',
   })
   @ApiParam({ name: 'patientId', description: 'ID do paciente' })
-  @ApiResponse({ status: 200, type: [MedicalRecordResponseDto] })
+  @ApiResponse({ status: 200, type: MedicalRecordListResponseDto })
   @ApiResponse({ status: 403, description: 'Sem vínculo com este paciente.' })
   findByPatient(
     @Request() req: { user: { userId: string } },
     @Param('patientId') patientId: string,
+    @Query() query: ListMedicalRecordsQueryDto,
   ) {
-    return this.service.findByPatient(patientId, req.user.userId);
+    return this.service.findByPatient(patientId, req.user.userId, query);
   }
 
   @Get('appointment/:appointmentId/pdf')

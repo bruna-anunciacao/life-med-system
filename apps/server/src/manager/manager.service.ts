@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
-import { ManagerRepository } from './manager.repository';
+import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { AppointmentStatus, UserRole } from '@prisma/client';
+import { ManagerRepository } from './manager.repository';
 import { ListManagerAppointmentsQueryDto } from './dtos/list-manager-appointments-query.dto';
 
 @Injectable()
@@ -16,8 +12,7 @@ export class ManagerService {
     appointmentId: string,
     reason?: string,
   ) {
-    const appointment =
-      await this.repository.findAppointmentById(appointmentId);
+    const appointment = await this.repository.findAppointmentById(appointmentId);
 
     if (!appointment) {
       throw new NotFoundException('Consulta não encontrada');
@@ -27,8 +22,9 @@ export class ManagerService {
       throw new BadRequestException('Consulta já está cancelada');
     }
 
-    const manager =
-      await this.repository.findManagerProfileByUserId(managerUserId);
+    const manager = await this.repository.findManagerProfileByUserId(
+      managerUserId,
+    );
 
     if (!manager) {
       throw new NotFoundException('Perfil de gestor não encontrado');
@@ -46,49 +42,39 @@ export class ManagerService {
   }
 
   async listAppointments(query: ListManagerAppointmentsQueryDto) {
-    const appointments =
-      await this.repository.findAllAppointmentsForManagerAndAdmin();
+    const { data, meta } =
+      await this.repository.findAllAppointmentsForManagerAndAdmin(query);
 
-    const response = appointments.map((appointment) => ({
-      id: appointment.id,
-      dateTime: appointment.dateTime,
-      status: appointment.status,
-      notes: appointment.notes,
-      modality: appointment.modality,
-      meetLink: appointment.meetLink,
-      createdAt: appointment.createdAt,
-      patient: {
-        id: appointment.patient.id,
-        name: appointment.patient.name,
-        email: appointment.patient.email,
-      },
-      professional: appointment.professional,
-      scheduledByManager: appointment.scheduledByManager,
-      cancelledByManager: appointment.cancelledByManager,
-      totalScore:
-        appointment.patient.patientProfile?.questionnaire?.totalScore ?? null,
-      isVulnerable:
-        appointment.patient.patientProfile?.questionnaire?.isVulnerable ?? null,
-    }));
+    return {
+      data: data.map((appt) => {
+        const questionnaire = appt.patient.patientProfile?.questionnaire;
 
-    if (query.sortBy !== 'vulnerabilityScore') {
-      return response;
-    }
-
-    const direction = query.order === 'desc' ? -1 : 1;
-
-    return response.sort((left, right) => {
-      if (left.totalScore === null && right.totalScore === null) {
-        return right.dateTime.getTime() - left.dateTime.getTime();
-      }
-      if (left.totalScore === null) return 1;
-      if (right.totalScore === null) return -1;
-
-      const scoreDifference = (left.totalScore - right.totalScore) * direction;
-      return (
-        scoreDifference || right.dateTime.getTime() - left.dateTime.getTime()
-      );
-    });
+        return {
+          id: appt.id,
+          dateTime: appt.dateTime,
+          status: appt.status,
+          notes: appt.notes,
+          modality: appt.modality,
+          meetLink: appt.meetLink,
+          createdAt: appt.createdAt,
+          patient: {
+            id: appt.patient.id,
+            name: appt.patient.name,
+            email: appt.patient.email,
+          },
+          professional: {
+            id: appt.professional.id,
+            name: appt.professional.name,
+            email: appt.professional.email,
+          },
+          scheduledByManagerName: appt.scheduledByManager?.user.name ?? null,
+          cancelledByManagerName: appt.cancelledByManager?.user.name ?? null,
+          vulnerabilityScore: questionnaire?.totalScore ?? null,
+          isVulnerable: questionnaire?.isVulnerable ?? false,
+        };
+      }),
+      meta,
+    };
   }
 
   async getProfessionalAvailability(professionalId: string) {

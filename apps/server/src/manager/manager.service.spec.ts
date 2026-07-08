@@ -83,7 +83,7 @@ describe('ManagerService', () => {
     });
   });
 
-  describe('listAppointments vulnerability sorting', () => {
+  describe('listAppointments', () => {
     const makeAppt = (
       id: string,
       dateTime: Date,
@@ -110,45 +110,46 @@ describe('ManagerService', () => {
       cancelledByManager: null,
     });
 
-    it('keeps insertion order when not sorting by vulnerability', async () => {
-      repository.findAllAppointmentsForManagerAndAdmin.mockResolvedValue([
-        makeAppt('a', new Date('2026-01-01'), 2),
-        makeAppt('b', new Date('2026-02-01'), 8),
-      ]);
+    const meta = { page: 1, limit: 10, total: 2, totalPages: 1 };
 
-      const result = await service.listAppointments({} as any);
-
-      expect(result.map((r) => r.id)).toEqual(['a', 'b']);
-      expect(result[1].isVulnerable).toBe(true);
-    });
-
-    it('sorts by score descending and pushes null scores to the end', async () => {
-      repository.findAllAppointmentsForManagerAndAdmin.mockResolvedValue([
-        makeAppt('low', new Date('2026-01-01'), 2),
-        makeAppt('none', new Date('2026-01-01'), null),
-        makeAppt('high', new Date('2026-01-01'), 9),
-      ]);
+    it('returns the { data, meta } envelope and maps rows', async () => {
+      repository.findAllAppointmentsForManagerAndAdmin.mockResolvedValue({
+        data: [
+          makeAppt('a', new Date('2026-01-01'), 2),
+          makeAppt('b', new Date('2026-02-01'), 8),
+        ],
+        meta,
+      });
 
       const result = await service.listAppointments({
-        sortBy: 'vulnerabilityScore',
-        order: 'desc',
+        page: 1,
+        limit: 10,
       } as any);
 
-      expect(result.map((r) => r.id)).toEqual(['high', 'low', 'none']);
+      expect(result.data.map((r) => r.id)).toEqual(['a', 'b']);
+      expect(result.data[1].isVulnerable).toBe(true);
+      expect(result.meta).toEqual(meta);
     });
 
-    it('sorts ascending when order is asc', async () => {
-      repository.findAllAppointmentsForManagerAndAdmin.mockResolvedValue([
-        makeAppt('high', new Date('2026-01-01'), 9),
-        makeAppt('low', new Date('2026-01-01'), 2),
-      ]);
+    it('preserves the DB ordering (sorting now happens in the repository)', async () => {
+      // A ordenação por vulnerabilityScore é feita no Prisma orderBy; o service
+      // apenas repassa a ordem já resolvida pelo banco através de todas as páginas.
+      repository.findAllAppointmentsForManagerAndAdmin.mockResolvedValue({
+        data: [
+          makeAppt('high', new Date('2026-01-01'), 9),
+          makeAppt('low', new Date('2026-01-01'), 2),
+          makeAppt('none', new Date('2026-01-01'), null),
+        ],
+        meta: { ...meta, total: 3 },
+      });
 
-      const result = await service.listAppointments({
-        sortBy: 'vulnerabilityScore',
-        order: 'asc',
-      } as any);
+      const query = { sortBy: 'vulnerabilityScore', order: 'desc' } as any;
+      const result = await service.listAppointments(query);
 
-      expect(result.map((r) => r.id)).toEqual(['low', 'high']);
+      expect(result.data.map((r) => r.id)).toEqual(['high', 'low', 'none']);
+      expect(
+        repository.findAllAppointmentsForManagerAndAdmin,
+      ).toHaveBeenCalledWith(query);
     });
   });
 
