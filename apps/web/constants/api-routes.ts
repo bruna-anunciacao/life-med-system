@@ -37,4 +37,7 @@ export const API_ROUTES = {
   LOCATIONS: {
     CITIES: "/addresses/cities",
   },
+  DASHBOARD: {
+    OVERVIEW: "/dashboard/overview",
+  },
 };
