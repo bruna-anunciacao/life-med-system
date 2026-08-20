@@ -21,6 +21,7 @@ import { AdminModule } from './admin/admin.module';
 import { HealthController } from './health/health.controller';
 import { GoogleCalendarModule } from './google-calendar/google-calendar.module';
 import { MedicalRecordsModule } from './medical-records/medical-records.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { MedicalRecordsModule } from './medical-records/medical-records.module';
     AdminModule,
     GoogleCalendarModule,
     MedicalRecordsModule,
+    DashboardModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService, PrismaService, AdminSeederService],
