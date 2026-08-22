@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { AppointmentStatus, Prisma } from '@prisma/client';
+import { AppointmentStatus, Prisma, UserRole, UserStatus } from '@prisma/client';
 import { CreateScheduleBlockDto } from './dto/schedule-block.dto';
 import { UpdateProfessionalSettingsDto } from './dto/update-setting.dto';
+import { ListProfessionalsQueryDto } from './dto/list-professionals-query.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { paginate } from '../common/dto/paginated-response.dto';
 
 @Injectable()
 export class ProfessionalRepository {
@@ -185,31 +187,80 @@ export class ProfessionalRepository {
     return { appointments, total };
   }
 
-  async listAllProfessionals(page: number, limit: number) {
-    const where = { role: 'PROFESSIONAL' as const };
-    const select = {
-      id: true,
-      name: true,
-      email: true,
-      status: true,
-      professionalProfile: {
-        include: { specialities: true },
-      },
-      address: true,
+  /**
+   * Lista profissionais visíveis para pacientes (exclui PENDING/BLOCKED, que
+   * ainda não foram aprovados ou foram bloqueados) com busca/filtros
+   * server-side, evitando trazer a base inteira para filtrar no cliente.
+   */
+  listAllProfessionals(query: ListProfessionalsQueryDto) {
+    const { page, limit, search, speciality, city, state } = query;
+
+    const where: Prisma.UserWhereInput = {
+      role: UserRole.PROFESSIONAL,
+      status: { notIn: [UserStatus.PENDING, UserStatus.BLOCKED] },
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          {
+            professionalProfile: {
+              specialities: {
+                some: { name: { contains: search, mode: 'insensitive' } },
+              },
+            },
+          },
+        ],
+      }),
+      ...(speciality && {
+        professionalProfile: {
+          specialities: { some: { name: { equals: speciality, mode: 'insensitive' } } },
+        },
+      }),
+      ...((city || state) && {
+        address: {
+          is: {
+            ...(city && { city: { equals: city, mode: 'insensitive' } }),
+            ...(state && { state: { equals: state, mode: 'insensitive' } }),
+          },
+        },
+      }),
     };
 
-    const [data, total] = await Promise.all([
-      this.prisma.user.findMany({
+    return paginate(
+      this.prisma.user,
+      {
         where,
-        select,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          status: true,
+          professionalProfile: {
+            include: { specialities: true },
+          },
+          address: true,
+        },
         orderBy: { name: 'asc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      this.prisma.user.count({ where }),
-    ]);
+      },
+      page,
+      limit,
+    );
+  }
 
-    return { data, total };
+  /** Combinações distintas de cidade/estado entre profissionais visíveis, para o filtro de localização. */
+  async listDistinctProfessionalLocations() {
+    const rows = await this.prisma.address.findMany({
+      where: {
+        user: {
+          role: UserRole.PROFESSIONAL,
+          status: { notIn: [UserStatus.PENDING, UserStatus.BLOCKED] },
+        },
+      },
+      select: { city: true, state: true },
+      distinct: ['city', 'state'],
+      orderBy: [{ state: 'asc' }, { city: 'asc' }],
+    });
+
+    return rows;
   }
 
   updateSettings(userId: string, dto: UpdateProfessionalSettingsDto) {

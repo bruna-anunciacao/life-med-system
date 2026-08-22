@@ -25,6 +25,7 @@ export const API_ROUTES = {
   },
   PROFESSIONALS: {
     LIST: "/professional",
+    LOCATIONS: "/professional/locations",
     SETTINGS: "/professional/settings",
     SCHEDULE: "/professional/schedule",
   },
