@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   Calendar,
   CalendarDays,
   CalendarPlus,
@@ -25,6 +26,11 @@ export function getNavItems(role: string): NavItem[] {
     case "ADMIN":
       return [
         { name: "Início", href: "/dashboard/admin", icon: Home },
+        {
+          name: "Dashboard",
+          href: "/dashboard/admin/analytics",
+          icon: BarChart3,
+        },
         {
           name: "Agendamentos",
           href: "/dashboard/admin/appointments",
@@ -78,6 +84,11 @@ export function getNavItems(role: string): NavItem[] {
     case "MANAGER":
       return [
         { name: "Início", href: "/dashboard/manager", icon: Home },
+        {
+          name: "Dashboard",
+          href: "/dashboard/manager/analytics",
+          icon: BarChart3,
+        },
         {
           name: "Pacientes",
           href: "/dashboard/manager/patients",
